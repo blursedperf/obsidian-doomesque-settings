@@ -282,39 +282,43 @@ body .popover.hover-popover {
 	box-sizing: border-box !important;
 }
 
-/* Force ALL direct children to expand to the full width of the resized popover (overriding Obsidian's .popover.hover-popover > * { width: var(--popover-width) }) */
+/* Force ALL direct children to expand to the full width of the resized popover */
 body .popover.hover-popover > * {
 	width: 100% !important;
 	max-width: 100% !important;
 	box-sizing: border-box !important;
 }
 
-/* Force markdown embeds & popover contents to fill 100% width and 100% height without artificial max-height limits */
+/* Ensure hidden elements (such as inactive editorEl inside embeds) remain strictly hidden */
+body .popover.hover-popover [style*="display: none"],
+body .popover.hover-popover [style*="display:none"],
+body .popover.hover-popover .markdown-embed-content[style*="display: none"],
+body .popover.hover-popover .markdown-embed-content[style*="display:none"] {
+	display: none !important;
+}
+
+/* Force markdown embeds & popover contents to fill available height cleanly without overflowing */
 body .popover.hover-popover > .markdown-embed,
 body .popover.hover-popover .markdown-embed,
 body .popover.hover-popover .popover-content {
 	width: 100% !important;
 	max-width: 100% !important;
-	height: 100% !important;
-	max-height: none !important;
-	flex: 1 1 auto !important;
-	display: flex !important;
-	flex-direction: column !important;
-	overflow: auto !important;
+	flex: 1 1 0 !important;
+	min-height: 0 !important;
+	height: auto !important;
+	overflow: hidden !important;
 	margin: 0 !important;
 	padding: 0 !important;
 	border: none !important;
 	background: transparent !important;
 }
 
-body .popover.hover-popover .markdown-embed-content {
+/* Only display active (non-hidden) embed content containers */
+body .popover.hover-popover .markdown-embed-content:not([style*="display: none"]):not([style*="display:none"]) {
 	width: 100% !important;
 	max-width: 100% !important;
 	height: 100% !important;
 	max-height: none !important;
-	flex: 1 1 auto !important;
-	display: flex !important;
-	flex-direction: column !important;
 	overflow: auto !important;
 }
 
@@ -327,18 +331,18 @@ body .popover.hover-popover .cm-scroller {
 	max-width: 100% !important;
 	height: 100% !important;
 	max-height: none !important;
-	flex: 1 1 auto !important;
 	box-sizing: border-box !important;
 	padding: 0 !important;
 }
 
-/* CRUCIAL: Prevent markdown-preview-sizer from constraining note content to a small narrow column */
+/* Prevent markdown-preview-sizer from constraining note content to a narrow column and remove excessive scroll-past-end bottom padding */
 body .popover.hover-popover .markdown-preview-sizer {
 	width: 100% !important;
 	max-width: 100% !important;
 	min-height: 100% !important;
 	margin: 0 !important;
-	padding: 16px 20px !important;
+	padding: 16px 20px 20px 20px !important;
+	padding-bottom: 20px !important;
 	box-sizing: border-box !important;
 }
 
@@ -346,6 +350,12 @@ body .popover.hover-popover .markdown-preview-section {
 	width: 100% !important;
 	max-width: 100% !important;
 	box-sizing: border-box !important;
+}
+
+/* Hide virtual scroll pusher and embedded backlinks inside hover popovers to prevent blank bottom space */
+body .popover.hover-popover .markdown-preview-pusher,
+body .popover.hover-popover .embedded-backlinks {
+	display: none !important;
 }
 
 /* CodeMirror content width in live preview inside popover */

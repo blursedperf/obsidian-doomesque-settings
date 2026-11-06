@@ -823,10 +823,15 @@ export class HoverPreviewManager {
 		);
 		for (let i = 0; i < embeds.length; i++) {
 			const el = embeds[i];
+			// Do not disturb hidden elements (e.g. inactive editorEl inside embeds)
+			if (el.style.display === "none" || el.getAttribute("style")?.includes("display: none")) {
+				continue;
+			}
 			el.style.maxWidth = "100%";
 			if (el.classList.contains("markdown-preview-sizer")) {
 				el.style.width = "100%";
 				el.style.margin = "0";
+				el.style.paddingBottom = "20px";
 			}
 		}
 	}

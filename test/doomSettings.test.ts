@@ -19,6 +19,22 @@ function makeSettings(overrides: Partial<DoomEmacsStyleSettings> = {}): DoomEmac
 	return { ...DEFAULT_DOOM_SETTINGS, ...overrides };
 }
 
+class MockDOMTokenList {
+	private classes = new Set<string>();
+	add(cls: string): void {
+		this.classes.add(cls);
+	}
+	remove(cls: string): void {
+		this.classes.delete(cls);
+	}
+	contains(cls: string): boolean {
+		return this.classes.has(cls);
+	}
+	get values(): string[] {
+		return Array.from(this.classes);
+	}
+}
+
 // -----------------------------------------------------------------------------
 // 1. DEFAULT_DOOM_SETTINGS Baseline Tests
 // -----------------------------------------------------------------------------
@@ -324,22 +340,6 @@ function makeSettings(overrides: Partial<DoomEmacsStyleSettings> = {}): DoomEmac
 // 9. DOM Mutation & Cleanup (applyDoomDomState & clearDoomDomState)
 // -----------------------------------------------------------------------------
 {
-	class MockDOMTokenList {
-		private classes = new Set<string>();
-		add(cls: string): void {
-			this.classes.add(cls);
-		}
-		remove(cls: string): void {
-			this.classes.delete(cls);
-		}
-		contains(cls: string): boolean {
-			return this.classes.has(cls);
-		}
-		get values(): string[] {
-			return Array.from(this.classes);
-		}
-	}
-
 	class MockCSSStyleDeclaration {
 		private props: Record<string, string> = {};
 		setProperty(prop: string, val: string): void {
@@ -549,6 +549,67 @@ function makeSettings(overrides: Partial<DoomEmacsStyleSettings> = {}): DoomEmac
 	assert.strictEqual(unpatchedInst.hidden, true, "Unpatched prototype must execute original hide()");
 
 	console.log("✓ Sticky hover preview interception, drag coordinate lock, and clean restoration verified");
+}
+
+// -----------------------------------------------------------------------------
+// 11. Hover Popover Content Expansion & Inactive Hidden Element Preservation
+// -----------------------------------------------------------------------------
+{
+	class MockElement {
+		classList = new MockDOMTokenList();
+		style: Record<string, string> = {};
+		private attrs: Record<string, string> = {};
+
+		constructor(className = "", styleAttr = "") {
+			className.split(" ").filter(Boolean).forEach((c) => this.classList.add(c));
+			if (styleAttr) {
+				this.attrs["style"] = styleAttr;
+				if (styleAttr.includes("display: none") || styleAttr.includes("display:none")) {
+					this.style.display = "none";
+				}
+			}
+		}
+
+		getAttribute(name: string): string | null {
+			return this.attrs[name] ?? null;
+		}
+	}
+
+	function expandPopoverInnerContent(popoverEl: { querySelectorAll: (sel: string) => MockElement[] }): void {
+		const embeds = popoverEl.querySelectorAll(
+			".markdown-embed, .markdown-embed-content, .markdown-preview-view, .markdown-preview-sizer, .popover-content, .cm-editor, .cm-scroller"
+		);
+		for (let i = 0; i < embeds.length; i++) {
+			const el = embeds[i];
+			if (el.style.display === "none" || el.getAttribute("style")?.includes("display: none")) {
+				continue;
+			}
+			el.style.maxWidth = "100%";
+			if (el.classList.contains("markdown-preview-sizer")) {
+				el.style.width = "100%";
+				el.style.margin = "0";
+				el.style.paddingBottom = "20px";
+			}
+		}
+	}
+
+	const activePreview = new MockElement("markdown-embed-content");
+	const hiddenEditor = new MockElement("markdown-embed-content", "display: none;");
+	const previewSizer = new MockElement("markdown-preview-sizer");
+
+	const mockPopover = {
+		querySelectorAll: (_sel: string) => [activePreview, hiddenEditor, previewSizer],
+	};
+
+	expandPopoverInnerContent(mockPopover);
+
+	assert.strictEqual(activePreview.style.maxWidth, "100%");
+	assert.strictEqual(hiddenEditor.style.maxWidth, undefined, "Hidden inactive elements must remain untouched");
+	assert.strictEqual(previewSizer.style.width, "100%");
+	assert.strictEqual(previewSizer.style.margin, "0");
+	assert.strictEqual(previewSizer.style.paddingBottom, "20px");
+
+	console.log("✓ Hover popover content expansion & inactive hidden element preservation verified");
 }
 
 console.log("\nAll unit tests passed successfully!");

@@ -5,12 +5,25 @@ export type DoomDarkPalette =
 	| "doom-palette-tokyo-night"
 	| "doom-palette-gruvbox";
 
+export type DoomLightPalette =
+	| "doom-palette-one-light"
+	| "doom-palette-nord-light"
+	| "doom-palette-gruvbox-light"
+	| "doom-palette-solarized-light"
+	| "doom-palette-tomorrow-day";
+
 export type DoomIndentGuideStyle = "solid" | "dashed" | "dotted" | "double" | "none";
 
 export type DoomSidebarDensity = "compact" | "normal" | "comfortable";
 
 export interface DoomPaletteOption {
 	id: DoomDarkPalette;
+	label: string;
+	description: string;
+}
+
+export interface DoomLightPaletteOption {
+	id: DoomLightPalette;
 	label: string;
 	description: string;
 }
@@ -43,6 +56,34 @@ export const DOOM_PALETTES: readonly DoomPaletteOption[] = [
 	},
 ];
 
+export const DOOM_LIGHT_PALETTES: readonly DoomLightPaletteOption[] = [
+	{
+		id: "doom-palette-one-light",
+		label: "doom-one-light (Default)",
+		description: "Clean Atom One Light port (#fafafa) with bright Doom syntax accents.",
+	},
+	{
+		id: "doom-palette-nord-light",
+		label: "doom-nord-light",
+		description: "Arctic pastel light palette (#e5e9f0) with cool slate and pine accents.",
+	},
+	{
+		id: "doom-palette-gruvbox-light",
+		label: "doom-gruvbox-light",
+		description: "Warm retro Gruvbox light medium palette (#fbf1c7) with earthy tones.",
+	},
+	{
+		id: "doom-palette-solarized-light",
+		label: "doom-solarized-light",
+		description: "Classic Ethan Schoonover solarized light palette (#fdf6e3).",
+	},
+	{
+		id: "doom-palette-tomorrow-day",
+		label: "doom-tomorrow-day",
+		description: "Crisp white Chris Kempson Tomorrow Day palette (#ffffff).",
+	},
+];
+
 export const INDENT_GUIDE_STYLE_CLASSES: Record<DoomIndentGuideStyle, string> = {
 	solid: "doom-indent-style-solid",
 	dashed: "doom-indent-style-dashed",
@@ -63,6 +104,11 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-palette-dracula",
 	"doom-palette-tokyo-night",
 	"doom-palette-gruvbox",
+	"doom-palette-one-light",
+	"doom-palette-nord-light",
+	"doom-palette-gruvbox-light",
+	"doom-palette-solarized-light",
+	"doom-palette-tomorrow-day",
 	"doom-no-org-todo",
 	"doom-monospace-editor",
 	"doom-disable-monospace-ui",
@@ -118,6 +164,8 @@ export interface DoomEsqueStyleSettings {
 	// --- Palette & Style ---
 	/** Active Dark Mode Doom palette class (`doom-palette-*`). */
 	darkPalette: DoomDarkPalette;
+	/** Active Light Mode Doom palette class (`doom-palette-*`). */
+	lightPalette: DoomLightPalette;
 	/** Hide explicit `TODO` / `DONE` badges on task items (`doom-no-org-todo`). */
 	disableOrgTodoBadges: boolean;
 	/** Use single accent color for all headings instead of Org rainbow (`doom-monochrome-headings`). */
@@ -189,6 +237,7 @@ export type DoomEmacsStyleSettings = DoomEsqueStyleSettings;
 
 export const DEFAULT_DOOMESQUE_SETTINGS: DoomEsqueStyleSettings = {
 	darkPalette: "doom-palette-one",
+	lightPalette: "doom-palette-one-light",
 	disableOrgTodoBadges: false,
 	monochromeHeadings: false,
 	disableH1Border: false,
@@ -260,7 +309,13 @@ export function computeDoomDomState(settings: DoomEmacsStyleSettings): ComputedD
 		? settings.darkPalette
 		: DEFAULT_DOOM_SETTINGS.darkPalette;
 
-	const activeClasses: string[] = [validPalette];
+	const validLightPalette: DoomLightPalette = DOOM_LIGHT_PALETTES.some(
+		(p) => p.id === settings.lightPalette
+	)
+		? settings.lightPalette
+		: DEFAULT_DOOM_SETTINGS.lightPalette;
+
+	const activeClasses: string[] = [validPalette, validLightPalette];
 
 	if (settings.disableOrgTodoBadges) {
 		activeClasses.push("doom-no-org-todo");
@@ -496,6 +551,12 @@ export function getNextDarkPalette(current: DoomDarkPalette): DoomDarkPalette {
 	const idx = DOOM_PALETTES.findIndex((p) => p.id === current);
 	if (idx === -1) return DOOM_PALETTES[0].id;
 	return DOOM_PALETTES[(idx + 1) % DOOM_PALETTES.length].id;
+}
+
+export function getNextLightPalette(current: DoomLightPalette): DoomLightPalette {
+	const idx = DOOM_LIGHT_PALETTES.findIndex((p) => p.id === current);
+	if (idx === -1) return DOOM_LIGHT_PALETTES[0].id;
+	return DOOM_LIGHT_PALETTES[(idx + 1) % DOOM_LIGHT_PALETTES.length].id;
 }
 
 export function getNextIndentStyle(current: DoomIndentGuideStyle): DoomIndentGuideStyle {

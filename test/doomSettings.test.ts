@@ -8,6 +8,7 @@ import {
 	clearDoomDomState,
 	computeDoomDomState,
 	getNextDarkPalette,
+	getNextLightPalette,
 	getNextIndentStyle,
 	sanitizeFontFamily,
 } from "../src/settings";
@@ -26,6 +27,7 @@ function makeSettings(overrides: Partial<DoomEmacsStyleSettings> = {}): DoomEmac
 
 	assert.deepStrictEqual(state.activeClasses, [
 		"doom-palette-one",
+		"doom-palette-one-light",
 		"doom-indent-style-solid",
 		"doom-sidebar-normal",
 	]);
@@ -57,14 +59,40 @@ function makeSettings(overrides: Partial<DoomEmacsStyleSettings> = {}): DoomEmac
 	const gruvbox = computeDoomDomState(makeSettings({ darkPalette: "doom-palette-gruvbox" }));
 	assert.ok(gruvbox.activeClasses.includes("doom-palette-gruvbox"));
 
-	// Invalid palette fallback
-	const invalid = computeDoomDomState(makeSettings({ darkPalette: "doom-unknown" as any }));
-	assert.ok(invalid.activeClasses.includes("doom-palette-one"));
-	console.log("✓ Palette selection and invalid fallback work correctly");
+	// Invalid dark palette fallback
+	const invalidDark = computeDoomDomState(makeSettings({ darkPalette: "doom-unknown" as any }));
+	assert.ok(invalidDark.activeClasses.includes("doom-palette-one"));
+
+	// Light palettes
+	const oneLight = computeDoomDomState(makeSettings({ lightPalette: "doom-palette-one-light" }));
+	assert.ok(oneLight.activeClasses.includes("doom-palette-one-light"));
+
+	const nordLight = computeDoomDomState(makeSettings({ lightPalette: "doom-palette-nord-light" }));
+	assert.ok(nordLight.activeClasses.includes("doom-palette-nord-light"));
+
+	const gruvboxLight = computeDoomDomState(
+		makeSettings({ lightPalette: "doom-palette-gruvbox-light" })
+	);
+	assert.ok(gruvboxLight.activeClasses.includes("doom-palette-gruvbox-light"));
+
+	const solarizedLight = computeDoomDomState(
+		makeSettings({ lightPalette: "doom-palette-solarized-light" })
+	);
+	assert.ok(solarizedLight.activeClasses.includes("doom-palette-solarized-light"));
+
+	const tomorrowDay = computeDoomDomState(
+		makeSettings({ lightPalette: "doom-palette-tomorrow-day" })
+	);
+	assert.ok(tomorrowDay.activeClasses.includes("doom-palette-tomorrow-day"));
+
+	// Invalid light palette fallback
+	const invalidLight = computeDoomDomState(makeSettings({ lightPalette: "doom-unknown" as any }));
+	assert.ok(invalidLight.activeClasses.includes("doom-palette-one-light"));
+	console.log("✓ Dark and light palette selections and invalid fallbacks work correctly");
 }
 
 // -----------------------------------------------------------------------------
-// 3. getNextDarkPalette & getNextIndentStyle Cycling
+// 3. getNextDarkPalette, getNextLightPalette & getNextIndentStyle Cycling
 // -----------------------------------------------------------------------------
 {
 	assert.strictEqual(getNextDarkPalette("doom-palette-one"), "doom-palette-vibrant");
@@ -74,12 +102,25 @@ function makeSettings(overrides: Partial<DoomEmacsStyleSettings> = {}): DoomEmac
 	assert.strictEqual(getNextDarkPalette("doom-palette-gruvbox"), "doom-palette-one");
 	assert.strictEqual(getNextDarkPalette("invalid" as any), "doom-palette-one");
 
+	assert.strictEqual(getNextLightPalette("doom-palette-one-light"), "doom-palette-nord-light");
+	assert.strictEqual(getNextLightPalette("doom-palette-nord-light"), "doom-palette-gruvbox-light");
+	assert.strictEqual(
+		getNextLightPalette("doom-palette-gruvbox-light"),
+		"doom-palette-solarized-light"
+	);
+	assert.strictEqual(
+		getNextLightPalette("doom-palette-solarized-light"),
+		"doom-palette-tomorrow-day"
+	);
+	assert.strictEqual(getNextLightPalette("doom-palette-tomorrow-day"), "doom-palette-one-light");
+	assert.strictEqual(getNextLightPalette("invalid" as any), "doom-palette-one-light");
+
 	assert.strictEqual(getNextIndentStyle("solid"), "dashed");
 	assert.strictEqual(getNextIndentStyle("dashed"), "dotted");
 	assert.strictEqual(getNextIndentStyle("dotted"), "double");
 	assert.strictEqual(getNextIndentStyle("double"), "none");
 	assert.strictEqual(getNextIndentStyle("none"), "solid");
-	console.log("✓ Palette and indent guide cycling logic verified");
+	console.log("✓ Dark & light palette and indent guide cycling logic verified");
 }
 
 // -----------------------------------------------------------------------------

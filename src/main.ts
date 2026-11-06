@@ -2,8 +2,10 @@ import { App, Notice, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { HoverPreviewManager } from "./hoverPreview";
 import {
 	DOOM_PALETTES,
+	DOOM_LIGHT_PALETTES,
 	DEFAULT_DOOM_SETTINGS,
 	DoomDarkPalette,
+	DoomLightPalette,
 	DoomEmacsStyleSettings,
 	DoomIndentGuideStyle,
 	DoomSidebarDensity,
@@ -11,6 +13,7 @@ import {
 	clearDoomDomState,
 	computeDoomDomState,
 	getNextDarkPalette,
+	getNextLightPalette,
 	getNextIndentStyle,
 	sanitizeFontFamily,
 } from "./settings";
@@ -33,7 +36,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			})
 		);
 
-		// Palette switcher / cycler
+		// Palette switcher / cycler (dark)
 		this.addCommand({
 			id: "cycle-dark-palette",
 			name: "Cycle dark theme palette",
@@ -42,6 +45,19 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 				this.settings.darkPalette = nextPalette;
 				await this.saveSettings();
 				const paletteOption = DOOM_PALETTES.find((p) => p.id === nextPalette);
+				new Notice(`DoomEsque: ${paletteOption?.label ?? nextPalette}`);
+			},
+		});
+
+		// Palette switcher / cycler (light)
+		this.addCommand({
+			id: "cycle-light-palette",
+			name: "Cycle light theme palette",
+			callback: async () => {
+				const nextPalette = getNextLightPalette(this.settings.lightPalette);
+				this.settings.lightPalette = nextPalette;
+				await this.saveSettings();
+				const paletteOption = DOOM_LIGHT_PALETTES.find((p) => p.id === nextPalette);
 				new Notice(`DoomEsque: ${paletteOption?.label ?? nextPalette}`);
 			},
 		});
@@ -277,6 +293,20 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 				dropdown.setValue(this.plugin.settings.darkPalette);
 				dropdown.onChange(async (val) => {
 					this.plugin.settings.darkPalette = val as DoomDarkPalette;
+					await this.plugin.saveSettings();
+				});
+			});
+
+		new Setting(containerEl)
+			.setName("Light theme palette")
+			.setDesc("Choose which authentic Doom color scheme to apply in Light Mode.")
+			.addDropdown((dropdown) => {
+				for (const palette of DOOM_LIGHT_PALETTES) {
+					dropdown.addOption(palette.id, palette.label);
+				}
+				dropdown.setValue(this.plugin.settings.lightPalette);
+				dropdown.onChange(async (val) => {
+					this.plugin.settings.lightPalette = val as DoomLightPalette;
 					await this.plugin.saveSettings();
 				});
 			});

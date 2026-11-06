@@ -13,6 +13,12 @@ A dedicated companion plugin to customize and manipulate style settings, layout 
   - `doom-dracula` (Iconic purple/pink/cyan Dracula adaptation)
   - `doom-tokyo-night` (Midnight indigo storm palette `#1a1b26`)
   - `doom-gruvbox` (Warm retro medium dark `#282828`)
+- **Authentic Doom Light Palettes**: Ported from official Emacs `doomemacs/themes` definitions:
+  - `doom-one-light` (Default Atom One Light port `#fafafa` with vivid syntax accents)
+  - `doom-nord-light` (Arctic pastel light scheme `#e5e9f0` with cool slate and pine accents)
+  - `doom-gruvbox-light` (Warm retro Gruvbox light medium `#fbf1c7` with earthy tones)
+  - `doom-solarized-light` (Classic Ethan Schoonover solarized light `#fdf6e3`)
+  - `doom-tomorrow-day` (Crisp white Chris Kempson Tomorrow Day palette `#ffffff`)
 - **Org-Mode Task Badges**: Toggle explicit `TODO` and `DONE` prefix badges beside checkboxes.
 - **Monochrome Headings**: Switch between Org rainbow headings and a clean, uniform Doom blue accent.
 - **H1 Accent Border**: Toggle the subtle bottom border under Level 1 headings.
@@ -66,6 +72,7 @@ The plugin provides quick keyboard commands accessible via `Ctrl/Cmd + P`:
 | Command | Action |
 | :--- | :--- |
 | `DoomEsque: Cycle dark theme palette` | Instantly cycles through all 5 Doom dark color schemes with a notice badge |
+| `DoomEsque: Cycle light theme palette` | Instantly cycles through all 5 Doom light color schemes with a notice badge |
 | `DoomEsque: Toggle monospace note editor` | Switches editor body between monospace buffer and default font |
 | `DoomEsque: Toggle Org-mode TODO/DONE task badges` | Toggles explicit `TODO` / `DONE` badges next to checkboxes |
 | `DoomEsque: Toggle rainbow indentation guides` | Turns rainbow nested indent guides on/off |

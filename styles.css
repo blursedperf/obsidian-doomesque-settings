@@ -265,6 +265,8 @@ body.doom-disable-monospace-ui .prompt {
    Hover Preview Sizing, Content Expansion, Sticky State & Modeline Header
    -------------------------------------------------------------------------- */
 body .popover.hover-popover {
+	--popover-height: 100% !important;
+	--popover-max-height: 100% !important;
 	width: var(--doom-popover-width, var(--popover-width, 550px));
 	height: var(--doom-popover-height, var(--popover-height, 420px));
 	min-width: 320px;
@@ -282,6 +284,19 @@ body .popover.hover-popover {
 	box-sizing: border-box !important;
 }
 
+/* Maximized preview window cleanly occupies the full expanded viewport */
+body .popover.hover-popover.mod-maximized {
+	position: fixed !important;
+	left: 4vw !important;
+	top: 5vh !important;
+	width: 92vw !important;
+	height: 90vh !important;
+	max-width: 92vw !important;
+	max-height: 90vh !important;
+	margin: 0 !important;
+	resize: none !important;
+}
+
 /* Force ALL direct children to expand to the full width of the resized popover */
 body .popover.hover-popover > * {
 	width: 100% !important;
@@ -297,15 +312,18 @@ body .popover.hover-popover .markdown-embed-content[style*="display:none"] {
 	display: none !important;
 }
 
-/* Force markdown embeds & popover contents to fill available height cleanly all the way to the bottom */
+/* Force markdown embeds & popover contents to fill available height cleanly all the way to the bottom without height caps */
+body .popover.hover-popover > div:not(.doom-popover-header),
 body .popover.hover-popover > .markdown-embed,
 body .popover.hover-popover .markdown-embed,
-body .popover.hover-popover .popover-content {
+body .popover.hover-popover .popover-content,
+body .popover.hover-popover .bases-embed {
 	width: 100% !important;
 	max-width: 100% !important;
 	flex: 1 1 auto !important;
 	min-height: 0 !important;
 	height: 100% !important;
+	max-height: none !important;
 	display: flex !important;
 	flex-direction: column !important;
 	overflow: hidden !important;
@@ -326,9 +344,10 @@ body .popover.hover-popover .markdown-embed-content:not([style*="display: none"]
 	display: flex !important;
 	flex-direction: column !important;
 	overflow: hidden !important;
+	background: transparent !important;
 }
 
-/* Make preview view, editor and scroller expand to fill entire area to the bottom */
+/* Make preview view, editor and scroller expand to fill entire area to the bottom with seamless background */
 body .popover.hover-popover .markdown-preview-view,
 body .popover.hover-popover .markdown-source-view.mod-cm6,
 body .popover.hover-popover .cm-editor {
@@ -341,6 +360,7 @@ body .popover.hover-popover .cm-editor {
 	box-sizing: border-box !important;
 	overflow: auto !important;
 	padding: 0 !important;
+	background-color: var(--doom-bg-alt, #21242b) !important;
 }
 
 body .popover.hover-popover .cm-scroller {
@@ -348,9 +368,11 @@ body .popover.hover-popover .cm-scroller {
 	max-width: 100% !important;
 	height: 100% !important;
 	min-height: 100% !important;
+	max-height: none !important;
 	box-sizing: border-box !important;
 	overflow: auto !important;
 	padding: 0 !important;
+	background-color: var(--doom-bg-alt, #21242b) !important;
 }
 
 /* Ensure note content container expands to the full height of the resized popover window */
@@ -362,6 +384,7 @@ body .popover.hover-popover .markdown-preview-sizer {
 	padding: 16px 20px 24px 20px !important;
 	padding-bottom: 24px !important;
 	box-sizing: border-box !important;
+	background-color: var(--doom-bg-alt, #21242b) !important;
 }
 
 body .popover.hover-popover .markdown-preview-section {
@@ -371,9 +394,11 @@ body .popover.hover-popover .markdown-preview-section {
 	box-sizing: border-box !important;
 }
 
-/* Hide virtual scroll pusher and embedded backlinks inside hover popovers to prevent blank bottom space */
+/* Hide virtual scroll pusher, footers, and embedded backlinks inside hover popovers to prevent blank bottom space */
 body .popover.hover-popover .markdown-preview-pusher,
-body .popover.hover-popover .embedded-backlinks {
+body .popover.hover-popover .embedded-backlinks,
+body .popover.hover-popover .mod-footer,
+body .popover.hover-popover .mod-ui {
 	display: none !important;
 }
 

@@ -575,9 +575,19 @@ class MockDOMTokenList {
 		}
 	}
 
-	function expandPopoverInnerContent(popoverEl: { querySelectorAll: (sel: string) => MockElement[] }): void {
+	function expandPopoverInnerContent(popoverEl: { children?: MockElement[]; querySelectorAll: (sel: string) => MockElement[] }): void {
+		const directChildren = popoverEl.children || [];
+		for (const child of directChildren) {
+			if (!child.classList.contains("doom-popover-header")) {
+				child.style.width = "100%";
+				child.style.maxWidth = "100%";
+				child.style.height = "100%";
+				child.style.maxHeight = "none";
+			}
+		}
+
 		const embeds = popoverEl.querySelectorAll(
-			".markdown-embed, .markdown-embed-content, .markdown-preview-view, .markdown-preview-sizer, .popover-content, .cm-editor, .cm-scroller"
+			".markdown-embed, .markdown-embed-content, .markdown-preview-view, .markdown-preview-sizer, .popover-content, .cm-editor, .cm-scroller, .bases-embed"
 		);
 		for (let i = 0; i < embeds.length; i++) {
 			const el = embeds[i];
@@ -585,6 +595,7 @@ class MockDOMTokenList {
 				continue;
 			}
 			el.style.maxWidth = "100%";
+			el.style.maxHeight = "none";
 			if (el.classList.contains("markdown-preview-sizer")) {
 				el.style.width = "100%";
 				el.style.minHeight = "100%";
@@ -594,29 +605,42 @@ class MockDOMTokenList {
 				el.classList.contains("markdown-embed") ||
 				el.classList.contains("markdown-embed-content") ||
 				el.classList.contains("markdown-preview-view") ||
-				el.classList.contains("cm-scroller")
+				el.classList.contains("cm-scroller") ||
+				el.classList.contains("cm-editor") ||
+				el.classList.contains("bases-embed") ||
+				el.classList.contains("popover-content")
 			) {
 				el.style.height = "100%";
 			}
 		}
 	}
 
+	const headerEl = new MockElement("doom-popover-header");
+	const directWrapper = new MockElement("markdown-embed");
 	const activePreview = new MockElement("markdown-embed-content");
 	const hiddenEditor = new MockElement("markdown-embed-content", "display: none;");
 	const previewSizer = new MockElement("markdown-preview-sizer");
 
 	const mockPopover = {
+		children: [headerEl, directWrapper],
 		querySelectorAll: (_sel: string) => [activePreview, hiddenEditor, previewSizer],
 	};
 
 	expandPopoverInnerContent(mockPopover);
 
+	assert.strictEqual(headerEl.style.maxHeight, undefined, "Header elements must not be forcibly expanded");
+	assert.strictEqual(directWrapper.style.width, "100%");
+	assert.strictEqual(directWrapper.style.height, "100%");
+	assert.strictEqual(directWrapper.style.maxHeight, "none");
 	assert.strictEqual(activePreview.style.maxWidth, "100%");
 	assert.strictEqual(activePreview.style.height, "100%");
+	assert.strictEqual(activePreview.style.maxHeight, "none");
 	assert.strictEqual(hiddenEditor.style.maxWidth, undefined, "Hidden inactive elements must remain untouched");
 	assert.strictEqual(hiddenEditor.style.height, undefined, "Hidden inactive elements must remain untouched");
+	assert.strictEqual(hiddenEditor.style.maxHeight, undefined, "Hidden inactive elements must remain untouched");
 	assert.strictEqual(previewSizer.style.width, "100%");
 	assert.strictEqual(previewSizer.style.minHeight, "100%");
+	assert.strictEqual(previewSizer.style.maxHeight, "none");
 	assert.strictEqual(previewSizer.style.margin, "0");
 	assert.strictEqual(previewSizer.style.paddingBottom, "24px");
 

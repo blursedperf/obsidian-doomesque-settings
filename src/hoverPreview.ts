@@ -472,6 +472,15 @@ export class HoverPreviewManager {
 		);
 
 		this.buildPopoverHeader(popoverEl, resolvedLinktext, resolvedSourcePath, instance);
+
+		// Observe subsequent asynchronous embed mounting inside this popover to expand immediately
+		try {
+			const childObserver = new MutationObserver(() => {
+				this.expandPopoverInnerContent(popoverEl);
+			});
+			childObserver.observe(popoverEl, { childList: true, subtree: true });
+			(popoverEl as any)._doomChildObserver = childObserver;
+		} catch {}
 	}
 
 	/**
@@ -774,6 +783,10 @@ export class HoverPreviewManager {
 	 * Closes a specific popover element and cleanly tears down its internal HoverPopover component.
 	 */
 	closeHoverPopoverEl(popoverEl: HTMLElement, popoverInstance?: any): void {
+		try {
+			(popoverEl as any)?._doomChildObserver?.disconnect();
+		} catch {}
+
 		const instance = popoverInstance || (popoverEl as any)?._doomPopover || this.findInstanceForEl(popoverEl);
 		if (instance) {
 			instance._doomIsSticky = false;
@@ -818,8 +831,22 @@ export class HoverPreviewManager {
 	 * Unconstrains inner embed elements so they expand to 100% of the resized window.
 	 */
 	expandPopoverInnerContent(popoverEl: HTMLElement): void {
+		if (!popoverEl) return;
+
+		// 1. Unconstrain direct container children
+		const directChildren = Array.from(popoverEl.children || []) as HTMLElement[];
+		for (const child of directChildren) {
+			if (!child.classList.contains("doom-popover-header")) {
+				child.style.width = "100%";
+				child.style.maxWidth = "100%";
+				child.style.height = "100%";
+				child.style.maxHeight = "none";
+			}
+		}
+
+		// 2. Unconstrain nested embed components and views
 		const embeds = popoverEl.querySelectorAll<HTMLElement>(
-			".markdown-embed, .markdown-embed-content, .markdown-preview-view, .markdown-preview-sizer, .popover-content, .cm-editor, .cm-scroller"
+			".markdown-embed, .markdown-embed-content, .markdown-preview-view, .markdown-preview-sizer, .popover-content, .cm-editor, .cm-scroller, .bases-embed"
 		);
 		for (let i = 0; i < embeds.length; i++) {
 			const el = embeds[i];
@@ -828,6 +855,7 @@ export class HoverPreviewManager {
 				continue;
 			}
 			el.style.maxWidth = "100%";
+			el.style.maxHeight = "none";
 			if (el.classList.contains("markdown-preview-sizer")) {
 				el.style.width = "100%";
 				el.style.minHeight = "100%";
@@ -837,7 +865,10 @@ export class HoverPreviewManager {
 				el.classList.contains("markdown-embed") ||
 				el.classList.contains("markdown-embed-content") ||
 				el.classList.contains("markdown-preview-view") ||
-				el.classList.contains("cm-scroller")
+				el.classList.contains("cm-scroller") ||
+				el.classList.contains("cm-editor") ||
+				el.classList.contains("bases-embed") ||
+				el.classList.contains("popover-content")
 			) {
 				el.style.height = "100%";
 			}

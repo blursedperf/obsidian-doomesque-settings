@@ -1,0 +1,9 @@
+{
+	"id": "doomesque-settings",
+	"name": "DoomEsque Settings",
+	"version": "1.0.0",
+	"minAppVersion": "1.5.0",
+	"description": "Customize DoomEsque theme palettes, spacing, indentation guides, and sticky hover preview popovers.",
+	"author": "Jason Gunst",
+	"isDesktopOnly": false
+}

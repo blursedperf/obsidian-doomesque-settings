@@ -1,0 +1,515 @@
+/* ==========================================================================
+   DoomEsque Settings Plugin Styles
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Settings Tab UI Enhancements & Refined Setting Items
+   -------------------------------------------------------------------------- */
+.modal.mod-settings .setting-item:not(.setting-item-heading) {
+	background-color: var(--doom-bg-alt, var(--background-secondary)) !important;
+	border: 1px solid var(--doom-base3, var(--background-modifier-border)) !important;
+	border-radius: 6px !important;
+	padding: 13px 18px !important;
+	margin-bottom: 8px !important;
+	align-items: center;
+	gap: 16px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+	transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.modal.mod-settings .setting-item:not(.setting-item-heading):hover {
+	background-color: var(--doom-base0, var(--background-primary)) !important;
+	border-color: var(--doom-base4, var(--background-modifier-border-hover)) !important;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.modal.mod-settings .setting-items {
+	background-color: var(--doom-bg-alt, var(--background-secondary)) !important;
+	border: 1px solid var(--doom-base3, var(--background-modifier-border)) !important;
+	border-radius: 6px !important;
+	overflow: hidden;
+	margin-bottom: 14px !important;
+	padding: 0 !important;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.modal.mod-settings .setting-items > .setting-item:not(.setting-item-heading) {
+	background-color: transparent !important;
+	border: none !important;
+	border-radius: 0 !important;
+	border-top: 1px solid var(--doom-base2, var(--background-modifier-border)) !important;
+	padding: 13px 18px !important;
+	margin-bottom: 0 !important;
+	box-shadow: none !important;
+}
+
+.modal.mod-settings .setting-items > .setting-item:not(.setting-item-heading):first-child {
+	border-top: none !important;
+}
+
+.modal.mod-settings .setting-item.setting-item-heading {
+	background-color: transparent !important;
+	border: none !important;
+	border-bottom: 1px solid var(--doom-base3, var(--background-modifier-border)) !important;
+	border-radius: 0 !important;
+	padding: 22px 4px 8px 4px !important;
+	margin: 18px 0 12px 0 !important;
+	box-shadow: none !important;
+}
+
+.modal.mod-settings .setting-item.setting-item-heading .setting-item-name {
+	color: var(--doom-blue, var(--text-accent)) !important;
+	font-family: var(--font-monospace-doom, var(--font-monospace)) !important;
+	font-size: 13.5px !important;
+	font-weight: 700 !important;
+	text-transform: uppercase !important;
+	letter-spacing: 0.05em !important;
+}
+
+/* Flat Settings Rows Variant */
+body.doom-settings-flat .modal.mod-settings .setting-item:not(.setting-item-heading),
+body.doom-settings-flat .modal.mod-settings .setting-items {
+	background-color: transparent !important;
+	border: none !important;
+	border-bottom: 1px solid var(--doom-base2, var(--background-modifier-border)) !important;
+	border-radius: 4px !important;
+	box-shadow: none !important;
+	margin-bottom: 0 !important;
+	padding: 12px 10px !important;
+}
+
+body.doom-settings-flat .modal.mod-settings .setting-item:not(.setting-item-heading):hover {
+	background-color: rgba(81, 175, 239, 0.08) !important;
+}
+
+.doom-settings-slider-value {
+	display: inline-block;
+	min-width: 54px;
+	padding: 3px 8px;
+	margin-right: 8px;
+	font-family: var(--font-monospace-doom, var(--font-monospace));
+	font-size: 11.5px;
+	text-align: right;
+	background-color: var(--doom-base0, var(--background-secondary));
+	border: 1px solid var(--doom-base3, var(--background-modifier-border));
+	border-radius: 4px;
+	color: var(--doom-blue, var(--text-accent));
+	user-select: none;
+}
+
+/* --------------------------------------------------------------------------
+   Indentation Guide Styles (highlight-indent-guides / indent-bars)
+   -------------------------------------------------------------------------- */
+body.doom-indent-style-none .cm-indent,
+body.doom-indent-style-none .markdown-rendered ul ul,
+body.doom-indent-style-none .markdown-rendered ol ol,
+body.doom-indent-style-none .mod-indent-guide {
+	border-right: none !important;
+	border-left: none !important;
+	box-shadow: none !important;
+	opacity: 0 !important;
+}
+
+body.doom-indent-style-dashed .cm-indent {
+	border-right-style: dashed !important;
+}
+
+body.doom-indent-style-dashed .markdown-rendered ul ul,
+body.doom-indent-style-dashed .markdown-rendered ol ol {
+	border-left-style: dashed !important;
+}
+
+body.doom-indent-style-dotted .cm-indent {
+	border-right-style: dotted !important;
+}
+
+body.doom-indent-style-dotted .markdown-rendered ul ul,
+body.doom-indent-style-dotted .markdown-rendered ol ol {
+	border-left-style: dotted !important;
+}
+
+body.doom-indent-style-double .cm-indent {
+	border-right-style: double !important;
+}
+
+body.doom-indent-style-double .markdown-rendered ul ul,
+body.doom-indent-style-double .markdown-rendered ol ol {
+	border-left-style: double !important;
+}
+
+body.doom-indent-style-solid .cm-indent {
+	border-right-style: solid !important;
+}
+
+body.doom-indent-style-solid .markdown-rendered ul ul,
+body.doom-indent-style-solid .markdown-rendered ol ol {
+	border-left-style: solid !important;
+}
+
+/* --------------------------------------------------------------------------
+   Rainbow Indentation Guides (Cycle Doom palette colors per nesting depth)
+   -------------------------------------------------------------------------- */
+body.doom-rainbow-indent-guides .cm-indent:nth-of-type(6n + 1) {
+	border-right-color: var(--doom-blue, #51afef) !important;
+}
+
+body.doom-rainbow-indent-guides .cm-indent:nth-of-type(6n + 2) {
+	border-right-color: var(--doom-magenta, #c678dd) !important;
+}
+
+body.doom-rainbow-indent-guides .cm-indent:nth-of-type(6n + 3) {
+	border-right-color: var(--doom-violet, #a9a1e1) !important;
+}
+
+body.doom-rainbow-indent-guides .cm-indent:nth-of-type(6n + 4) {
+	border-right-color: var(--doom-orange, #da8548) !important;
+}
+
+body.doom-rainbow-indent-guides .cm-indent:nth-of-type(6n + 5) {
+	border-right-color: var(--doom-green, #98be65) !important;
+}
+
+body.doom-rainbow-indent-guides .cm-indent:nth-of-type(6n + 6) {
+	border-right-color: var(--doom-cyan, #46d9ff) !important;
+}
+
+/* Reading View Rainbow Guides */
+body.doom-rainbow-indent-guides .markdown-rendered ul,
+body.doom-rainbow-indent-guides .markdown-rendered ol {
+	border-left-color: var(--doom-blue, #51afef);
+}
+
+body.doom-rainbow-indent-guides .markdown-rendered ul ul,
+body.doom-rainbow-indent-guides .markdown-rendered ol ol {
+	border-left-color: var(--doom-magenta, #c678dd);
+}
+
+body.doom-rainbow-indent-guides .markdown-rendered ul ul ul,
+body.doom-rainbow-indent-guides .markdown-rendered ol ol ol {
+	border-left-color: var(--doom-violet, #a9a1e1);
+}
+
+body.doom-rainbow-indent-guides .markdown-rendered ul ul ul ul,
+body.doom-rainbow-indent-guides .markdown-rendered ol ol ol ol {
+	border-left-color: var(--doom-orange, #da8548);
+}
+
+body.doom-rainbow-indent-guides .markdown-rendered ul ul ul ul ul,
+body.doom-rainbow-indent-guides .markdown-rendered ol ol ol ol ol {
+	border-left-color: var(--doom-green, #98be65);
+}
+
+body.doom-rainbow-indent-guides .markdown-rendered ul ul ul ul ul ul,
+body.doom-rainbow-indent-guides .markdown-rendered ol ol ol ol ol ol {
+	border-left-color: var(--doom-cyan, #46d9ff);
+}
+
+/* --------------------------------------------------------------------------
+   Headings & Borders
+   -------------------------------------------------------------------------- */
+body.doom-monochrome-headings {
+	--h1-color: var(--doom-blue, #51afef) !important;
+	--h2-color: var(--doom-blue, #51afef) !important;
+	--h3-color: var(--doom-blue, #51afef) !important;
+	--h4-color: var(--doom-blue, #51afef) !important;
+	--h5-color: var(--doom-blue, #51afef) !important;
+	--h6-color: var(--doom-blue, #51afef) !important;
+}
+
+body.doom-no-h1-border .markdown-rendered h1,
+body.doom-no-h1-border .HyperMD-header-1 {
+	border-bottom: none !important;
+}
+
+body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
+	background-color: transparent !important;
+}
+
+/* --------------------------------------------------------------------------
+   Sidebar & File Explorer Densities & Tree Indentation
+   -------------------------------------------------------------------------- */
+body .tree-item-children {
+	margin-left: var(--doom-tree-indent, 14px) !important;
+}
+
+body.doom-sidebar-compact .tree-item-self {
+	padding-top: 1px !important;
+	padding-bottom: 1px !important;
+	font-size: 12px !important;
+}
+
+body.doom-sidebar-comfortable .tree-item-self {
+	padding-top: 6px !important;
+	padding-bottom: 6px !important;
+	font-size: 14px !important;
+}
+
+/* --------------------------------------------------------------------------
+   Typography Overrides
+   -------------------------------------------------------------------------- */
+body.doom-monospace-editor .markdown-source-view.mod-cm6 .cm-content,
+body.doom-monospace-editor .markdown-preview-view {
+	font-family: var(--font-monospace-doom) !important;
+}
+
+body.doom-disable-monospace-ui .workspace-tab-header,
+body.doom-disable-monospace-ui .nav-folder-title,
+body.doom-disable-monospace-ui .nav-file-title,
+body.doom-disable-monospace-ui .status-bar,
+body.doom-disable-monospace-ui .modal-container,
+body.doom-disable-monospace-ui .prompt {
+	font-family: var(--font-interface) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Hover Preview Sizing, Content Expansion, Sticky State & Modeline Header
+   -------------------------------------------------------------------------- */
+body .popover.hover-popover {
+	width: var(--doom-popover-width, var(--popover-width, 550px));
+	height: var(--doom-popover-height, var(--popover-height, 420px));
+	min-width: 320px;
+	min-height: 220px;
+	max-width: 96vw !important;
+	max-height: 94vh !important;
+	border: 1px solid var(--doom-blue, #51afef) !important;
+	border-radius: var(--radius-m, 4px) !important;
+	box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), 0 0 0 1px var(--doom-base3, #23272e) !important;
+	background-color: var(--doom-bg-alt, #21242b) !important;
+	display: flex !important;
+	flex-direction: column !important;
+	overflow: hidden !important;
+	resize: both;
+	box-sizing: border-box !important;
+}
+
+/* Force ALL direct children to expand to the full width of the resized popover (overriding Obsidian's .popover.hover-popover > * { width: var(--popover-width) }) */
+body .popover.hover-popover > * {
+	width: 100% !important;
+	max-width: 100% !important;
+	box-sizing: border-box !important;
+}
+
+/* Force markdown embeds & popover contents to fill 100% width and 100% height without artificial max-height limits */
+body .popover.hover-popover > .markdown-embed,
+body .popover.hover-popover .markdown-embed,
+body .popover.hover-popover .popover-content {
+	width: 100% !important;
+	max-width: 100% !important;
+	height: 100% !important;
+	max-height: none !important;
+	flex: 1 1 auto !important;
+	display: flex !important;
+	flex-direction: column !important;
+	overflow: auto !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: none !important;
+	background: transparent !important;
+}
+
+body .popover.hover-popover .markdown-embed-content {
+	width: 100% !important;
+	max-width: 100% !important;
+	height: 100% !important;
+	max-height: none !important;
+	flex: 1 1 auto !important;
+	display: flex !important;
+	flex-direction: column !important;
+	overflow: auto !important;
+}
+
+/* Make preview view and scroller expand to fill entire area */
+body .popover.hover-popover .markdown-preview-view,
+body .popover.hover-popover .markdown-source-view.mod-cm6,
+body .popover.hover-popover .cm-editor,
+body .popover.hover-popover .cm-scroller {
+	width: 100% !important;
+	max-width: 100% !important;
+	height: 100% !important;
+	max-height: none !important;
+	flex: 1 1 auto !important;
+	box-sizing: border-box !important;
+	padding: 0 !important;
+}
+
+/* CRUCIAL: Prevent markdown-preview-sizer from constraining note content to a small narrow column */
+body .popover.hover-popover .markdown-preview-sizer {
+	width: 100% !important;
+	max-width: 100% !important;
+	min-height: 100% !important;
+	margin: 0 !important;
+	padding: 16px 20px !important;
+	box-sizing: border-box !important;
+}
+
+body .popover.hover-popover .markdown-preview-section {
+	width: 100% !important;
+	max-width: 100% !important;
+	box-sizing: border-box !important;
+}
+
+/* CodeMirror content width in live preview inside popover */
+body .popover.hover-popover .cm-content {
+	width: 100% !important;
+	max-width: 100% !important;
+	box-sizing: border-box !important;
+	padding: 14px 20px !important;
+}
+
+body .popover.hover-popover .cm-line {
+	max-width: 100% !important;
+}
+
+/* Typography, Font Scale & Line Rhythm inside hover popovers */
+body .popover.hover-popover {
+	--popover-font-size: calc(var(--font-text-size, 16px) * var(--doom-popover-font-scale, 1.0));
+}
+
+body .popover.hover-popover,
+body .popover.hover-popover .markdown-preview-view,
+body .popover.hover-popover .markdown-source-view,
+body .popover.hover-popover .markdown-rendered,
+body .popover.hover-popover .cm-content {
+	font-size: var(--popover-font-size, 16px) !important;
+	line-height: var(--line-height-normal, 1.6) !important;
+}
+
+/* Scale headings and code elements inside popover proportionally */
+body .popover.hover-popover h1,
+body .popover.hover-popover .HyperMD-header-1 {
+	font-size: calc(var(--h1-size, 1.48em) * var(--doom-popover-font-scale, 1.0)) !important;
+}
+body .popover.hover-popover h2,
+body .popover.hover-popover .HyperMD-header-2 {
+	font-size: calc(var(--h2-size, 1.30em) * var(--doom-popover-font-scale, 1.0)) !important;
+}
+body .popover.hover-popover h3,
+body .popover.hover-popover .HyperMD-header-3 {
+	font-size: calc(var(--h3-size, 1.16em) * var(--doom-popover-font-scale, 1.0)) !important;
+}
+body .popover.hover-popover h4,
+body .popover.hover-popover .HyperMD-header-4 {
+	font-size: calc(var(--h4-size, 1.06em) * var(--doom-popover-font-scale, 1.0)) !important;
+}
+body .popover.hover-popover pre,
+body .popover.hover-popover code {
+	font-size: 0.95em !important;
+	font-family: var(--font-monospace-doom) !important;
+}
+
+/* Responsive tables & media inside hover popovers */
+body .popover.hover-popover table {
+	width: 100% !important;
+	max-width: 100% !important;
+}
+
+body .popover.hover-popover img:not(.emoji) {
+	max-width: 100% !important;
+	height: auto !important;
+}
+
+body .popover.hover-popover .image-embed,
+body .popover.hover-popover .video-embed,
+body .popover.hover-popover .pdf-embed {
+	width: 100% !important;
+	max-width: 100% !important;
+	flex: 1 1 auto !important;
+}
+
+body .popover.hover-popover .pdf-embed {
+	height: 100% !important;
+	min-height: 350px !important;
+}
+
+/* Sticky Popover Appearance */
+body .popover.hover-popover.doom-sticky-popover {
+	z-index: var(--layer-popover, 35) !important;
+	box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75), 0 0 0 2px var(--doom-blue, #51afef) !important;
+}
+
+/* Doom Popover Header */
+.doom-popover-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 5px 8px;
+	background-color: var(--doom-base1, #1c1f24);
+	border-bottom: 1px solid var(--doom-base3, #23272e);
+	font-family: var(--font-monospace-doom, var(--font-monospace));
+	font-size: 11.5px;
+	color: var(--doom-fg, #bbc2cf);
+	user-select: none;
+	cursor: grab;
+	flex-shrink: 0;
+	box-sizing: border-box !important;
+}
+
+.doom-popover-header:active {
+	cursor: grabbing;
+}
+
+.doom-popover-title {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-weight: 600;
+	color: var(--doom-blue, #51afef);
+}
+
+.doom-popover-actions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex-shrink: 0;
+}
+
+.doom-popover-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border-radius: 3px;
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--doom-base6, #73797e);
+	cursor: pointer;
+	font-size: 12px;
+	line-height: 1;
+	transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.doom-popover-btn:hover {
+	background-color: var(--doom-base3, #23272e);
+	color: var(--doom-fg, #bbc2cf);
+	border-color: var(--doom-base4, #3f444a);
+}
+
+.doom-popover-btn.is-active,
+.doom-popover-btn.mod-pin.is-active {
+	color: var(--doom-green, #98be65);
+	background-color: rgba(152, 190, 101, 0.16);
+	border-color: rgba(152, 190, 101, 0.35);
+}
+
+.doom-popover-btn.mod-maximize:hover {
+	color: var(--doom-cyan, #46d9ff);
+	background-color: rgba(70, 217, 255, 0.16);
+	border-color: rgba(70, 217, 255, 0.35);
+}
+
+.doom-popover-btn.mod-sidebar:hover {
+	color: var(--doom-yellow, #ecbe7b);
+	background-color: rgba(236, 190, 123, 0.16);
+	border-color: rgba(236, 190, 123, 0.35);
+}
+
+.doom-popover-btn.mod-close:hover {
+	color: var(--doom-red, #ff6c6b);
+	background-color: rgba(255, 108, 107, 0.16);
+	border-color: rgba(255, 108, 107, 0.35);
+}

@@ -297,15 +297,17 @@ body .popover.hover-popover .markdown-embed-content[style*="display:none"] {
 	display: none !important;
 }
 
-/* Force markdown embeds & popover contents to fill available height cleanly without overflowing */
+/* Force markdown embeds & popover contents to fill available height cleanly all the way to the bottom */
 body .popover.hover-popover > .markdown-embed,
 body .popover.hover-popover .markdown-embed,
 body .popover.hover-popover .popover-content {
 	width: 100% !important;
 	max-width: 100% !important;
-	flex: 1 1 0 !important;
+	flex: 1 1 auto !important;
 	min-height: 0 !important;
-	height: auto !important;
+	height: 100% !important;
+	display: flex !important;
+	flex-direction: column !important;
 	overflow: hidden !important;
 	margin: 0 !important;
 	padding: 0 !important;
@@ -313,42 +315,59 @@ body .popover.hover-popover .popover-content {
 	background: transparent !important;
 }
 
-/* Only display active (non-hidden) embed content containers */
+/* Only display active (non-hidden) embed content containers, expanding to full available height */
 body .popover.hover-popover .markdown-embed-content:not([style*="display: none"]):not([style*="display:none"]) {
 	width: 100% !important;
 	max-width: 100% !important;
+	flex: 1 1 auto !important;
+	min-height: 0 !important;
 	height: 100% !important;
 	max-height: none !important;
-	overflow: auto !important;
+	display: flex !important;
+	flex-direction: column !important;
+	overflow: hidden !important;
 }
 
-/* Make preview view and scroller expand to fill entire area */
+/* Make preview view, editor and scroller expand to fill entire area to the bottom */
 body .popover.hover-popover .markdown-preview-view,
 body .popover.hover-popover .markdown-source-view.mod-cm6,
-body .popover.hover-popover .cm-editor,
+body .popover.hover-popover .cm-editor {
+	width: 100% !important;
+	max-width: 100% !important;
+	flex: 1 1 auto !important;
+	min-height: 0 !important;
+	height: 100% !important;
+	max-height: none !important;
+	box-sizing: border-box !important;
+	overflow: auto !important;
+	padding: 0 !important;
+}
+
 body .popover.hover-popover .cm-scroller {
 	width: 100% !important;
 	max-width: 100% !important;
 	height: 100% !important;
-	max-height: none !important;
+	min-height: 100% !important;
 	box-sizing: border-box !important;
+	overflow: auto !important;
 	padding: 0 !important;
 }
 
-/* Prevent markdown-preview-sizer from constraining note content to a narrow column and remove excessive scroll-past-end bottom padding */
+/* Ensure note content container expands to the full height of the resized popover window */
 body .popover.hover-popover .markdown-preview-sizer {
 	width: 100% !important;
 	max-width: 100% !important;
 	min-height: 100% !important;
 	margin: 0 !important;
-	padding: 16px 20px 20px 20px !important;
-	padding-bottom: 20px !important;
+	padding: 16px 20px 24px 20px !important;
+	padding-bottom: 24px !important;
 	box-sizing: border-box !important;
 }
 
 body .popover.hover-popover .markdown-preview-section {
 	width: 100% !important;
 	max-width: 100% !important;
+	min-height: 100% !important;
 	box-sizing: border-box !important;
 }
 

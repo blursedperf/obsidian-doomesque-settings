@@ -830,8 +830,16 @@ export class HoverPreviewManager {
 			el.style.maxWidth = "100%";
 			if (el.classList.contains("markdown-preview-sizer")) {
 				el.style.width = "100%";
+				el.style.minHeight = "100%";
 				el.style.margin = "0";
-				el.style.paddingBottom = "20px";
+				el.style.paddingBottom = "24px";
+			} else if (
+				el.classList.contains("markdown-embed") ||
+				el.classList.contains("markdown-embed-content") ||
+				el.classList.contains("markdown-preview-view") ||
+				el.classList.contains("cm-scroller")
+			) {
+				el.style.height = "100%";
 			}
 		}
 	}

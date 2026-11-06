@@ -587,8 +587,16 @@ class MockDOMTokenList {
 			el.style.maxWidth = "100%";
 			if (el.classList.contains("markdown-preview-sizer")) {
 				el.style.width = "100%";
+				el.style.minHeight = "100%";
 				el.style.margin = "0";
-				el.style.paddingBottom = "20px";
+				el.style.paddingBottom = "24px";
+			} else if (
+				el.classList.contains("markdown-embed") ||
+				el.classList.contains("markdown-embed-content") ||
+				el.classList.contains("markdown-preview-view") ||
+				el.classList.contains("cm-scroller")
+			) {
+				el.style.height = "100%";
 			}
 		}
 	}
@@ -604,10 +612,13 @@ class MockDOMTokenList {
 	expandPopoverInnerContent(mockPopover);
 
 	assert.strictEqual(activePreview.style.maxWidth, "100%");
+	assert.strictEqual(activePreview.style.height, "100%");
 	assert.strictEqual(hiddenEditor.style.maxWidth, undefined, "Hidden inactive elements must remain untouched");
+	assert.strictEqual(hiddenEditor.style.height, undefined, "Hidden inactive elements must remain untouched");
 	assert.strictEqual(previewSizer.style.width, "100%");
+	assert.strictEqual(previewSizer.style.minHeight, "100%");
 	assert.strictEqual(previewSizer.style.margin, "0");
-	assert.strictEqual(previewSizer.style.paddingBottom, "20px");
+	assert.strictEqual(previewSizer.style.paddingBottom, "24px");
 
 	console.log("✓ Hover popover content expansion & inactive hidden element preservation verified");
 }

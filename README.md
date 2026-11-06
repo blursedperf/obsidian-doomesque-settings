@@ -1,6 +1,6 @@
 # DoomEsque Settings for Obsidian
 
-A dedicated companion plugin to customize and manipulate style settings, layout spacing, indentation styles, typography, and sticky hover previews in the **[DoomEsque](https://github.com/jasongunst/obsidian-doomesque-theme)** theme for Obsidian.
+A dedicated companion plugin to customize and manipulate style settings, layout spacing, indentation styles, typography, and sticky hover previews in the **[DoomEsque](https://github.com/blursedperf/obsidian-theme-doomesque)** theme for Obsidian.
 
 ---
 

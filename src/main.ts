@@ -33,6 +33,9 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 				if (win?.document) {
 					this.applySettingsToDocument(win.document);
 				}
+				if (win) {
+					this.hoverManager.registerWindow(win as unknown as Window);
+				}
 			})
 		);
 
@@ -276,12 +279,12 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "DoomEsque Settings" });
+		new Setting(containerEl).setName("DoomEsque Settings").setHeading();
 
 		// ---------------------------------------------------------------------
 		// 1. Color Palette & Faces
 		// ---------------------------------------------------------------------
-		containerEl.createEl("h3", { text: "🎨 Color Palette & Theme Faces" });
+		new Setting(containerEl).setName("Color palette & theme faces").setHeading();
 
 		new Setting(containerEl)
 			.setName("Dark theme palette")
@@ -378,7 +381,7 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		// ---------------------------------------------------------------------
 		// 2. Spacing & Layout Rhythm
 		// ---------------------------------------------------------------------
-		containerEl.createEl("h3", { text: "📐 Spacing & Layout Rhythm" });
+		new Setting(containerEl).setName("Spacing & layout rhythm").setHeading();
 
 		this.createSliderSetting({
 			containerEl,
@@ -517,7 +520,7 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		// ---------------------------------------------------------------------
 		// 3. Indentation & Indent Guides
 		// ---------------------------------------------------------------------
-		containerEl.createEl("h3", { text: "📏 Indentation & Indent Guides" });
+		new Setting(containerEl).setName("Indentation & indent guides").setHeading();
 
 		this.createSliderSetting({
 			containerEl,
@@ -599,7 +602,7 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		// ---------------------------------------------------------------------
 		// 4. Typography & Heading Scale
 		// ---------------------------------------------------------------------
-		containerEl.createEl("h3", { text: "🔤 Typography & Heading Scale" });
+		new Setting(containerEl).setName("Typography & heading scale").setHeading();
 
 		new Setting(containerEl)
 			.setName("Force monospace note editor")
@@ -662,7 +665,7 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		// ---------------------------------------------------------------------
 		// 5. Hover Preview & Sidebar Pop-Open
 		// ---------------------------------------------------------------------
-		containerEl.createEl("h3", { text: "🔍 Hover Preview & Sidebar Pop-Open" });
+		new Setting(containerEl).setName("Hover preview & sidebar pop-open").setHeading();
 
 		this.createSliderSetting({
 			containerEl,
@@ -740,7 +743,7 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		// ---------------------------------------------------------------------
 		// 6. Reset Settings
 		// ---------------------------------------------------------------------
-		containerEl.createEl("h3", { text: "🔄 Reset Defaults" });
+		new Setting(containerEl).setName("Reset defaults").setHeading();
 
 		new Setting(containerEl)
 			.setName("Reset all settings to DoomEsque defaults")

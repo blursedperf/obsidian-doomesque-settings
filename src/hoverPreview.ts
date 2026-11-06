@@ -35,11 +35,9 @@ export class HoverPreviewManager {
 
 	init(): void {
 		this.patchHoverPopoverPrototype();
-		this.registerLinkTrackers();
-		this.registerSuperKeyListeners();
+		this.registerWindow(window);
 		this.registerWorkspaceHoverListener();
 		this.registerDomPopoverObserver();
-		this.registerEscapeKeyListener();
 	}
 
 	destroy(): void {
@@ -59,6 +57,16 @@ export class HoverPreviewManager {
 
 		this.closeAllHoverPopovers(true);
 		this.activePopovers.clear();
+	}
+
+	/**
+	 * Registers DOM event listeners on the main window or any newly opened popout window.
+	 */
+	registerWindow(win: Window): void {
+		if (!win) return;
+		this.registerLinkTrackers(win);
+		this.registerSuperKeyListeners(win);
+		this.registerEscapeKeyListener(win);
 	}
 
 	/**
@@ -212,7 +220,7 @@ export class HoverPreviewManager {
 	/**
 	 * Tracks pointer hover over markdown internal links to detect target note names before click or keypress.
 	 */
-	private registerLinkTrackers(): void {
+	private registerLinkTrackers(win: Window): void {
 		const onMouseOver = (evt: MouseEvent): void => {
 			const target = evt.target as HTMLElement | null;
 			if (!target) return;
@@ -251,19 +259,21 @@ export class HoverPreviewManager {
 			this.currentlyHoveredLink = null;
 		};
 
-		window.addEventListener("mouseover", onMouseOver, { capture: true, passive: true });
-		window.addEventListener("mouseout", onMouseOut, { capture: true, passive: true });
+		this.plugin.registerDomEvent(win, "mouseover", onMouseOver, { capture: true, passive: true });
+		this.plugin.registerDomEvent(win, "mouseout", onMouseOut, { capture: true, passive: true });
 
 		this.cleanupFns.push(() => {
-			window.removeEventListener("mouseover", onMouseOver, { capture: true });
-			window.removeEventListener("mouseout", onMouseOut, { capture: true });
+			try {
+				win.removeEventListener("mouseover", onMouseOver, { capture: true });
+				win.removeEventListener("mouseout", onMouseOut, { capture: true });
+			} catch {}
 		});
 	}
 
 	/**
 	 * Detects the Super (Meta/Cmd/Win) key to pop open previews directly into the right sidebar.
 	 */
-	private registerSuperKeyListeners(): void {
+	private registerSuperKeyListeners(win: Window): void {
 		const isSuperKey = (evt: KeyboardEvent): boolean =>
 			evt.key === "Meta" ||
 			evt.code === "MetaLeft" ||
@@ -309,12 +319,14 @@ export class HoverPreviewManager {
 			}
 		};
 
-		window.addEventListener("keydown", onKeyDown, { capture: true });
-		window.addEventListener("keyup", onKeyUp, { capture: true });
+		this.plugin.registerDomEvent(win, "keydown", onKeyDown, { capture: true });
+		this.plugin.registerDomEvent(win, "keyup", onKeyUp, { capture: true });
 
 		this.cleanupFns.push(() => {
-			window.removeEventListener("keydown", onKeyDown, { capture: true });
-			window.removeEventListener("keyup", onKeyUp, { capture: true });
+			try {
+				win.removeEventListener("keydown", onKeyDown, { capture: true });
+				win.removeEventListener("keyup", onKeyUp, { capture: true });
+			} catch {}
 		});
 	}
 
@@ -481,7 +493,11 @@ export class HoverPreviewManager {
 		// Title & Drag Handle
 		const titleEl = document.createElement("span");
 		titleEl.className = "doom-popover-title";
-		titleEl.innerHTML = `<span style="font-size:12px">📄</span> <span>${this.escapeHtml(linktext)}</span>`;
+		const titleIcon = titleEl.createSpan();
+		titleIcon.setText("📄");
+		titleIcon.style.fontSize = "12px";
+		const titleText = titleEl.createSpan();
+		titleText.setText(linktext);
 		header.appendChild(titleEl);
 
 		// Action buttons container
@@ -492,7 +508,7 @@ export class HoverPreviewManager {
 		const sidebarBtn = document.createElement("button");
 		sidebarBtn.className = "doom-popover-btn mod-sidebar";
 		sidebarBtn.title = "Pop open in right sidebar (Super key)";
-		sidebarBtn.innerHTML = "⇥";
+		sidebarBtn.setText("⇥");
 		sidebarBtn.onclick = async (e) => {
 			e.stopPropagation();
 			e.preventDefault();
@@ -507,7 +523,7 @@ export class HoverPreviewManager {
 		const maxBtn = document.createElement("button");
 		maxBtn.className = "doom-popover-btn mod-maximize";
 		maxBtn.title = "Maximize / restore preview window";
-		maxBtn.innerHTML = "⤢";
+		maxBtn.setText("⤢");
 		let isMaximized = false;
 		let prevStyle = { left: "", top: "", width: "", height: "", position: "" };
 
@@ -532,7 +548,7 @@ export class HoverPreviewManager {
 				popoverEl.style.height = "90vh";
 				popoverEl.style.margin = "0";
 				maxBtn.classList.add("is-active");
-				maxBtn.innerHTML = "🗗";
+				maxBtn.setText("🗗");
 				maxBtn.title = "Restore preview window size";
 			} else {
 				popoverEl.classList.remove("mod-maximized");
@@ -542,7 +558,7 @@ export class HoverPreviewManager {
 				popoverEl.style.width = prevStyle.width || `${this.plugin.settings.hoverPopoverWidthPx}px`;
 				popoverEl.style.height = prevStyle.height || `${this.plugin.settings.hoverPopoverHeightPx}px`;
 				maxBtn.classList.remove("is-active");
-				maxBtn.innerHTML = "⤢";
+				maxBtn.setText("⤢");
 				maxBtn.title = "Maximize preview window";
 			}
 			this.expandPopoverInnerContent(popoverEl);
@@ -557,7 +573,7 @@ export class HoverPreviewManager {
 
 		pinBtn.className = `doom-popover-btn mod-pin ${isCurrentlySticky ? "is-active" : ""}`;
 		pinBtn.title = isCurrentlySticky ? "Pinned (sticky until closed)" : "Pin preview (make sticky)";
-		pinBtn.innerHTML = "📌";
+		pinBtn.setText("📌");
 
 		pinBtn.onclick = (e) => {
 			e.stopPropagation();
@@ -590,7 +606,7 @@ export class HoverPreviewManager {
 		const closeBtn = document.createElement("button");
 		closeBtn.className = "doom-popover-btn mod-close";
 		closeBtn.title = "Close preview (Esc)";
-		closeBtn.innerHTML = "✕";
+		closeBtn.setText("✕");
 		closeBtn.onclick = (e) => {
 			e.stopPropagation();
 			e.preventDefault();
@@ -675,7 +691,7 @@ export class HoverPreviewManager {
 	/**
 	 * Registers Escape key listener to close topmost active/sticky preview.
 	 */
-	private registerEscapeKeyListener(): void {
+	private registerEscapeKeyListener(win: Window): void {
 		const onKeyDown = (evt: KeyboardEvent): void => {
 			if (evt.key !== "Escape") return;
 
@@ -692,9 +708,11 @@ export class HoverPreviewManager {
 			}
 		};
 
-		window.addEventListener("keydown", onKeyDown, { capture: true });
+		this.plugin.registerDomEvent(win, "keydown", onKeyDown, { capture: true });
 		this.cleanupFns.push(() => {
-			window.removeEventListener("keydown", onKeyDown, { capture: true });
+			try {
+				win.removeEventListener("keydown", onKeyDown, { capture: true });
+			} catch {}
 		});
 	}
 
@@ -851,11 +869,5 @@ export class HoverPreviewManager {
 			}
 			this.expandPopoverInnerContent(el);
 		}
-	}
-
-	private escapeHtml(text: string): string {
-		const div = document.createElement("div");
-		div.textContent = text;
-		return div.innerHTML;
 	}
 }

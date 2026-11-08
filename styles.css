@@ -861,6 +861,12 @@ body .popover.hover-popover.doom-sticky-popover {
 	white-space: nowrap;
 	font-weight: 600;
 	color: var(--doom-blue, #51afef);
+	cursor: pointer;
+	transition: color 0.12s ease;
+}
+
+.doom-popover-title:hover {
+	color: var(--doom-teal, #4db5bd);
 }
 
 .doom-popover-actions {
@@ -900,6 +906,12 @@ body .popover.hover-popover.doom-sticky-popover {
 	border-color: rgba(152, 190, 101, 0.35);
 }
 
+.doom-popover-btn.mod-open-tab:hover {
+	color: var(--doom-teal, #4db5bd);
+	background-color: rgba(77, 181, 189, 0.16);
+	border-color: rgba(77, 181, 189, 0.35);
+}
+
 .doom-popover-btn.mod-maximize:hover {
 	color: var(--doom-cyan, #46d9ff);
 	background-color: rgba(70, 217, 255, 0.16);
@@ -916,4 +928,166 @@ body .popover.hover-popover.doom-sticky-popover {
 	color: var(--doom-red, #ff6c6b);
 	background-color: rgba(255, 108, 107, 0.16);
 	border-color: rgba(255, 108, 107, 0.35);
+}
+
+/* Open link button in hover popovers */
+.popover.hover-popover .markdown-embed-link,
+.popover.hover-popover .file-embed-link {
+	color: var(--doom-base6, #73797e);
+	cursor: pointer;
+	border-radius: 3px;
+	transition: color 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.popover.hover-popover .markdown-embed-link:hover,
+.popover.hover-popover .file-embed-link:hover {
+	color: var(--doom-teal, #4db5bd);
+	background-color: rgba(77, 181, 189, 0.16);
+}
+
+/* --------------------------------------------------------------------------
+   Cursor & Caret Faces
+   -------------------------------------------------------------------------- */
+.cm-s-obsidian .cm-cursor,
+.cm-s-obsidian .cm-dropCursor {
+	border-left-color: var(--doom-cursor-color, var(--doom-blue, #51afef)) !important;
+}
+
+body.doom-cursor-block .cm-s-obsidian .cm-cursor {
+	border-left-width: 0.55em !important;
+	background-color: var(--doom-cursor-color, var(--doom-blue, #51afef)) !important;
+	opacity: 0.75 !important;
+}
+
+body.doom-cursor-underline .cm-s-obsidian .cm-cursor {
+	border-left-width: 0.55em !important;
+	border-bottom: 2px solid var(--doom-cursor-color, var(--doom-blue, #51afef)) !important;
+	border-left-color: transparent !important;
+	background-color: transparent !important;
+	height: 2px !important;
+	margin-top: 1.15em !important;
+}
+
+body.doom-cursor-solid .cm-s-obsidian .cm-cursor,
+body.doom-cursor-solid .cm-fat-cursor .cm-cursor,
+body.doom-cursor-solid .cm-animate-fat-cursor {
+	animation: none !important;
+}
+
+/* Cursor Accent Color Modifiers */
+body.doom-cursor-color-teal { --doom-cursor-color: var(--doom-teal, #4db5bd); }
+body.doom-cursor-color-magenta { --doom-cursor-color: var(--doom-magenta, #c678dd); }
+body.doom-cursor-color-cyan { --doom-cursor-color: var(--doom-cyan, #46d9ff); }
+body.doom-cursor-color-yellow { --doom-cursor-color: var(--doom-yellow, #ecbe7b); }
+body.doom-cursor-color-green { --doom-cursor-color: var(--doom-green, #98be65); }
+
+/* --------------------------------------------------------------------------
+   Buffer Splitting & Solaire Inactive Pane Dimming
+   -------------------------------------------------------------------------- */
+body.doom-dim-inactive-panes .workspace-split .workspace-leaf:not(.mod-active) .view-content {
+	opacity: 0.72 !important;
+	filter: brightness(0.92) !important;
+	transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+body.doom-dim-inactive-panes .workspace-split .workspace-leaf.mod-active .view-content {
+	opacity: 1 !important;
+	filter: none !important;
+}
+
+body.doom-active-pane-border .workspace-split .workspace-leaf.mod-active {
+	box-shadow: inset 0 0 0 1px var(--doom-blue, #51afef) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Doom Modeline & Status Bar
+   -------------------------------------------------------------------------- */
+body.doom-hide-status-bar .status-bar {
+	display: none !important;
+}
+
+body.doom-no-modeline-bar .status-bar::before {
+	display: none !important;
+}
+
+body .status-bar {
+	height: var(--doom-modeline-height, var(--status-bar-height, 26px)) !important;
+	min-height: var(--doom-modeline-height, var(--status-bar-height, 26px)) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Code Blocks (Org Babel)
+   -------------------------------------------------------------------------- */
+body.doom-code-accent-border .cm-s-obsidian .cm-embed-block:not(.cm-table-widget):not(.bases-embed),
+body.doom-code-accent-border .markdown-rendered pre:not(.HyperMD-table) {
+	border-left: 3px solid var(--doom-blue, #51afef) !important;
+}
+
+.cm-s-obsidian .cm-embed-block pre,
+.markdown-rendered pre {
+	font-size: calc(var(--code-size, 0.88em) * var(--doom-code-font-scale, 1.0)) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Tables & Databases (Org Table)
+   -------------------------------------------------------------------------- */
+body.doom-no-table-zebra .markdown-rendered tbody tr:nth-child(even),
+body.doom-no-table-zebra .cm-s-obsidian .cm-embed-block table tbody tr:nth-child(even) {
+	background-color: transparent !important;
+}
+
+body.doom-table-compact .markdown-rendered th,
+body.doom-table-compact .markdown-rendered td,
+body.doom-table-compact .cm-s-obsidian .cm-embed-block table th,
+body.doom-table-compact .cm-s-obsidian .cm-embed-block table td {
+	padding: 4px 8px !important;
+	font-size: 0.92em !important;
+}
+
+/* --------------------------------------------------------------------------
+   File Tree & Treemacs Navigation
+   -------------------------------------------------------------------------- */
+body.doom-filetree-accent .nav-file-title.is-active {
+	border-left: 2px solid var(--doom-blue, #51afef) !important;
+	padding-left: calc(var(--size-4-2, 8px) - 2px) !important;
+}
+
+body.doom-filetree-bold-folders .nav-folder-title-content {
+	font-weight: 700 !important;
+	color: var(--doom-cyan, #46d9ff) !important;
+}
+
+/* --------------------------------------------------------------------------
+   UI Geometry (Terminal Sharp vs Modern Rounded)
+   -------------------------------------------------------------------------- */
+body.doom-radius-sharp {
+	--radius-s: 0px !important;
+	--radius-m: 0px !important;
+	--radius-l: 0px !important;
+	--tag-radius: 0px !important;
+	--tab-radius: 0px !important;
+	--input-radius: 0px !important;
+	--modal-radius: 0px !important;
+	--button-radius: 0px !important;
+}
+
+body.doom-radius-rounded {
+	--radius-s: 6px !important;
+	--radius-m: 10px !important;
+	--radius-l: 14px !important;
+	--tag-radius: 6px !important;
+	--tab-radius: 6px !important;
+	--input-radius: 6px !important;
+	--modal-radius: 12px !important;
+	--button-radius: 6px !important;
+}
+
+/* --------------------------------------------------------------------------
+   Math / LaTeX Block Alignment
+   -------------------------------------------------------------------------- */
+body.doom-math-left .math-block,
+body.doom-math-left .math.math-block {
+	text-align: left !important;
+	justify-content: flex-start !important;
+	padding-left: 1.5em !important;
 }

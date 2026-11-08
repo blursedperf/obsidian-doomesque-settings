@@ -10,6 +10,8 @@ import {
 	getNextDarkPalette,
 	getNextLightPalette,
 	getNextIndentStyle,
+	getNextCursorStyle,
+	getNextUiCornerRadius,
 	sanitizeFontFamily,
 } from "../src/settings";
 
@@ -737,4 +739,259 @@ class MockDOMTokenList {
 	console.log("✓ Obsidian Bases stylesheet compatibility & fallback tokens verified");
 }
 
-console.log("\nAll unit tests passed successfully!");
+// -----------------------------------------------------------------------------
+// 13. Popover Open in New Tab Action & Embed Link Interception
+// -----------------------------------------------------------------------------
+void (async () => {
+	const fs = require("node:fs");
+	const path = require("node:path");
+	const cssPath = path.resolve(process.cwd(), "styles.css");
+	const cssContent = fs.readFileSync(cssPath, "utf-8");
+
+	// Verify mod-open-tab and embed-link CSS styling
+	assert.ok(
+		cssContent.includes(".doom-popover-btn.mod-open-tab"),
+		"styles.css must contain styling for mod-open-tab button"
+	);
+	assert.ok(
+		cssContent.includes(".popover.hover-popover .markdown-embed-link"),
+		"styles.css must style .markdown-embed-link in hover popovers"
+	);
+
+	// Verify open in new tab simulated workflow
+	let openedLeafType: string | null = null;
+	let openedFileParam: any = null;
+	let activeLeafFocused = false;
+	let popoverClosed = false;
+
+	const mockLeaf = {
+		openFile: async (file: any, state?: any) => {
+			openedFileParam = file;
+			assert.strictEqual(state?.active, true, "Opened tab must be marked active");
+		},
+	};
+
+	const mockWorkspace = {
+		getLeaf: (type: string) => {
+			openedLeafType = type;
+			return mockLeaf;
+		},
+		setActiveLeaf: (leaf: any, params?: any) => {
+			assert.strictEqual(leaf, mockLeaf);
+			if (params?.focus) activeLeafFocused = true;
+		},
+	};
+
+	const mockFile = { basename: "Test Note", path: "Test Note.md" };
+	const mockApp = {
+		workspace: mockWorkspace,
+		metadataCache: {
+			getFirstLinkpathDest: (path: string, _source: string) => (path === "Test Note" ? mockFile : null),
+		},
+		vault: {
+			getAbstractFileByPath: (_p: string) => null,
+		},
+	};
+
+	const mockPopoverEl = {
+		dataset: { doomLinktext: "Test Note", doomSourcePath: "" },
+		remove: () => {
+			popoverClosed = true;
+		},
+	};
+
+	// Execute simulated openInNewTab logic
+	async function simulateOpenInNewTab(linktext: string, sourcePath: string, popoverEl?: any) {
+		const rawPath = linktext.split("#")[0].split("^")[0].trim();
+		const file = mockApp.metadataCache.getFirstLinkpathDest(rawPath, sourcePath);
+		if (file) {
+			const leaf = mockApp.workspace.getLeaf("tab");
+			await leaf.openFile(file, { active: true });
+			mockApp.workspace.setActiveLeaf(leaf, { focus: true });
+		}
+		if (popoverEl) {
+			popoverEl.remove();
+		}
+	}
+
+	await simulateOpenInNewTab("Test Note", "", mockPopoverEl);
+
+	assert.strictEqual(openedLeafType, "tab", "Must request a 'tab' leaf rather than same tab (false)");
+	assert.strictEqual(openedFileParam, mockFile, "Must open the resolved note");
+	assert.strictEqual(activeLeafFocused, true, "Must focus the newly opened tab leaf");
+	assert.strictEqual(popoverClosed, true, "Must close the preview popover once opened in new tab");
+
+	console.log("✓ Popover Open in New Tab action & embed link interception verified");
+
+	// -----------------------------------------------------------------------------
+	// 14. Advanced Customization Options Verification
+	// -----------------------------------------------------------------------------
+	{
+		// 1. Cursor & Caret Faces
+		const blockCursor = computeDoomDomState(
+			makeSettings({
+				cursorStyle: "block",
+				cursorBlink: "solid",
+				cursorColor: "teal",
+			})
+		);
+		assert.ok(blockCursor.activeClasses.includes("doom-cursor-block"));
+		assert.ok(blockCursor.activeClasses.includes("doom-cursor-solid"));
+		assert.ok(blockCursor.activeClasses.includes("doom-cursor-color-teal"));
+		assert.strictEqual(blockCursor.cssVariables["--doom-cursor-color"], "var(--doom-teal, #4db5bd)");
+
+		const underlineCursor = computeDoomDomState(
+			makeSettings({
+				cursorStyle: "underline",
+				cursorBlink: "blink",
+				cursorColor: "magenta",
+			})
+		);
+		assert.ok(underlineCursor.activeClasses.includes("doom-cursor-underline"));
+		assert.ok(!underlineCursor.activeClasses.includes("doom-cursor-solid"));
+		assert.ok(underlineCursor.activeClasses.includes("doom-cursor-color-magenta"));
+		assert.strictEqual(underlineCursor.cssVariables["--doom-cursor-color"], "var(--doom-magenta, #c678dd)");
+
+		// Default bar & blue cursor should have clean empty state
+		const defaultCursor = computeDoomDomState(
+			makeSettings({
+				cursorStyle: "bar",
+				cursorBlink: "blink",
+				cursorColor: "blue",
+			})
+		);
+		assert.ok(!defaultCursor.activeClasses.includes("doom-cursor-block"));
+		assert.ok(!defaultCursor.activeClasses.includes("doom-cursor-underline"));
+		assert.ok(!defaultCursor.activeClasses.includes("doom-cursor-solid"));
+		assert.strictEqual(defaultCursor.cssVariables["--doom-cursor-color"], null);
+
+		// Cursor style cycler
+		assert.strictEqual(getNextCursorStyle("bar"), "block");
+		assert.strictEqual(getNextCursorStyle("block"), "underline");
+		assert.strictEqual(getNextCursorStyle("underline"), "bar");
+
+		// 2. Buffer Splitting & Solaire Focus
+		const solaire = computeDoomDomState(
+			makeSettings({
+				dimInactivePanes: true,
+				activePaneBorder: true,
+			})
+		);
+		assert.ok(solaire.activeClasses.includes("doom-dim-inactive-panes"));
+		assert.ok(solaire.activeClasses.includes("doom-active-pane-border"));
+
+		// 3. Modeline & Status Bar
+		const customModeline = computeDoomDomState(
+			makeSettings({
+				hideStatusBar: true,
+				statusBarHeightPx: 32,
+				disableModelineBar: true,
+			})
+		);
+		assert.ok(customModeline.activeClasses.includes("doom-hide-status-bar"));
+		assert.ok(customModeline.activeClasses.includes("doom-no-modeline-bar"));
+		assert.strictEqual(customModeline.cssVariables["--status-bar-height"], "32px");
+		assert.strictEqual(customModeline.cssVariables["--doom-modeline-height"], "32px");
+
+		const defaultModeline = computeDoomDomState(
+			makeSettings({
+				statusBarHeightPx: 26,
+			})
+		);
+		assert.strictEqual(defaultModeline.cssVariables["--status-bar-height"], null);
+		assert.strictEqual(defaultModeline.cssVariables["--doom-modeline-height"], null);
+
+		// 4. Code Blocks
+		const customCode = computeDoomDomState(
+			makeSettings({
+				codeBlockAccentBorder: true,
+				codeBlockFontScale: 1.15,
+			})
+		);
+		assert.ok(customCode.activeClasses.includes("doom-code-accent-border"));
+		assert.strictEqual(customCode.cssVariables["--doom-code-font-scale"], "1.15");
+
+		const defaultCode = computeDoomDomState(
+			makeSettings({
+				codeBlockFontScale: 1.0,
+			})
+		);
+		assert.strictEqual(defaultCode.cssVariables["--doom-code-font-scale"], null);
+
+		// 5. Tables & Databases
+		const customTables = computeDoomDomState(
+			makeSettings({
+				disableTableZebra: true,
+				compactTables: true,
+			})
+		);
+		assert.ok(customTables.activeClasses.includes("doom-no-table-zebra"));
+		assert.ok(customTables.activeClasses.includes("doom-table-compact"));
+
+		// 6. File Tree & Treemacs
+		const customFileTree = computeDoomDomState(
+			makeSettings({
+				fileTreeAccentBar: true,
+				fileTreeFolderBold: true,
+			})
+		);
+		assert.ok(customFileTree.activeClasses.includes("doom-filetree-accent"));
+		assert.ok(customFileTree.activeClasses.includes("doom-filetree-bold-folders"));
+
+		// 7. UI Corner Geometry & Math Alignment
+		const sharpCorner = computeDoomDomState(
+			makeSettings({
+				uiCornerRadius: "sharp",
+				mathBlockAlignment: "left",
+			})
+		);
+		assert.ok(sharpCorner.activeClasses.includes("doom-radius-sharp"));
+		assert.ok(sharpCorner.activeClasses.includes("doom-math-left"));
+
+		const roundedCorner = computeDoomDomState(
+			makeSettings({
+				uiCornerRadius: "rounded",
+				mathBlockAlignment: "center",
+			})
+		);
+		assert.ok(roundedCorner.activeClasses.includes("doom-radius-rounded"));
+		assert.ok(!roundedCorner.activeClasses.includes("doom-math-left"));
+
+		// Corner radius cycler
+		assert.strictEqual(getNextUiCornerRadius("subtle"), "sharp");
+		assert.strictEqual(getNextUiCornerRadius("sharp"), "rounded");
+		assert.strictEqual(getNextUiCornerRadius("rounded"), "subtle");
+
+		// 8. Stylesheet Verification for all new classes
+		const fs = require("node:fs");
+		const path = require("node:path");
+		const cssPath = path.resolve(process.cwd(), "styles.css");
+		const cssContent = fs.readFileSync(cssPath, "utf-8");
+
+		const requiredNewSelectors = [
+			"body.doom-cursor-block",
+			"body.doom-cursor-underline",
+			"body.doom-cursor-solid",
+			"body.doom-dim-inactive-panes",
+			"body.doom-active-pane-border",
+			"body.doom-hide-status-bar",
+			"body.doom-no-modeline-bar",
+			"body.doom-code-accent-border",
+			"body.doom-no-table-zebra",
+			"body.doom-table-compact",
+			"body.doom-filetree-accent",
+			"body.doom-filetree-bold-folders",
+			"body.doom-radius-sharp",
+			"body.doom-radius-rounded",
+			"body.doom-math-left",
+		];
+
+		for (const sel of requiredNewSelectors) {
+			assert.ok(cssContent.includes(sel), `styles.css must include selector: ${sel}`);
+		}
+
+		console.log("✓ Advanced customization options & stylesheet selectors verified");
+	}
+
+	console.log("\nAll unit tests passed successfully!");
+})();

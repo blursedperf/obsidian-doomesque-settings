@@ -67,6 +67,7 @@ export class HoverPreviewManager {
 		this.registerLinkTrackers(win);
 		this.registerSuperKeyListeners(win);
 		this.registerEscapeKeyListener(win);
+		this.registerEmbedLinkInterceptor(win);
 	}
 
 	/**
@@ -471,6 +472,28 @@ export class HoverPreviewManager {
 			{ capture: true }
 		);
 
+		// Intercept clicks on any embed link button within this popover so it opens in a new tab
+		popoverEl.addEventListener(
+			"click",
+			async (evt: MouseEvent) => {
+				const target = evt.target as HTMLElement | null;
+				if (!target) return;
+				const embedLink = target.closest(".markdown-embed-link, .file-embed-link") as HTMLElement | null;
+				if (!embedLink) return;
+
+				evt.preventDefault();
+				evt.stopPropagation();
+				evt.stopImmediatePropagation();
+
+				const curLink = popoverEl.dataset.doomLinktext || resolvedLinktext;
+				const curSource = popoverEl.dataset.doomSourcePath || resolvedSourcePath;
+				if (curLink) {
+					await this.openInNewTab(curLink, curSource, instance, popoverEl);
+				}
+			},
+			{ capture: true }
+		);
+
 		this.buildPopoverHeader(popoverEl, resolvedLinktext, resolvedSourcePath, instance);
 
 		// Observe subsequent asynchronous embed mounting inside this popover to expand immediately
@@ -507,18 +530,41 @@ export class HoverPreviewManager {
 		// Title & Drag Handle
 		const titleEl = document.createElement("span");
 		titleEl.className = "doom-popover-title";
+		titleEl.title = "Open note in new tab";
 		const titleIcon = titleEl.createSpan();
 		titleIcon.setText("📄");
 		titleIcon.style.fontSize = "12px";
 		const titleText = titleEl.createSpan();
 		titleText.setText(linktext);
+		titleEl.onclick = async (e) => {
+			if (header.dataset.hasDragged === "true") return;
+			e.stopPropagation();
+			e.preventDefault();
+			const curLink = popoverEl.dataset.doomLinktext || linktext;
+			const curSource = popoverEl.dataset.doomSourcePath || sourcePath;
+			await this.openInNewTab(curLink, curSource, popoverInstance, popoverEl);
+		};
 		header.appendChild(titleEl);
 
 		// Action buttons container
 		const actionsEl = document.createElement("div");
 		actionsEl.className = "doom-popover-actions";
 
-		// 1. Pop to Right Sidebar button (⇥)
+		// 1. Open note in new tab button (↗)
+		const openBtn = document.createElement("button");
+		openBtn.className = "doom-popover-btn mod-open-tab";
+		openBtn.title = "Open note in new tab";
+		openBtn.setText("↗");
+		openBtn.onclick = async (e) => {
+			e.stopPropagation();
+			e.preventDefault();
+			const curLink = popoverEl.dataset.doomLinktext || linktext;
+			const curSource = popoverEl.dataset.doomSourcePath || sourcePath;
+			await this.openInNewTab(curLink, curSource, popoverInstance, popoverEl);
+		};
+		actionsEl.appendChild(openBtn);
+
+		// 2. Pop to Right Sidebar button (⇥)
 		const sidebarBtn = document.createElement("button");
 		sidebarBtn.className = "doom-popover-btn mod-sidebar";
 		sidebarBtn.title = "Pop open in right sidebar (Super key)";
@@ -655,6 +701,7 @@ export class HoverPreviewManager {
 			isDragging = true;
 			startX = e.clientX;
 			startY = e.clientY;
+			handleEl.dataset.hasDragged = "false";
 
 			const rect = popoverEl.getBoundingClientRect();
 			initialLeft = rect.left;
@@ -680,13 +727,18 @@ export class HoverPreviewManager {
 			if (!isDragging) return;
 			const clientX = e.clientX;
 			const clientY = e.clientY;
+			const dx = clientX - startX;
+			const dy = clientY - startY;
+
+			if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+				handleEl.dataset.hasDragged = "true";
+			}
+
 			if (rafId !== null) return;
 
 			rafId = requestAnimationFrame(() => {
 				rafId = null;
 				if (!isDragging) return;
-				const dx = clientX - startX;
-				const dy = clientY - startY;
 
 				const maxLeft = Math.max(10, (window.innerWidth || 1200) - 80);
 				const maxTop = Math.max(10, (window.innerHeight || 800) - 50);
@@ -710,6 +762,9 @@ export class HoverPreviewManager {
 			try {
 				handleEl.releasePointerCapture(e.pointerId);
 			} catch {}
+			setTimeout(() => {
+				handleEl.dataset.hasDragged = "false";
+			}, 150);
 		};
 
 		handleEl.addEventListener("pointerdown", onPointerDown);
@@ -742,6 +797,53 @@ export class HoverPreviewManager {
 		this.cleanupFns.push(() => {
 			try {
 				win.removeEventListener("keydown", onKeyDown, { capture: true });
+			} catch {}
+		});
+	}
+
+	/**
+	 * Intercepts clicks on the open link button (.markdown-embed-link / .file-embed-link)
+	 * in the top right of hover preview popovers, ensuring notes open in a new tab rather than the same tab.
+	 */
+	private registerEmbedLinkInterceptor(win: Window): void {
+		const onEmbedLinkClick = async (evt: MouseEvent): Promise<void> => {
+			if (evt.button !== 0 && evt.button !== 1) return;
+
+			const target = evt.target as HTMLElement | null;
+			if (!target) return;
+
+			const embedLink = target.closest(".markdown-embed-link, .file-embed-link") as HTMLElement | null;
+			if (!embedLink) return;
+
+			const popoverEl = embedLink.closest(".popover.hover-popover") as HTMLElement | null;
+			if (!popoverEl) return;
+
+			evt.preventDefault();
+			evt.stopPropagation();
+			evt.stopImmediatePropagation();
+
+			const instance = (popoverEl as any)._doomPopover || this.findInstanceForEl(popoverEl);
+			const curLink =
+				popoverEl.dataset.doomLinktext ||
+				instance?.embed?.linktext ||
+				this.currentlyHoveredLink?.linktext ||
+				"";
+			const curSource =
+				popoverEl.dataset.doomSourcePath ||
+				instance?.embed?.sourcePath ||
+				this.currentlyHoveredLink?.sourcePath ||
+				"";
+
+			if (curLink) {
+				await this.openInNewTab(curLink, curSource, instance, popoverEl);
+			}
+		};
+
+		this.plugin.registerDomEvent(win, "click", onEmbedLinkClick, { capture: true });
+
+		this.cleanupFns.push(() => {
+			try {
+				win.removeEventListener("click", onEmbedLinkClick, { capture: true });
 			} catch {}
 		});
 	}
@@ -797,6 +899,60 @@ export class HoverPreviewManager {
 
 		await this.app.workspace.revealLeaf(leaf);
 		new Notice(`DoomEsque: Opened "${file.basename}" in right sidebar`);
+		return true;
+	}
+
+	/**
+	 * Opens a linktarget in a new editor tab and closes the preview popover.
+	 */
+	async openInNewTab(
+		linktext: string,
+		sourcePath = "",
+		popoverInstance?: any,
+		popoverEl?: HTMLElement
+	): Promise<boolean> {
+		const rawPath = linktext.split("#")[0].split("^")[0].trim();
+		if (!rawPath) return false;
+
+		// Resolve TFile in vault
+		let file = this.app.metadataCache.getFirstLinkpathDest(rawPath, sourcePath);
+		if (!file) {
+			const direct = this.app.vault.getAbstractFileByPath(rawPath);
+			if (direct instanceof TFile) file = direct;
+		}
+
+		if (!file && !rawPath.endsWith(".md")) {
+			const withMd = this.app.metadataCache.getFirstLinkpathDest(rawPath + ".md", sourcePath);
+			if (withMd) file = withMd;
+		}
+
+		// Extract subpath (heading/block)
+		const subpathMatch = linktext.match(/(#.*)$/);
+		const subpath = subpathMatch ? subpathMatch[1] : undefined;
+
+		try {
+			if (file) {
+				const leaf = this.app.workspace.getLeaf("tab");
+				await leaf.openFile(file, {
+					active: true,
+					eState: subpath ? { subpath } : undefined,
+				});
+				this.app.workspace.setActiveLeaf(leaf, { focus: true });
+			} else {
+				await this.app.workspace.openLinkText(linktext, sourcePath, "tab", {
+					active: true,
+				});
+			}
+		} catch (err) {
+			console.error("DoomEsque Settings: error opening note in new tab", err);
+			return false;
+		} finally {
+			const targetPopover = popoverEl || this.getActiveHoverPopoverEl();
+			if (targetPopover) {
+				this.closeHoverPopoverEl(targetPopover, popoverInstance);
+			}
+		}
+
 		return true;
 	}
 
@@ -893,6 +1049,15 @@ export class HoverPreviewManager {
 			) {
 				el.style.height = "100%";
 			}
+		}
+
+		// 3. Update tooltip / aria-label on embed link buttons
+		const embedLinks = popoverEl.querySelectorAll<HTMLElement>(
+			".markdown-embed-link, .file-embed-link"
+		);
+		for (let i = 0; i < embedLinks.length; i++) {
+			embedLinks[i].setAttribute("aria-label", "Open note in new tab");
+			embedLinks[i].setAttribute("title", "Open note in new tab");
 		}
 	}
 

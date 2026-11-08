@@ -179,6 +179,7 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-cursor-block",
 	"doom-cursor-underline",
 	"doom-cursor-solid",
+	"doom-cursor-color-blue",
 	"doom-cursor-color-teal",
 	"doom-cursor-color-magenta",
 	"doom-cursor-color-cyan",

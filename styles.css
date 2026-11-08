@@ -68,9 +68,14 @@
 
 /* Flat Settings Rows Variant */
 body.doom-settings-flat .modal.mod-settings .setting-item:not(.setting-item-heading),
-body.doom-settings-flat .modal.mod-settings .setting-items {
+body.doom-settings-flat .modal.mod-settings .setting-items,
+body.doom-settings-flat .modal.mod-settings .setting-items > .setting-item:not(.setting-item-heading),
+body.doom-settings-flat .setting-item:not(.setting-item-heading),
+body.doom-settings-flat .setting-items,
+body.doom-settings-flat .setting-items > .setting-item:not(.setting-item-heading) {
 	background-color: transparent !important;
 	border: none !important;
+	border-top: none !important;
 	border-bottom: 1px solid var(--doom-base2, var(--background-modifier-border)) !important;
 	border-radius: 4px !important;
 	box-shadow: none !important;
@@ -78,7 +83,8 @@ body.doom-settings-flat .modal.mod-settings .setting-items {
 	padding: 12px 10px !important;
 }
 
-body.doom-settings-flat .modal.mod-settings .setting-item:not(.setting-item-heading):hover {
+body.doom-settings-flat .modal.mod-settings .setting-item:not(.setting-item-heading):hover,
+body.doom-settings-flat .setting-item:not(.setting-item-heading):hover {
 	background-color: rgba(81, 175, 239, 0.08) !important;
 }
 
@@ -602,6 +608,10 @@ body.doom-monospace-editor .markdown-preview-view {
 	font-family: var(--font-monospace) !important;
 }
 
+body.doom-disable-monospace-ui {
+	--font-interface-theme: var(--font-default) !important;
+}
+
 body.doom-disable-monospace-ui .workspace-tab-header,
 body.doom-disable-monospace-ui .nav-folder-title,
 body.doom-disable-monospace-ui .nav-file-title,
@@ -948,33 +958,47 @@ body .popover.hover-popover.doom-sticky-popover {
 /* --------------------------------------------------------------------------
    Cursor & Caret Faces
    -------------------------------------------------------------------------- */
+body {
+	--caret-color: var(--doom-cursor-color, var(--doom-blue, #51afef)) !important;
+}
+
+.cm-editor .cm-cursor,
+.cm-editor .cm-dropCursor,
 .cm-s-obsidian .cm-cursor,
 .cm-s-obsidian .cm-dropCursor {
 	border-left-color: var(--doom-cursor-color, var(--doom-blue, #51afef)) !important;
 }
 
+body.doom-cursor-block .cm-editor .cm-cursor,
 body.doom-cursor-block .cm-s-obsidian .cm-cursor {
-	border-left-width: 0.55em !important;
+	width: 0.6em !important;
+	border-left: none !important;
 	background-color: var(--doom-cursor-color, var(--doom-blue, #51afef)) !important;
 	opacity: 0.75 !important;
 }
 
+body.doom-cursor-underline .cm-editor .cm-cursor,
 body.doom-cursor-underline .cm-s-obsidian .cm-cursor {
-	border-left-width: 0.55em !important;
+	width: 0.6em !important;
+	border-left: none !important;
 	border-bottom: 2px solid var(--doom-cursor-color, var(--doom-blue, #51afef)) !important;
-	border-left-color: transparent !important;
 	background-color: transparent !important;
 	height: 2px !important;
 	margin-top: 1.15em !important;
 }
 
+body.doom-cursor-solid .cm-cursorLayer,
+body.doom-cursor-solid .cm-editor .cm-cursor,
 body.doom-cursor-solid .cm-s-obsidian .cm-cursor,
 body.doom-cursor-solid .cm-fat-cursor .cm-cursor,
 body.doom-cursor-solid .cm-animate-fat-cursor {
 	animation: none !important;
+	opacity: 1 !important;
+	visibility: visible !important;
 }
 
 /* Cursor Accent Color Modifiers */
+body.doom-cursor-color-blue { --doom-cursor-color: var(--doom-blue, #51afef); }
 body.doom-cursor-color-teal { --doom-cursor-color: var(--doom-teal, #4db5bd); }
 body.doom-cursor-color-magenta { --doom-cursor-color: var(--doom-magenta, #c678dd); }
 body.doom-cursor-color-cyan { --doom-cursor-color: var(--doom-cyan, #46d9ff); }
@@ -984,19 +1008,19 @@ body.doom-cursor-color-green { --doom-cursor-color: var(--doom-green, #98be65); 
 /* --------------------------------------------------------------------------
    Buffer Splitting & Solaire Inactive Pane Dimming
    -------------------------------------------------------------------------- */
-body.doom-dim-inactive-panes .workspace-split .workspace-leaf:not(.mod-active) .view-content {
+body.doom-dim-inactive-panes .mod-root .workspace-leaf:not(.mod-active) .view-content {
 	opacity: 0.72 !important;
 	filter: brightness(0.92) !important;
 	transition: opacity 0.15s ease, filter 0.15s ease;
 }
 
-body.doom-dim-inactive-panes .workspace-split .workspace-leaf.mod-active .view-content {
+body.doom-dim-inactive-panes .mod-root .workspace-leaf.mod-active .view-content {
 	opacity: 1 !important;
 	filter: none !important;
 }
 
-body.doom-active-pane-border .workspace-split .workspace-leaf.mod-active {
-	box-shadow: inset 0 0 0 1px var(--doom-blue, #51afef) !important;
+body.doom-active-pane-border .mod-root .workspace-leaf.mod-active .workspace-leaf-content {
+	box-shadow: inset 0 0 0 1.5px var(--doom-blue, #51afef) !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -1006,10 +1030,14 @@ body.doom-hide-status-bar .status-bar {
 	display: none !important;
 }
 
+body.doom-no-modeline-bar:not(.is-mobile) .status-bar::before,
 body.doom-no-modeline-bar .status-bar::before {
 	display: none !important;
+	width: 0 !important;
+	content: none !important;
 }
 
+body:not(.is-mobile) .status-bar,
 body .status-bar {
 	height: var(--doom-modeline-height, var(--status-bar-height, 26px)) !important;
 	min-height: var(--doom-modeline-height, var(--status-bar-height, 26px)) !important;
@@ -1018,8 +1046,14 @@ body .status-bar {
 /* --------------------------------------------------------------------------
    Code Blocks (Org Babel)
    -------------------------------------------------------------------------- */
+body.doom-code-accent-border .cm-line.HyperMD-codeblock {
+	border-left: 3px solid var(--doom-blue, #51afef) !important;
+	padding-left: 17px !important;
+}
+
 body.doom-code-accent-border .cm-s-obsidian .cm-embed-block:not(.cm-table-widget):not(.bases-embed),
-body.doom-code-accent-border .markdown-rendered pre:not(.HyperMD-table) {
+body.doom-code-accent-border .markdown-rendered pre:not(.HyperMD-table),
+body.doom-code-accent-border .block-language-preview pre {
 	border-left: 3px solid var(--doom-blue, #51afef) !important;
 }
 
@@ -1031,28 +1065,46 @@ body.doom-code-accent-border .markdown-rendered pre:not(.HyperMD-table) {
 /* --------------------------------------------------------------------------
    Tables & Databases (Org Table)
    -------------------------------------------------------------------------- */
+body.doom-no-table-zebra {
+	--table-row-alt-background: transparent !important;
+}
+
 body.doom-no-table-zebra .markdown-rendered tbody tr:nth-child(even),
+body.doom-no-table-zebra .cm-table-widget tbody tr:nth-child(even),
+body.doom-no-table-zebra .bases-tbody .bases-tr:nth-child(even),
 body.doom-no-table-zebra .cm-s-obsidian .cm-embed-block table tbody tr:nth-child(even) {
 	background-color: transparent !important;
 }
 
+body.doom-table-compact {
+	--table-cell-padding-y: 3px !important;
+	--table-cell-padding-x: 6px !important;
+	--table-cell-padding: 3px 6px !important;
+}
+
 body.doom-table-compact .markdown-rendered th,
 body.doom-table-compact .markdown-rendered td,
+body.doom-table-compact .cm-table-widget th,
+body.doom-table-compact .cm-table-widget td,
+body.doom-table-compact .bases-td,
 body.doom-table-compact .cm-s-obsidian .cm-embed-block table th,
 body.doom-table-compact .cm-s-obsidian .cm-embed-block table td {
-	padding: 4px 8px !important;
-	font-size: 0.92em !important;
+	padding: 3px 6px !important;
+	font-size: 0.88em !important;
 }
 
 /* --------------------------------------------------------------------------
    File Tree & Treemacs Navigation
    -------------------------------------------------------------------------- */
+body.doom-filetree-accent .tree-item-self.is-active,
 body.doom-filetree-accent .nav-file-title.is-active {
-	border-left: 2px solid var(--doom-blue, #51afef) !important;
-	padding-left: calc(var(--size-4-2, 8px) - 2px) !important;
+	border-left: 2.5px solid var(--doom-blue, #51afef) !important;
+	border-radius: 0 3px 3px 0 !important;
 }
 
-body.doom-filetree-bold-folders .nav-folder-title-content {
+body.doom-filetree-bold-folders .nav-folder-title,
+body.doom-filetree-bold-folders .nav-folder-title-content,
+body.doom-filetree-bold-folders .nav-folder > .tree-item-self .tree-item-inner {
 	font-weight: 700 !important;
 	color: var(--doom-cyan, #46d9ff) !important;
 }
@@ -1064,30 +1116,87 @@ body.doom-radius-sharp {
 	--radius-s: 0px !important;
 	--radius-m: 0px !important;
 	--radius-l: 0px !important;
+	--radius-xl: 0px !important;
 	--tag-radius: 0px !important;
 	--tab-radius: 0px !important;
+	--tab-radius-active: 0px !important;
 	--input-radius: 0px !important;
 	--modal-radius: 0px !important;
 	--button-radius: 0px !important;
+	--checkbox-radius: 0px !important;
+	--toggle-thumb-radius: 0px !important;
+	--pill-radius: 0px !important;
+	--popover-radius: 0px !important;
+}
+
+body.doom-radius-sharp button,
+body.doom-radius-sharp input,
+body.doom-radius-sharp select,
+body.doom-radius-sharp .modal,
+body.doom-radius-sharp .menu,
+body.doom-radius-sharp .popover.hover-popover,
+body.doom-radius-sharp .prompt,
+body.doom-radius-sharp .suggestion-container,
+body.doom-radius-sharp .clickable-icon,
+body.doom-radius-sharp .setting-item,
+body.doom-radius-sharp .setting-items,
+body.doom-radius-sharp .bases-cards-item,
+body.doom-radius-sharp .bases-kanban-column,
+body.doom-radius-sharp .bases-embed {
+	border-radius: 0px !important;
 }
 
 body.doom-radius-rounded {
 	--radius-s: 6px !important;
 	--radius-m: 10px !important;
 	--radius-l: 14px !important;
+	--radius-xl: 18px !important;
 	--tag-radius: 6px !important;
 	--tab-radius: 6px !important;
 	--input-radius: 6px !important;
 	--modal-radius: 12px !important;
 	--button-radius: 6px !important;
+	--popover-radius: 10px !important;
+}
+
+body.doom-radius-rounded button,
+body.doom-radius-rounded input,
+body.doom-radius-rounded select,
+body.doom-radius-rounded .modal,
+body.doom-radius-rounded .menu,
+body.doom-radius-rounded .popover.hover-popover,
+body.doom-radius-rounded .prompt,
+body.doom-radius-rounded .suggestion-container {
+	border-radius: var(--button-radius, 6px) !important;
+}
+
+body.doom-radius-rounded .modal {
+	border-radius: var(--modal-radius, 12px) !important;
 }
 
 /* --------------------------------------------------------------------------
    Math / LaTeX Block Alignment
    -------------------------------------------------------------------------- */
 body.doom-math-left .math-block,
-body.doom-math-left .math.math-block {
+body.doom-math-left .math.math-block,
+body.doom-math-left .cm-embed-block:has(.math),
+body.doom-math-left .markdown-rendered .math {
 	text-align: left !important;
 	justify-content: flex-start !important;
 	padding-left: 1.5em !important;
+}
+
+body.doom-math-left .math-block > mjx-container[display="true"],
+body.doom-math-left .math > mjx-container[display="true"],
+body.doom-math-left mjx-container[jax="CHTML"][display="true"] {
+	text-align: left !important;
+	margin-left: 0 !important;
+	margin-right: auto !important;
+	padding-left: 0 !important;
+}
+
+body.doom-math-left .katex-display {
+	text-align: left !important;
+	justify-content: flex-start !important;
+	margin-left: 0 !important;
 }

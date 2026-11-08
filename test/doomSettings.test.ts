@@ -659,4 +659,60 @@ class MockDOMTokenList {
 	console.log("✓ Hover popover content expansion & inactive hidden element preservation verified");
 }
 
+// -----------------------------------------------------------------------------
+// 12. Obsidian Bases / Database Views Stylesheet & Token Compatibility
+// -----------------------------------------------------------------------------
+{
+	const fs = require("node:fs");
+	const path = require("node:path");
+	const cssPath = path.resolve(process.cwd(), "styles.css");
+	assert.ok(fs.existsSync(cssPath), "styles.css must exist");
+
+	const cssContent = fs.readFileSync(cssPath, "utf-8");
+
+	// Ensure core Bases database view selectors are present
+	const requiredBasesSelectors = [
+		".block-language-base",
+		".bases-embed",
+		".bases-header",
+		".bases-toolbar",
+		".bases-thead",
+		".bases-table-header-label",
+		".bases-table-header-icon",
+		".bases-tbody",
+		".bases-tr",
+		".bases-td",
+		".bases-table-footer",
+		".bases-table-summary-cell",
+		".bases-group-heading",
+		".bases-cards-item",
+		".bases-kanban-column",
+	];
+
+	for (const selector of requiredBasesSelectors) {
+		assert.ok(
+			cssContent.includes(selector),
+			`styles.css must include Bases selector: ${selector}`
+		);
+	}
+
+	// Verify header bottom border uses Org-table style
+	assert.ok(
+		cssContent.includes("border-bottom: 2px solid var(--doom-blue"),
+		"styles.css must style Bases table header with Org-table 2px accent underline"
+	);
+
+	// Verify fallback tokens are provided for all colors
+	assert.ok(
+		cssContent.includes("var(--doom-blue, #51afef)"),
+		"styles.css must provide hex fallback for doom-blue"
+	);
+	assert.ok(
+		cssContent.includes("var(--table-header-background, var(--doom-base1, #1c1f24))"),
+		"styles.css must provide fallback for table-header-background"
+	);
+
+	console.log("✓ Obsidian Bases stylesheet compatibility & fallback tokens verified");
+}
+
 console.log("\nAll unit tests passed successfully!");

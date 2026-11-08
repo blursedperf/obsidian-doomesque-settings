@@ -3,19 +3,9 @@ import { HoverPreviewManager } from "./hoverPreview";
 import {
 	DOOM_PALETTES,
 	DOOM_LIGHT_PALETTES,
-	DOOM_CURSOR_STYLES,
-	DOOM_CURSOR_BLINKS,
-	DOOM_CURSOR_COLORS,
-	DOOM_UI_CORNER_RADII,
-	DOOM_MATH_ALIGNMENTS,
 	DEFAULT_DOOM_SETTINGS,
 	DoomDarkPalette,
 	DoomLightPalette,
-	DoomCursorStyle,
-	DoomCursorBlink,
-	DoomCursorColor,
-	DoomUiCornerRadius,
-	DoomMathAlignment,
 	DoomEmacsStyleSettings,
 	DoomIndentGuideStyle,
 	DoomSidebarDensity,
@@ -25,8 +15,6 @@ import {
 	getNextDarkPalette,
 	getNextLightPalette,
 	getNextIndentStyle,
-	getNextCursorStyle,
-	getNextUiCornerRadius,
 	sanitizeFontFamily,
 } from "./settings";
 
@@ -151,132 +139,6 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 				new Notice(
 					`DoomEsque: ${this.settings.flatSettingsItems ? "Flat" : "Card"} settings style enabled`
 				);
-			},
-		});
-
-		// Cycle cursor style (bar -> block -> underline)
-		this.addCommand({
-			id: "cycle-cursor-style",
-			name: "Cycle cursor style (bar, block, underline)",
-			callback: async () => {
-				const next = getNextCursorStyle(this.settings.cursorStyle);
-				this.settings.cursorStyle = next;
-				await this.saveSettings();
-				new Notice(`DoomEsque: Cursor style set to '${next}'`);
-			},
-		});
-
-		// Toggle cursor blinking animation
-		this.addCommand({
-			id: "toggle-cursor-blink",
-			name: "Toggle cursor blinking animation (blink vs solid steady)",
-			callback: async () => {
-				this.settings.cursorBlink = this.settings.cursorBlink === "solid" ? "blink" : "solid";
-				await this.saveSettings();
-				new Notice(`DoomEsque: Cursor blink '${this.settings.cursorBlink}'`);
-			},
-		});
-
-		// Toggle dimming of inactive panes (solaire-mode)
-		this.addCommand({
-			id: "toggle-solaire-dim",
-			name: "Toggle dimming of inactive panes (solaire-mode)",
-			callback: async () => {
-				this.settings.dimInactivePanes = !this.settings.dimInactivePanes;
-				await this.saveSettings();
-				new Notice(
-					`DoomEsque: Inactive pane dimming ${this.settings.dimInactivePanes ? "enabled" : "disabled"}`
-				);
-			},
-		});
-
-		// Toggle active pane accent outline
-		this.addCommand({
-			id: "toggle-active-pane-border",
-			name: "Toggle active pane accent outline",
-			callback: async () => {
-				this.settings.activePaneBorder = !this.settings.activePaneBorder;
-				await this.saveSettings();
-				new Notice(
-					`DoomEsque: Active pane border ${this.settings.activePaneBorder ? "enabled" : "disabled"}`
-				);
-			},
-		});
-
-		// Toggle status bar / modeline visibility
-		this.addCommand({
-			id: "toggle-hide-status-bar",
-			name: "Toggle status bar / modeline visibility",
-			callback: async () => {
-				this.settings.hideStatusBar = !this.settings.hideStatusBar;
-				await this.saveSettings();
-				new Notice(
-					`DoomEsque: Status bar ${this.settings.hideStatusBar ? "hidden" : "visible"}`
-				);
-			},
-		});
-
-		// Toggle Org-mode left accent border on code blocks
-		this.addCommand({
-			id: "toggle-code-accent-border",
-			name: "Toggle Org-mode left accent border on code blocks",
-			callback: async () => {
-				this.settings.codeBlockAccentBorder = !this.settings.codeBlockAccentBorder;
-				await this.saveSettings();
-				new Notice(
-					`DoomEsque: Code accent border ${this.settings.codeBlockAccentBorder ? "enabled" : "disabled"}`
-				);
-			},
-		});
-
-		// Toggle table zebra row striping
-		this.addCommand({
-			id: "toggle-table-zebra",
-			name: "Toggle table zebra row striping",
-			callback: async () => {
-				this.settings.disableTableZebra = !this.settings.disableTableZebra;
-				await this.saveSettings();
-				new Notice(
-					`DoomEsque: Table zebra striping ${this.settings.disableTableZebra ? "disabled" : "enabled"}`
-				);
-			},
-		});
-
-		// Toggle compact table cell padding
-		this.addCommand({
-			id: "toggle-compact-tables",
-			name: "Toggle compact table cell padding",
-			callback: async () => {
-				this.settings.compactTables = !this.settings.compactTables;
-				await this.saveSettings();
-				new Notice(
-					`DoomEsque: Compact tables ${this.settings.compactTables ? "enabled" : "disabled"}`
-				);
-			},
-		});
-
-		// Toggle file tree active note accent bar
-		this.addCommand({
-			id: "toggle-filetree-accent",
-			name: "Toggle file tree active note accent bar",
-			callback: async () => {
-				this.settings.fileTreeAccentBar = !this.settings.fileTreeAccentBar;
-				await this.saveSettings();
-				new Notice(
-					`DoomEsque: File tree active accent bar ${this.settings.fileTreeAccentBar ? "enabled" : "disabled"}`
-				);
-			},
-		});
-
-		// Cycle UI corner radius (sharp -> subtle -> rounded)
-		this.addCommand({
-			id: "cycle-ui-corner-radius",
-			name: "Cycle UI corner radius (sharp, subtle, rounded)",
-			callback: async () => {
-				const next = getNextUiCornerRadius(this.settings.uiCornerRadius);
-				this.settings.uiCornerRadius = next;
-				await this.saveSettings();
-				new Notice(`DoomEsque: Corner geometry set to '${next}'`);
 			},
 		});
 
@@ -517,250 +379,7 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 			});
 
 		// ---------------------------------------------------------------------
-		// 2. Cursor & Caret Faces
-		// ---------------------------------------------------------------------
-		new Setting(containerEl).setName("Cursor & caret faces").setHeading();
-
-		new Setting(containerEl)
-			.setName("Cursor shape style")
-			.setDesc("Choose between thin bar, full block (Evil / Emacs style), or underline.")
-			.addDropdown((dropdown) => {
-				for (const opt of DOOM_CURSOR_STYLES) {
-					dropdown.addOption(opt.id, opt.label);
-				}
-				dropdown.setValue(this.plugin.settings.cursorStyle);
-				dropdown.onChange(async (val) => {
-					this.plugin.settings.cursorStyle = val as DoomCursorStyle;
-					await this.plugin.saveSettings();
-				});
-			});
-
-		new Setting(containerEl)
-			.setName("Cursor animation")
-			.setDesc("Smooth animated blinking or solid steady non-blinking terminal cursor.")
-			.addDropdown((dropdown) => {
-				for (const opt of DOOM_CURSOR_BLINKS) {
-					dropdown.addOption(opt.id, opt.label);
-				}
-				dropdown.setValue(this.plugin.settings.cursorBlink);
-				dropdown.onChange(async (val) => {
-					this.plugin.settings.cursorBlink = val as DoomCursorBlink;
-					await this.plugin.saveSettings();
-				});
-			});
-
-		new Setting(containerEl)
-			.setName("Cursor accent color")
-			.setDesc("Select the highlight color for the editor caret/cursor.")
-			.addDropdown((dropdown) => {
-				for (const opt of DOOM_CURSOR_COLORS) {
-					dropdown.addOption(opt.id, opt.label);
-				}
-				dropdown.setValue(this.plugin.settings.cursorColor);
-				dropdown.onChange(async (val) => {
-					this.plugin.settings.cursorColor = val as DoomCursorColor;
-					await this.plugin.saveSettings();
-				});
-			});
-
-		// ---------------------------------------------------------------------
-		// 3. Buffer Splitting & Solaire Focus
-		// ---------------------------------------------------------------------
-		new Setting(containerEl).setName("Buffer splitting & solaire focus").setHeading();
-
-		new Setting(containerEl)
-			.setName("Dim inactive editor splits (solaire-mode)")
-			.setDesc("Dim inactive panes to 72% opacity, keeping crisp visual focus on the active buffer.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.dimInactivePanes)
-					.onChange(async (val) => {
-						this.plugin.settings.dimInactivePanes = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Active pane accent outline")
-			.setDesc("Display a subtle 1px Doom accent border around the focused editor window.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.activePaneBorder)
-					.onChange(async (val) => {
-						this.plugin.settings.activePaneBorder = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		// ---------------------------------------------------------------------
-		// 4. Doom Modeline & Status Bar
-		// ---------------------------------------------------------------------
-		new Setting(containerEl).setName("Doom modeline & status bar").setHeading();
-
-		new Setting(containerEl)
-			.setName("Hide status bar / modeline")
-			.setDesc("Hide the bottom status bar for an immersive distraction-free zen writing environment.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.hideStatusBar)
-					.onChange(async (val) => {
-						this.plugin.settings.hideStatusBar = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		this.createSliderSetting({
-			containerEl,
-			name: "Status bar / modeline height",
-			desc: "Height of the bottom modeline status bar in px (Default: 26 px).",
-			min: 20,
-			max: 44,
-			step: 2,
-			value: this.plugin.settings.statusBarHeightPx,
-			formatValue: (v) => `${Math.round(v)} px`,
-			onChange: async (v) => {
-				this.plugin.settings.statusBarHeightPx = Math.round(v);
-				await this.plugin.saveSettings();
-			},
-		});
-
-		new Setting(containerEl)
-			.setName("Disable modeline left accent bar")
-			.setDesc("Hide the 3px active accent indicator bar on the left edge of the status bar.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.disableModelineBar)
-					.onChange(async (val) => {
-						this.plugin.settings.disableModelineBar = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		// ---------------------------------------------------------------------
-		// 5. Code Blocks & Syntax Highlighting
-		// ---------------------------------------------------------------------
-		new Setting(containerEl).setName("Code blocks & syntax highlighting").setHeading();
-
-		new Setting(containerEl)
-			.setName("Org-mode left accent border on code blocks")
-			.setDesc("Display an authentic 3px Doom blue accent bar on the left edge of code blocks (#+begin_src style).")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.codeBlockAccentBorder)
-					.onChange(async (val) => {
-						this.plugin.settings.codeBlockAccentBorder = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		this.createSliderSetting({
-			containerEl,
-			name: "Code block font scale",
-			desc: "Proportional font scale multiplier for code blocks and pre elements (Default: 1.00x).",
-			min: 0.8,
-			max: 1.3,
-			step: 0.05,
-			value: this.plugin.settings.codeBlockFontScale,
-			formatValue: (v) => `${v.toFixed(2)}x`,
-			onChange: async (v) => {
-				this.plugin.settings.codeBlockFontScale = v;
-				await this.plugin.saveSettings();
-			},
-		});
-
-		// ---------------------------------------------------------------------
-		// 6. Tables & Databases (Org-Table Polish)
-		// ---------------------------------------------------------------------
-		new Setting(containerEl).setName("Tables & databases (Org-table polish)").setHeading();
-
-		new Setting(containerEl)
-			.setName("Disable table zebra row striping")
-			.setDesc("Turn off alternating row background tints for solid, uniform table backgrounds.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.disableTableZebra)
-					.onChange(async (val) => {
-						this.plugin.settings.disableTableZebra = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Compact table cell padding")
-			.setDesc("Reduce table cell padding (4px 8px) for high-density academic and database tables.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.compactTables)
-					.onChange(async (val) => {
-						this.plugin.settings.compactTables = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		// ---------------------------------------------------------------------
-		// 7. File Tree & Treemacs Navigation
-		// ---------------------------------------------------------------------
-		new Setting(containerEl).setName("File tree & Treemacs navigation").setHeading();
-
-		new Setting(containerEl)
-			.setName("Active file indicator accent bar")
-			.setDesc("Show a distinct 2px accent line on the left edge of the currently active note in the file tree.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.fileTreeAccentBar)
-					.onChange(async (val) => {
-						this.plugin.settings.fileTreeAccentBar = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Bold folder names in file tree")
-			.setDesc("Highlight directory and folder names with bold weight for rapid visual hierarchy scanning.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.fileTreeFolderBold)
-					.onChange(async (val) => {
-						this.plugin.settings.fileTreeFolderBold = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		// ---------------------------------------------------------------------
-		// 8. UI Geometry & Math Layout
-		// ---------------------------------------------------------------------
-		new Setting(containerEl).setName("UI geometry & math layout").setHeading();
-
-		new Setting(containerEl)
-			.setName("UI corner rounding geometry")
-			.setDesc("Choose between Sharp (0px classic terminal Emacs), Subtle (3px Doom default), or Rounded (8px modern).")
-			.addDropdown((dropdown) => {
-				for (const opt of DOOM_UI_CORNER_RADII) {
-					dropdown.addOption(opt.id, opt.label);
-				}
-				dropdown.setValue(this.plugin.settings.uiCornerRadius);
-				dropdown.onChange(async (val) => {
-					this.plugin.settings.uiCornerRadius = val as DoomUiCornerRadius;
-					await this.plugin.saveSettings();
-				});
-			});
-
-		new Setting(containerEl)
-			.setName("Display math block alignment")
-			.setDesc("Choose whether display LaTeX math equations ($$ ... $$) are centered or left-aligned with indent.")
-			.addDropdown((dropdown) => {
-				for (const opt of DOOM_MATH_ALIGNMENTS) {
-					dropdown.addOption(opt.id, opt.label);
-				}
-				dropdown.setValue(this.plugin.settings.mathBlockAlignment);
-				dropdown.onChange(async (val) => {
-					this.plugin.settings.mathBlockAlignment = val as DoomMathAlignment;
-					await this.plugin.saveSettings();
-				});
-			});
-
-		// ---------------------------------------------------------------------
-		// 9. Spacing & Layout Rhythm
+		// 2. Spacing & Layout Rhythm
 		// ---------------------------------------------------------------------
 		new Setting(containerEl).setName("Spacing & layout rhythm").setHeading();
 
@@ -899,7 +518,7 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		});
 
 		// ---------------------------------------------------------------------
-		// 10. Indentation & Indent Guides
+		// 3. Indentation & Indent Guides
 		// ---------------------------------------------------------------------
 		new Setting(containerEl).setName("Indentation & indent guides").setHeading();
 
@@ -981,7 +600,7 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		});
 
 		// ---------------------------------------------------------------------
-		// 11. Typography & Heading Scale
+		// 4. Typography & Heading Scale
 		// ---------------------------------------------------------------------
 		new Setting(containerEl).setName("Typography & heading scale").setHeading();
 
@@ -1044,7 +663,7 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		});
 
 		// ---------------------------------------------------------------------
-		// 12. Hover Preview & Sidebar Pop-Open
+		// 5. Hover Preview & Sidebar Pop-Open
 		// ---------------------------------------------------------------------
 		new Setting(containerEl).setName("Hover preview & sidebar pop-open").setHeading();
 
@@ -1122,7 +741,7 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 			});
 
 		// ---------------------------------------------------------------------
-		// 13. Reset Settings
+		// 6. Reset Defaults
 		// ---------------------------------------------------------------------
 		new Setting(containerEl).setName("Reset defaults").setHeading();
 

@@ -17,16 +17,6 @@ export type DoomIndentGuideStyle = "solid" | "dashed" | "dotted" | "double" | "n
 
 export type DoomSidebarDensity = "compact" | "normal" | "comfortable";
 
-export type DoomCursorStyle = "bar" | "block" | "underline";
-
-export type DoomCursorBlink = "blink" | "solid";
-
-export type DoomCursorColor = "blue" | "teal" | "magenta" | "cyan" | "yellow" | "green";
-
-export type DoomUiCornerRadius = "sharp" | "subtle" | "rounded";
-
-export type DoomMathAlignment = "center" | "left";
-
 export interface DoomPaletteOption {
 	id: DoomDarkPalette;
 	label: string;
@@ -38,37 +28,6 @@ export interface DoomLightPaletteOption {
 	label: string;
 	description: string;
 }
-
-export const DOOM_CURSOR_STYLES: readonly { id: DoomCursorStyle; label: string; description: string }[] = [
-	{ id: "bar", label: "Thin Bar (Default)", description: "Modern 2px vertical caret line." },
-	{ id: "block", label: "Full Block", description: "Authentic Emacs / Evil normal state block cursor." },
-	{ id: "underline", label: "Underline", description: "Horizontal rule cursor underneath character." },
-];
-
-export const DOOM_CURSOR_BLINKS: readonly { id: DoomCursorBlink; label: string; description: string }[] = [
-	{ id: "blink", label: "Animated Blink (Default)", description: "Standard smooth blinking cursor animation." },
-	{ id: "solid", label: "Solid Steady (No Blink)", description: "Terminal-style solid non-blinking cursor." },
-];
-
-export const DOOM_CURSOR_COLORS: readonly { id: DoomCursorColor; label: string; hex: string }[] = [
-	{ id: "blue", label: "Doom Blue (Default)", hex: "#51afef" },
-	{ id: "teal", label: "Doom Teal", hex: "#4db5bd" },
-	{ id: "magenta", label: "Doom Magenta", hex: "#c678dd" },
-	{ id: "cyan", label: "Doom Cyan", hex: "#46d9ff" },
-	{ id: "yellow", label: "Doom Yellow", hex: "#ecbe7b" },
-	{ id: "green", label: "Doom Green", hex: "#98be65" },
-];
-
-export const DOOM_UI_CORNER_RADII: readonly { id: DoomUiCornerRadius; label: string; description: string }[] = [
-	{ id: "sharp", label: "Sharp (0px)", description: "Hard terminal Emacs geometry with zero rounded corners." },
-	{ id: "subtle", label: "Subtle (3px - Default)", description: "Crisp, refined DoomEsque subtle rounding." },
-	{ id: "rounded", label: "Rounded (8px)", description: "Modern soft cards with larger rounded corners." },
-];
-
-export const DOOM_MATH_ALIGNMENTS: readonly { id: DoomMathAlignment; label: string; description: string }[] = [
-	{ id: "center", label: "Centered (Default)", description: "Standard centered display math equations." },
-	{ id: "left", label: "Left Aligned", description: "Org-mode LaTeX preview left-aligned with indent." },
-];
 
 export const DOOM_PALETTES: readonly DoomPaletteOption[] = [
 	{
@@ -174,35 +133,6 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-sidebar-comfortable",
 	"doom-sticky-hover-enabled",
 	"doom-settings-flat",
-	// Cursor & Caret Faces
-	"doom-cursor-bar",
-	"doom-cursor-block",
-	"doom-cursor-underline",
-	"doom-cursor-solid",
-	"doom-cursor-color-blue",
-	"doom-cursor-color-teal",
-	"doom-cursor-color-magenta",
-	"doom-cursor-color-cyan",
-	"doom-cursor-color-yellow",
-	"doom-cursor-color-green",
-	// Buffer Splitting & Solaire Dimming
-	"doom-dim-inactive-panes",
-	"doom-active-pane-border",
-	// Modeline & Status Bar
-	"doom-hide-status-bar",
-	"doom-no-modeline-bar",
-	// Code Blocks & Syntax
-	"doom-code-accent-border",
-	// Tables & Data
-	"doom-no-table-zebra",
-	"doom-table-compact",
-	// File Tree
-	"doom-filetree-accent",
-	"doom-filetree-bold-folders",
-	// UI Geometry & Alignment
-	"doom-radius-sharp",
-	"doom-radius-rounded",
-	"doom-math-left",
 ];
 
 export const ALL_MANAGED_CSS_VARS: readonly string[] = [
@@ -233,10 +163,6 @@ export const ALL_MANAGED_CSS_VARS: readonly string[] = [
 	"--popover-width",
 	"--popover-height",
 	"--popover-font-size",
-	"--status-bar-height",
-	"--doom-modeline-height",
-	"--doom-code-font-scale",
-	"--doom-cursor-color",
 ];
 
 export const DEFAULT_DOOM_MONOSPACE_STACK =
@@ -256,52 +182,6 @@ export interface DoomEsqueStyleSettings {
 	disableH1Border: boolean;
 	/** Disable active editor line highlight (`hl-line-mode`) (`doom-no-active-line-highlight`). */
 	disableActiveLineHighlight: boolean;
-
-	// --- Cursor & Caret Faces ---
-	/** Cursor shape style (`bar` | `block` | `underline`). Default: `bar`. */
-	cursorStyle: DoomCursorStyle;
-	/** Cursor blinking animation (`blink` | `solid`). Default: `blink`. */
-	cursorBlink: DoomCursorBlink;
-	/** Accent color for the editor caret/cursor. Default: `blue`. */
-	cursorColor: DoomCursorColor;
-
-	// --- Buffer Splitting & Solaire Dimming ---
-	/** Dim inactive editor splits and panes to highlight the active buffer (`doom-dim-inactive-panes`). */
-	dimInactivePanes: boolean;
-	/** Display an accent border outline around the focused editor leaf (`doom-active-pane-border`). */
-	activePaneBorder: boolean;
-
-	// --- Modeline & Status Bar ---
-	/** Hide status bar / modeline for a clean distraction-free view (`doom-hide-status-bar`). */
-	hideStatusBar: boolean;
-	/** Custom height for status bar modeline in px (20-44px). Default: 26. */
-	statusBarHeightPx: number;
-	/** Hide the 3px accent indicator bar on the left edge of the status bar (`doom-no-modeline-bar`). */
-	disableModelineBar: boolean;
-
-	// --- Code Blocks (Org Babel) ---
-	/** Display an Org-mode left accent border on code blocks (`doom-code-accent-border`). */
-	codeBlockAccentBorder: boolean;
-	/** Font size scale multiplier for code blocks (0.8 - 1.3). Default: 1.0. */
-	codeBlockFontScale: number;
-
-	// --- Tables & Data (Org Table) ---
-	/** Disable alternating zebra striping on tables (`doom-no-table-zebra`). */
-	disableTableZebra: boolean;
-	/** Use compact padding for dense data tables and databases (`doom-table-compact`). */
-	compactTables: boolean;
-
-	// --- File Explorer (Treemacs) ---
-	/** Show active note indicator accent bar in the file tree (`doom-filetree-accent`). */
-	fileTreeAccentBar: boolean;
-	/** Make folder names in file tree bold for rapid scanning (`doom-filetree-bold-folders`). */
-	fileTreeFolderBold: boolean;
-
-	// --- UI Geometry & Alignment ---
-	/** UI element corner rounding geometry (`sharp` | `subtle` | `rounded`). Default: `subtle`. */
-	uiCornerRadius: DoomUiCornerRadius;
-	/** Alignment of display math / LaTeX blocks (`center` | `left`). Default: `center`. */
-	mathBlockAlignment: DoomMathAlignment;
 
 	// --- Typography ---
 	/** Force monospace font in the note editor (`doom-monospace-editor`). */
@@ -370,29 +250,6 @@ export const DEFAULT_DOOMESQUE_SETTINGS: DoomEsqueStyleSettings = {
 	monochromeHeadings: false,
 	disableH1Border: false,
 	disableActiveLineHighlight: false,
-
-	cursorStyle: "bar",
-	cursorBlink: "blink",
-	cursorColor: "blue",
-
-	dimInactivePanes: false,
-	activePaneBorder: false,
-
-	hideStatusBar: false,
-	statusBarHeightPx: 26,
-	disableModelineBar: false,
-
-	codeBlockAccentBorder: false,
-	codeBlockFontScale: 1.0,
-
-	disableTableZebra: false,
-	compactTables: false,
-
-	fileTreeAccentBar: false,
-	fileTreeFolderBold: false,
-
-	uiCornerRadius: "subtle",
-	mathBlockAlignment: "center",
 
 	monospaceEditor: false,
 	disableMonospaceUi: false,
@@ -494,69 +351,6 @@ export function computeDoomDomState(settings: DoomEmacsStyleSettings): ComputedD
 	}
 	if (settings.flatSettingsItems) {
 		activeClasses.push("doom-settings-flat");
-	}
-
-	// Cursor & Caret Faces
-	if (settings.cursorStyle === "block") {
-		activeClasses.push("doom-cursor-block");
-	} else if (settings.cursorStyle === "underline") {
-		activeClasses.push("doom-cursor-underline");
-	}
-
-	if (settings.cursorBlink === "solid") {
-		activeClasses.push("doom-cursor-solid");
-	}
-
-	if (settings.cursorColor && settings.cursorColor !== "blue") {
-		activeClasses.push(`doom-cursor-color-${settings.cursorColor}`);
-	}
-
-	// Buffer Splitting & Solaire Dimming
-	if (settings.dimInactivePanes) {
-		activeClasses.push("doom-dim-inactive-panes");
-	}
-	if (settings.activePaneBorder) {
-		activeClasses.push("doom-active-pane-border");
-	}
-
-	// Modeline & Status Bar
-	if (settings.hideStatusBar) {
-		activeClasses.push("doom-hide-status-bar");
-	}
-	if (settings.disableModelineBar) {
-		activeClasses.push("doom-no-modeline-bar");
-	}
-
-	// Code Blocks & Syntax
-	if (settings.codeBlockAccentBorder) {
-		activeClasses.push("doom-code-accent-border");
-	}
-
-	// Tables & Data
-	if (settings.disableTableZebra) {
-		activeClasses.push("doom-no-table-zebra");
-	}
-	if (settings.compactTables) {
-		activeClasses.push("doom-table-compact");
-	}
-
-	// File Tree
-	if (settings.fileTreeAccentBar) {
-		activeClasses.push("doom-filetree-accent");
-	}
-	if (settings.fileTreeFolderBold) {
-		activeClasses.push("doom-filetree-bold-folders");
-	}
-
-	// UI Geometry & Alignment
-	if (settings.uiCornerRadius === "sharp") {
-		activeClasses.push("doom-radius-sharp");
-	} else if (settings.uiCornerRadius === "rounded") {
-		activeClasses.push("doom-radius-rounded");
-	}
-
-	if (settings.mathBlockAlignment === "left") {
-		activeClasses.push("doom-math-left");
 	}
 
 	const indentStyle: DoomIndentGuideStyle =
@@ -672,33 +466,6 @@ export function computeDoomDomState(settings: DoomEmacsStyleSettings): ComputedD
 		2
 	);
 
-	const clampedStatusBarHeight = Math.round(
-		clampNumber(
-			settings.statusBarHeightPx,
-			20,
-			44,
-			DEFAULT_DOOM_SETTINGS.statusBarHeightPx
-		)
-	);
-	const clampedCodeFontScale = roundTo(
-		clampNumber(
-			settings.codeBlockFontScale,
-			0.8,
-			1.3,
-			DEFAULT_DOOM_SETTINGS.codeBlockFontScale
-		),
-		2
-	);
-
-	const cursorColorMap: Record<DoomCursorColor, string> = {
-		blue: "var(--doom-blue, #51afef)",
-		teal: "var(--doom-teal, #4db5bd)",
-		magenta: "var(--doom-magenta, #c678dd)",
-		cyan: "var(--doom-cyan, #46d9ff)",
-		yellow: "var(--doom-yellow, #ecbe7b)",
-		green: "var(--doom-green, #98be65)",
-	};
-
 	const scaleHeading = (baseEm: number): string | null =>
 		clampedScale === 1.0 ? null : `${(baseEm * clampedScale).toFixed(2)}em`;
 
@@ -775,22 +542,6 @@ export function computeDoomDomState(settings: DoomEmacsStyleSettings): ComputedD
 		"--popover-height": isDefaultPopover ? null : `${clampedPopoverHeight}px`,
 		"--popover-font-size":
 			isDefaultFontScale ? null : `${roundTo(16 * clampedFontScale, 1)}px`,
-		"--status-bar-height":
-			clampedStatusBarHeight === DEFAULT_DOOM_SETTINGS.statusBarHeightPx
-				? null
-				: `${clampedStatusBarHeight}px`,
-		"--doom-modeline-height":
-			clampedStatusBarHeight === DEFAULT_DOOM_SETTINGS.statusBarHeightPx
-				? null
-				: `${clampedStatusBarHeight}px`,
-		"--doom-code-font-scale":
-			clampedCodeFontScale === DEFAULT_DOOM_SETTINGS.codeBlockFontScale
-				? null
-				: String(clampedCodeFontScale),
-		"--doom-cursor-color":
-			settings.cursorColor && settings.cursorColor !== "blue"
-				? cursorColorMap[settings.cursorColor]
-				: null,
 	};
 
 	return { activeClasses, cssVariables };
@@ -820,18 +571,6 @@ export function getNextIndentStyle(current: DoomIndentGuideStyle): DoomIndentGui
 	const idx = INDENT_GUIDE_STYLES.indexOf(current);
 	if (idx === -1) return INDENT_GUIDE_STYLES[0];
 	return INDENT_GUIDE_STYLES[(idx + 1) % INDENT_GUIDE_STYLES.length];
-}
-
-export function getNextCursorStyle(current: DoomCursorStyle): DoomCursorStyle {
-	const styles: DoomCursorStyle[] = ["bar", "block", "underline"];
-	const idx = styles.indexOf(current);
-	return styles[(idx + 1) % styles.length];
-}
-
-export function getNextUiCornerRadius(current: DoomUiCornerRadius): DoomUiCornerRadius {
-	const radii: DoomUiCornerRadius[] = ["subtle", "sharp", "rounded"];
-	const idx = radii.indexOf(current);
-	return radii[(idx + 1) % radii.length];
 }
 
 /**

@@ -500,10 +500,9 @@ export function computeDoomDomState(settings: DoomEmacsStyleSettings): ComputedD
 			clampedListIndent === DEFAULT_DOOM_SETTINGS.listIndentEm
 				? null
 				: `${clampedListIndent}em`,
-		"--list-indent-editing":
-			clampedListIndent === DEFAULT_DOOM_SETTINGS.listIndentEm
-				? null
-				: `${clampedListIndent}em`,
+		// Obsidian uses --list-indent-editing for list bullet padding-inline-start (.75em).
+		// Overriding it with list indent offset breaks bullet alignment with indent guidelines.
+		"--list-indent-editing": null,
 		"--indentation-guide-width":
 			clampedIndentGuideWidth === DEFAULT_DOOM_SETTINGS.indentGuideWidthPx
 				? null

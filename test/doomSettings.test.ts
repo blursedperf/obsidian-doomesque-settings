@@ -225,7 +225,7 @@ class MockDOMTokenList {
 	assert.strictEqual(customSpacing.cssVariables["--doom-heading-spacing-scale"], "1.25");
 	assert.strictEqual(customSpacing.cssVariables["--list-spacing"], "0.35em");
 	assert.strictEqual(customSpacing.cssVariables["--list-indent"], "2.25em");
-	assert.strictEqual(customSpacing.cssVariables["--list-indent-editing"], "2.25em");
+	assert.strictEqual(customSpacing.cssVariables["--list-indent-editing"], null);
 	assert.strictEqual(customSpacing.cssVariables["--indentation-guide-width"], "2.5px");
 	assert.strictEqual(customSpacing.cssVariables["--doom-tree-indent"], "20px");
 	assert.strictEqual(customSpacing.cssVariables["--file-margins"], "40px 48px");
@@ -388,12 +388,24 @@ class MockDOMTokenList {
 		makeSettings({
 			darkPalette: "doom-palette-vibrant",
 			disableOrgTodoBadges: false,
+			indentGuideStyle: "dashed",
+			rainbowIndentGuides: true,
+			listIndentEm: 2.0,
 		})
 	);
+
+	// Verify --list-indent-editing is actively stripped if previously present
+	mockDoc.body.style.setProperty("--list-indent-editing", "2.0em");
+	assert.strictEqual(mockDoc.body.style.getPropertyValue("--list-indent-editing"), "2.0em");
+
 	applyDoomDomState(mockDoc, vibrantState);
 	assert.ok(mockDoc.body.classList.contains("doom-palette-vibrant"));
 	assert.ok(!mockDoc.body.classList.contains("doom-palette-tokyo-night"));
 	assert.ok(!mockDoc.body.classList.contains("doom-no-org-todo"));
+	assert.ok(mockDoc.body.classList.contains("doom-indent-style-dashed"));
+	assert.ok(mockDoc.body.classList.contains("doom-rainbow-indent-guides"));
+	assert.strictEqual(mockDoc.body.style.getPropertyValue("--list-indent"), "2em");
+	assert.strictEqual(mockDoc.body.style.getPropertyValue("--list-indent-editing"), "");
 
 	// Clear DOM state
 	clearDoomDomState(mockDoc);

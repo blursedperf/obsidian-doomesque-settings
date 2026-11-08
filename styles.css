@@ -100,108 +100,148 @@ body.doom-settings-flat .modal.mod-settings .setting-item:not(.setting-item-head
 /* --------------------------------------------------------------------------
    Indentation Guide Styles (highlight-indent-guides / indent-bars)
    -------------------------------------------------------------------------- */
-body.doom-indent-style-none .cm-indent,
-body.doom-indent-style-none .markdown-rendered ul ul,
-body.doom-indent-style-none .markdown-rendered ol ol,
-body.doom-indent-style-none .mod-indent-guide {
+/* Reset container borders to ensure guidelines follow cleanly under bullets */
+.markdown-source-view.mod-cm6 .cm-indent,
+.markdown-rendered ul ul,
+.markdown-rendered ol ol {
 	border-right: none !important;
 	border-left: none !important;
-	box-shadow: none !important;
+}
+
+body.doom-indent-style-none .markdown-source-view.mod-cm6 .cm-indent:before,
+body.doom-indent-style-none .markdown-rendered.show-indentation-guide li > ul:before,
+body.doom-indent-style-none .markdown-rendered.show-indentation-guide li > ol:before,
+body.doom-indent-style-none .mod-indent-guide {
+	display: none !important;
+	border: none !important;
 	opacity: 0 !important;
 }
 
-body.doom-indent-style-dashed .cm-indent {
-	border-right-style: dashed !important;
+body.doom-indent-style-dashed .markdown-source-view.mod-cm6 .cm-indent:before,
+body.doom-indent-style-dashed .markdown-rendered.show-indentation-guide li > ul:before,
+body.doom-indent-style-dashed .markdown-rendered.show-indentation-guide li > ol:before {
+	border-inline-end-style: dashed !important;
 }
 
-body.doom-indent-style-dashed .markdown-rendered ul ul,
-body.doom-indent-style-dashed .markdown-rendered ol ol {
-	border-left-style: dashed !important;
+body.doom-indent-style-dotted .markdown-source-view.mod-cm6 .cm-indent:before,
+body.doom-indent-style-dotted .markdown-rendered.show-indentation-guide li > ul:before,
+body.doom-indent-style-dotted .markdown-rendered.show-indentation-guide li > ol:before {
+	border-inline-end-style: dotted !important;
 }
 
-body.doom-indent-style-dotted .cm-indent {
-	border-right-style: dotted !important;
+body.doom-indent-style-double .markdown-source-view.mod-cm6 .cm-indent:before,
+body.doom-indent-style-double .markdown-rendered.show-indentation-guide li > ul:before,
+body.doom-indent-style-double .markdown-rendered.show-indentation-guide li > ol:before {
+	border-inline-end-style: double !important;
+	border-inline-end-width: max(3px, calc(var(--indentation-guide-width, 1px) * 2)) !important;
 }
 
-body.doom-indent-style-dotted .markdown-rendered ul ul,
-body.doom-indent-style-dotted .markdown-rendered ol ol {
-	border-left-style: dotted !important;
-}
-
-body.doom-indent-style-double .cm-indent {
-	border-right-style: double !important;
-}
-
-body.doom-indent-style-double .markdown-rendered ul ul,
-body.doom-indent-style-double .markdown-rendered ol ol {
-	border-left-style: double !important;
-}
-
-body.doom-indent-style-solid .cm-indent {
-	border-right-style: solid !important;
-}
-
-body.doom-indent-style-solid .markdown-rendered ul ul,
-body.doom-indent-style-solid .markdown-rendered ol ol {
-	border-left-style: solid !important;
+body.doom-indent-style-solid .markdown-source-view.mod-cm6 .cm-indent:before,
+body.doom-indent-style-solid .markdown-rendered.show-indentation-guide li > ul:before,
+body.doom-indent-style-solid .markdown-rendered.show-indentation-guide li > ol:before {
+	border-inline-end-style: solid !important;
 }
 
 /* --------------------------------------------------------------------------
    Rainbow Indentation Guides (Cycle Doom palette colors per nesting depth)
    -------------------------------------------------------------------------- */
-body.doom-rainbow-indent-guides .cm-indent:nth-of-type(6n + 1) {
-	border-right-color: var(--doom-blue, #51afef) !important;
+/* Live Preview (CodeMirror 6) */
+body.doom-rainbow-indent-guides .markdown-source-view.mod-cm6 .cm-indent:nth-of-type(6n + 1):before {
+	border-inline-end-color: var(--doom-blue, #51afef) !important;
 }
 
-body.doom-rainbow-indent-guides .cm-indent:nth-of-type(6n + 2) {
-	border-right-color: var(--doom-magenta, #c678dd) !important;
+body.doom-rainbow-indent-guides .markdown-source-view.mod-cm6 .cm-indent:nth-of-type(6n + 2):before {
+	border-inline-end-color: var(--doom-magenta, #c678dd) !important;
 }
 
-body.doom-rainbow-indent-guides .cm-indent:nth-of-type(6n + 3) {
-	border-right-color: var(--doom-violet, #a9a1e1) !important;
+body.doom-rainbow-indent-guides .markdown-source-view.mod-cm6 .cm-indent:nth-of-type(6n + 3):before {
+	border-inline-end-color: var(--doom-violet, #a9a1e1) !important;
 }
 
-body.doom-rainbow-indent-guides .cm-indent:nth-of-type(6n + 4) {
-	border-right-color: var(--doom-orange, #da8548) !important;
+body.doom-rainbow-indent-guides .markdown-source-view.mod-cm6 .cm-indent:nth-of-type(6n + 4):before {
+	border-inline-end-color: var(--doom-orange, #da8548) !important;
 }
 
-body.doom-rainbow-indent-guides .cm-indent:nth-of-type(6n + 5) {
-	border-right-color: var(--doom-green, #98be65) !important;
+body.doom-rainbow-indent-guides .markdown-source-view.mod-cm6 .cm-indent:nth-of-type(6n + 5):before {
+	border-inline-end-color: var(--doom-green, #98be65) !important;
 }
 
-body.doom-rainbow-indent-guides .cm-indent:nth-of-type(6n + 6) {
-	border-right-color: var(--doom-cyan, #46d9ff) !important;
+body.doom-rainbow-indent-guides .markdown-source-view.mod-cm6 .cm-indent:nth-of-type(6n + 6):before {
+	border-inline-end-color: var(--doom-cyan, #46d9ff) !important;
 }
 
 /* Reading View Rainbow Guides */
-body.doom-rainbow-indent-guides .markdown-rendered ul,
-body.doom-rainbow-indent-guides .markdown-rendered ol {
-	border-left-color: var(--doom-blue, #51afef);
+body.doom-rainbow-indent-guides .markdown-rendered.show-indentation-guide :is(ul, ol) > li > :is(ul, ol):before {
+	border-inline-end-color: var(--doom-blue, #51afef) !important;
 }
 
-body.doom-rainbow-indent-guides .markdown-rendered ul ul,
-body.doom-rainbow-indent-guides .markdown-rendered ol ol {
-	border-left-color: var(--doom-magenta, #c678dd);
+body.doom-rainbow-indent-guides .markdown-rendered.show-indentation-guide :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol):before {
+	border-inline-end-color: var(--doom-magenta, #c678dd) !important;
 }
 
-body.doom-rainbow-indent-guides .markdown-rendered ul ul ul,
-body.doom-rainbow-indent-guides .markdown-rendered ol ol ol {
-	border-left-color: var(--doom-violet, #a9a1e1);
+body.doom-rainbow-indent-guides .markdown-rendered.show-indentation-guide :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol):before {
+	border-inline-end-color: var(--doom-violet, #a9a1e1) !important;
 }
 
-body.doom-rainbow-indent-guides .markdown-rendered ul ul ul ul,
-body.doom-rainbow-indent-guides .markdown-rendered ol ol ol ol {
-	border-left-color: var(--doom-orange, #da8548);
+body.doom-rainbow-indent-guides .markdown-rendered.show-indentation-guide :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol):before {
+	border-inline-end-color: var(--doom-orange, #da8548) !important;
 }
 
-body.doom-rainbow-indent-guides .markdown-rendered ul ul ul ul ul,
-body.doom-rainbow-indent-guides .markdown-rendered ol ol ol ol ol {
-	border-left-color: var(--doom-green, #98be65);
+body.doom-rainbow-indent-guides .markdown-rendered.show-indentation-guide :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol):before {
+	border-inline-end-color: var(--doom-green, #98be65) !important;
 }
 
-body.doom-rainbow-indent-guides .markdown-rendered ul ul ul ul ul ul,
-body.doom-rainbow-indent-guides .markdown-rendered ol ol ol ol ol ol {
-	border-left-color: var(--doom-cyan, #46d9ff);
+body.doom-rainbow-indent-guides .markdown-rendered.show-indentation-guide :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol) > li > :is(ul, ol):before {
+	border-inline-end-color: var(--doom-cyan, #46d9ff) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Properties Heading & Fold Indicators (Prevent clashing with left accent bars)
+   -------------------------------------------------------------------------- */
+.metadata-properties-heading {
+	padding: 2px 6px 2px 24px !important;
+	position: relative !important;
+	display: inline-flex !important;
+	align-items: center !important;
+}
+
+.metadata-properties-heading .collapse-indicator {
+	position: absolute !important;
+	inset-inline-start: 4px !important;
+	top: 50% !important;
+	transform: translateY(-50%) !important;
+	padding: 0 !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	width: 14px !important;
+	height: 14px !important;
+	color: var(--doom-violet, #a9a1e1) !important;
+	opacity: 0.6 !important;
+	transition: opacity 0.15s ease, color 0.15s ease !important;
+}
+
+.metadata-properties-heading:hover .collapse-indicator,
+.metadata-container.is-collapsed .metadata-properties-heading .collapse-indicator {
+	opacity: 1 !important;
+	color: var(--doom-magenta, #c678dd) !important;
+}
+
+.cm-s-obsidian .HyperMD-codeblock {
+	padding-left: 20px !important;
+}
+
+.cm-fold-indicator .collapse-indicator,
+.heading-collapse-indicator,
+.list-collapse-indicator {
+	color: var(--collapse-icon-color, var(--doom-base4, #3f444a));
+	transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.is-collapsed .collapse-indicator,
+.cm-fold-indicator.is-collapsed .collapse-indicator,
+.cm-gutterElement .is-collapsed .collapse-indicator {
+	color: var(--collapse-icon-color-collapsed, var(--doom-magenta, #c678dd)) !important;
 }
 
 /* --------------------------------------------------------------------------

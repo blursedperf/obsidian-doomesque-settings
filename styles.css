@@ -593,13 +593,13 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 body {
 	--nav-item-children-padding-start: var(--doom-tree-indent, 14px);
 	--nav-item-children-padding-left: var(--doom-tree-indent, 14px);
-	--nav-item-children-margin-left: 0px;
+	--nav-item-children-margin-left: 7px;
 }
 
 body .tree-item-children {
-	padding-inline-start: var(--doom-tree-indent, 14px) !important;
-	margin-inline-start: 0 !important;
-	margin-left: 0 !important;
+	padding-inline-start: max(6px, calc(var(--doom-tree-indent, 14px) - 5px)) !important;
+	margin-inline-start: 7px !important;
+	margin-left: 7px !important;
 }
 
 body.doom-sidebar-compact {
@@ -622,6 +622,33 @@ body.doom-sidebar-comfortable .tree-item-self {
 	padding-top: 6px !important;
 	padding-bottom: 6px !important;
 	font-size: 14px !important;
+}
+
+/* --------------------------------------------------------------------------
+   Legal / Hornbook Outline Numbering & Editorial Emphasis
+   -------------------------------------------------------------------------- */
+body.doom-legal-outline .markdown-rendered ol {
+	list-style-type: upper-roman;
+}
+body.doom-legal-outline .markdown-rendered ol ol {
+	list-style-type: upper-alpha;
+}
+body.doom-legal-outline .markdown-rendered ol ol ol {
+	list-style-type: decimal;
+}
+body.doom-legal-outline .markdown-rendered ol ol ol ol {
+	list-style-type: lower-alpha;
+}
+body.doom-legal-outline .markdown-rendered ol ol ol ol ol {
+	list-style-type: lower-roman;
+}
+body.doom-legal-outline .markdown-rendered ol ol ol ol ol ol {
+	list-style-type: decimal;
+}
+
+body.doom-editorial-emphasis {
+	--bold-color: var(--doom-base8, var(--text-normal)) !important;
+	--italic-color: var(--doom-fg, var(--text-normal)) !important;
 }
 
 /* --------------------------------------------------------------------------

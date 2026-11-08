@@ -133,6 +133,8 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-sidebar-comfortable",
 	"doom-sticky-hover-enabled",
 	"doom-settings-flat",
+	"doom-legal-outline",
+	"doom-editorial-emphasis",
 ];
 
 export const ALL_MANAGED_CSS_VARS: readonly string[] = [
@@ -188,6 +190,8 @@ export interface DoomEsqueStyleSettings {
 	monospaceEditor: boolean;
 	/** Use system sans-serif font for UI chrome (`doom-disable-monospace-ui`). */
 	disableMonospaceUi: boolean;
+	/** Use high-contrast neutral text colors for bold/italic instead of orange/magenta syntax accents (`doom-editorial-emphasis`). */
+	editorialEmphasis: boolean;
 	/** Optional custom monospace font family prepended to `--font-monospace-doom`. */
 	customMonospaceFont: string;
 	/** Scale factor for Org-mode headings (1.0 = default). */
@@ -222,6 +226,8 @@ export interface DoomEsqueStyleSettings {
 	indentGuideWidthPx: number;
 	/** Color nested indentation guides with Doom rainbow level colors (`doom-rainbow-indent-guides`). */
 	rainbowIndentGuides: boolean;
+	/** Use formal legal / hornbook outline numbering (`I.` -> `A.` -> `1.` -> `a.` -> `i.`) for nested ordered lists (`doom-legal-outline`). */
+	legalOutlineNumbering: boolean;
 	/** File explorer tree indentation per folder level in `px` (`--doom-tree-indent`). Default: 14. */
 	fileTreeIndentPx: number;
 
@@ -253,6 +259,7 @@ export const DEFAULT_DOOMESQUE_SETTINGS: DoomEsqueStyleSettings = {
 
 	monospaceEditor: false,
 	disableMonospaceUi: false,
+	editorialEmphasis: false,
 	customMonospaceFont: "",
 	headingScale: 1.0,
 
@@ -270,6 +277,7 @@ export const DEFAULT_DOOMESQUE_SETTINGS: DoomEsqueStyleSettings = {
 	indentGuideStyle: "solid",
 	indentGuideWidthPx: 1,
 	rainbowIndentGuides: false,
+	legalOutlineNumbering: false,
 	fileTreeIndentPx: 14,
 
 	hoverPopoverWidthPx: 550,
@@ -345,6 +353,12 @@ export function computeDoomDomState(settings: DoomEmacsStyleSettings): ComputedD
 	}
 	if (settings.rainbowIndentGuides) {
 		activeClasses.push("doom-rainbow-indent-guides");
+	}
+	if (settings.legalOutlineNumbering) {
+		activeClasses.push("doom-legal-outline");
+	}
+	if (settings.editorialEmphasis) {
+		activeClasses.push("doom-editorial-emphasis");
 	}
 	if (settings.stickyHoverPreviews) {
 		activeClasses.push("doom-sticky-hover-enabled");

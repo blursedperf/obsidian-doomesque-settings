@@ -156,6 +156,8 @@ class MockDOMTokenList {
 			disableH1Border: true,
 			disableActiveLineHighlight: true,
 			rainbowIndentGuides: true,
+			legalOutlineNumbering: true,
+			editorialEmphasis: true,
 			stickyHoverPreviews: true,
 			flatSettingsItems: true,
 			indentGuideStyle: "dashed",
@@ -170,6 +172,8 @@ class MockDOMTokenList {
 	assert.ok(state.activeClasses.includes("doom-no-h1-border"));
 	assert.ok(state.activeClasses.includes("doom-no-active-line-highlight"));
 	assert.ok(state.activeClasses.includes("doom-rainbow-indent-guides"));
+	assert.ok(state.activeClasses.includes("doom-legal-outline"));
+	assert.ok(state.activeClasses.includes("doom-editorial-emphasis"));
 	assert.ok(state.activeClasses.includes("doom-sticky-hover-enabled"));
 	assert.ok(state.activeClasses.includes("doom-settings-flat"));
 	assert.ok(state.activeClasses.includes("doom-indent-style-dashed"));

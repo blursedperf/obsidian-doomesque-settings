@@ -142,6 +142,32 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			},
 		});
 
+		// Legal outline numbering toggle
+		this.addCommand({
+			id: "toggle-legal-outline-numbering",
+			name: "Toggle legal / hornbook outline numbering (I, A, 1, a, i)",
+			callback: async () => {
+				this.settings.legalOutlineNumbering = !this.settings.legalOutlineNumbering;
+				await this.saveSettings();
+				new Notice(
+					`DoomEsque: Legal outline numbering ${this.settings.legalOutlineNumbering ? "enabled" : "disabled"}`
+				);
+			},
+		});
+
+		// Editorial emphasis toggle
+		this.addCommand({
+			id: "toggle-editorial-emphasis",
+			name: "Toggle editorial bold & italic colors",
+			callback: async () => {
+				this.settings.editorialEmphasis = !this.settings.editorialEmphasis;
+				await this.saveSettings();
+				new Notice(
+					`DoomEsque: Editorial bold & italic colors ${this.settings.editorialEmphasis ? "enabled" : "disabled"}`
+				);
+			},
+		});
+
 		// Hover Preview: Open in Right Sidebar
 		this.addCommand({
 			id: "open-active-preview-in-right-sidebar",
@@ -584,6 +610,20 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 					});
 			});
 
+		new Setting(containerEl)
+			.setName("Legal / hornbook outline numbering (I, A, 1, a, i)")
+			.setDesc(
+				"Use classic legal outline hierarchy (I. → A. → 1. → a. → i. → (1)) for nested ordered lists in Reading View."
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.legalOutlineNumbering)
+					.onChange(async (val) => {
+						this.plugin.settings.legalOutlineNumbering = val;
+						await this.plugin.saveSettings();
+					});
+			});
+
 		this.createSliderSetting({
 			containerEl,
 			name: "File tree folder indentation",
@@ -603,6 +643,20 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		// 4. Typography & Heading Scale
 		// ---------------------------------------------------------------------
 		new Setting(containerEl).setName("Typography & heading scale").setHeading();
+
+		new Setting(containerEl)
+			.setName("Editorial bold & italic colors")
+			.setDesc(
+				"Use high-contrast neutral text colors for bold and italic emphasis instead of orange/magenta syntax accents during long-form legal or academic reading."
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.editorialEmphasis)
+					.onChange(async (val) => {
+						this.plugin.settings.editorialEmphasis = val;
+						await this.plugin.saveSettings();
+					});
+			});
 
 		new Setting(containerEl)
 			.setName("Force monospace note editor")

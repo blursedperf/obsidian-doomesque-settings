@@ -196,9 +196,13 @@ class MockDOMTokenList {
 	assert.ok(
 		stateWithFont.cssVariables["--font-monospace-doom"]?.startsWith('"JetBrains Mono", "JetBrains Mono"')
 	);
+	assert.ok(
+		stateWithFont.cssVariables["--font-monospace-theme"]?.startsWith('"JetBrains Mono", "JetBrains Mono"')
+	);
 
 	const stateEmptyFont = computeDoomDomState(makeSettings({ customMonospaceFont: "" }));
 	assert.strictEqual(stateEmptyFont.cssVariables["--font-monospace-doom"], null);
+	assert.strictEqual(stateEmptyFont.cssVariables["--font-monospace-theme"], null);
 	console.log("✓ Custom monospace font family sanitization and injection verified");
 }
 

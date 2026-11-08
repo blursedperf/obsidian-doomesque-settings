@@ -137,6 +137,7 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 
 export const ALL_MANAGED_CSS_VARS: readonly string[] = [
 	"--font-monospace-doom",
+	"--font-monospace-theme",
 	"--file-line-width",
 	"--line-height-normal",
 	"--p-spacing",
@@ -481,6 +482,7 @@ export function computeDoomDomState(settings: DoomEmacsStyleSettings): ComputedD
 
 	const cssVariables: Record<string, string | null> = {
 		"--font-monospace-doom": fontVar,
+		"--font-monospace-theme": fontVar,
 		"--file-line-width":
 			clampedWidth === DEFAULT_DOOM_SETTINGS.fileLineWidthRem ? null : `${clampedWidth}rem`,
 		"--line-height-normal":

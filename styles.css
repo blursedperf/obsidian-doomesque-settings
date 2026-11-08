@@ -59,7 +59,7 @@
 
 .modal.mod-settings .setting-item.setting-item-heading .setting-item-name {
 	color: var(--doom-blue, var(--text-accent)) !important;
-	font-family: var(--font-monospace-doom, var(--font-monospace)) !important;
+	font-family: var(--font-interface) !important;
 	font-size: 13.5px !important;
 	font-weight: 700 !important;
 	text-transform: uppercase !important;
@@ -346,7 +346,7 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 }
 
 .bases-header .title {
-	font-family: var(--font-monospace-doom, monospace) !important;
+	font-family: var(--font-interface) !important;
 	font-weight: 700 !important;
 	color: var(--doom-blue, #51afef) !important;
 	font-size: 1.05em !important;
@@ -359,7 +359,7 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 	border: 1px solid var(--doom-base3, #23272e) !important;
 	border-radius: 3px !important;
 	color: var(--doom-fg, var(--text-normal)) !important;
-	font-family: var(--font-monospace-doom, monospace) !important;
+	font-family: var(--font-interface) !important;
 	font-size: 0.82em !important;
 	padding: 3px 8px !important;
 	transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
@@ -381,7 +381,7 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 }
 
 .bases-toolbar .bases-toolbar-result-count {
-	font-family: var(--font-monospace-doom, monospace) !important;
+	font-family: var(--font-interface) !important;
 	color: var(--doom-base5, #5b6268) !important;
 	font-size: 0.82em !important;
 }
@@ -599,7 +599,7 @@ body.doom-sidebar-comfortable .tree-item-self {
    -------------------------------------------------------------------------- */
 body.doom-monospace-editor .markdown-source-view.mod-cm6 .cm-content,
 body.doom-monospace-editor .markdown-preview-view {
-	font-family: var(--font-monospace-doom) !important;
+	font-family: var(--font-monospace) !important;
 }
 
 body.doom-disable-monospace-ui .workspace-tab-header,
@@ -839,7 +839,7 @@ body .popover.hover-popover.doom-sticky-popover {
 	padding: 5px 8px;
 	background-color: var(--doom-base1, #1c1f24);
 	border-bottom: 1px solid var(--doom-base3, #23272e);
-	font-family: var(--font-monospace-doom, var(--font-monospace));
+	font-family: var(--font-interface);
 	font-size: 11.5px;
 	color: var(--doom-fg, #bbc2cf);
 	user-select: none;

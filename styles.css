@@ -798,7 +798,7 @@ body .popover.hover-popover .HyperMD-header-4 {
 body .popover.hover-popover pre,
 body .popover.hover-popover code {
 	font-size: 0.95em !important;
-	font-family: var(--font-monospace-doom) !important;
+	font-family: var(--font-monospace) !important;
 }
 
 /* Responsive tables & media inside hover popovers */

@@ -475,8 +475,13 @@ export class HoverPreviewManager {
 
 		// Observe subsequent asynchronous embed mounting inside this popover to expand immediately
 		try {
+			let expandRaf: number | null = null;
 			const childObserver = new MutationObserver(() => {
-				this.expandPopoverInnerContent(popoverEl);
+				if (expandRaf !== null) return;
+				expandRaf = requestAnimationFrame(() => {
+					expandRaf = null;
+					this.expandPopoverInnerContent(popoverEl);
+				});
 			});
 			childObserver.observe(popoverEl, { childList: true, subtree: true });
 			(popoverEl as any)._doomChildObserver = childObserver;
@@ -640,6 +645,7 @@ export class HoverPreviewManager {
 		let startY = 0;
 		let initialLeft = 0;
 		let initialTop = 0;
+		let rafId: number | null = null;
 
 		const onPointerDown = (e: PointerEvent): void => {
 			if ((e.target as HTMLElement).closest(".doom-popover-btn")) {
@@ -672,20 +678,35 @@ export class HoverPreviewManager {
 
 		const onPointerMove = (e: PointerEvent): void => {
 			if (!isDragging) return;
-			const dx = e.clientX - startX;
-			const dy = e.clientY - startY;
+			const clientX = e.clientX;
+			const clientY = e.clientY;
+			if (rafId !== null) return;
 
-			popoverEl.style.position = "fixed";
-			popoverEl.style.left = `${Math.max(10, initialLeft + dx)}px`;
-			popoverEl.style.top = `${Math.max(10, initialTop + dy)}px`;
-			popoverEl.style.right = "auto";
-			popoverEl.style.bottom = "auto";
-			popoverEl.style.margin = "0";
+			rafId = requestAnimationFrame(() => {
+				rafId = null;
+				if (!isDragging) return;
+				const dx = clientX - startX;
+				const dy = clientY - startY;
+
+				const maxLeft = Math.max(10, (window.innerWidth || 1200) - 80);
+				const maxTop = Math.max(10, (window.innerHeight || 800) - 50);
+
+				popoverEl.style.position = "fixed";
+				popoverEl.style.left = `${Math.min(maxLeft, Math.max(10, initialLeft + dx))}px`;
+				popoverEl.style.top = `${Math.min(maxTop, Math.max(10, initialTop + dy))}px`;
+				popoverEl.style.right = "auto";
+				popoverEl.style.bottom = "auto";
+				popoverEl.style.margin = "0";
+			});
 		};
 
 		const onPointerUp = (e: PointerEvent): void => {
 			if (!isDragging) return;
 			isDragging = false;
+			if (rafId !== null) {
+				cancelAnimationFrame(rafId);
+				rafId = null;
+			}
 			try {
 				handleEl.releasePointerCapture(e.pointerId);
 			} catch {}

@@ -591,20 +591,31 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
    Sidebar & File Explorer Densities & Tree Indentation
    -------------------------------------------------------------------------- */
 body {
-	--nav-item-children-padding-start: var(--doom-tree-indent, 14px);
-	--nav-item-children-padding-left: var(--doom-tree-indent, 14px);
-	--nav-item-children-margin-left: 7px;
+	--nav-item-padding: 4px var(--size-4-2, 8px) 4px var(--size-4-6, 24px);
+	--nav-item-parent-padding: var(--nav-item-padding);
+	--nav-item-children-padding-start: max(4px, calc(var(--doom-tree-indent, 14px) - 8px));
+	--nav-item-children-padding-left: max(4px, calc(var(--doom-tree-indent, 14px) - 8px));
+	--nav-item-children-margin-start: var(--size-4-3, 12px);
+	--nav-item-children-margin-left: var(--size-4-3, 12px);
 }
 
 body .tree-item-children {
-	padding-inline-start: max(6px, calc(var(--doom-tree-indent, 14px) - 5px)) !important;
-	margin-inline-start: 7px !important;
-	margin-left: 7px !important;
+	padding-inline-start: max(4px, calc(var(--doom-tree-indent, 14px) - 8px)) !important;
+	margin-inline-start: var(--size-4-3, 12px) !important;
+	margin-left: var(--size-4-3, 12px) !important;
+}
+
+body .graph-control-section .tree-item-children,
+body .recent-changes-container .tree-item-children {
+	padding-inline-start: 0 !important;
+	margin-inline-start: 0 !important;
+	margin-left: 0 !important;
+	border-inline-start: none !important;
 }
 
 body.doom-sidebar-compact {
-	--nav-item-padding: 1px var(--size-4-2, 8px) !important;
-	--nav-item-parent-padding: 1px var(--size-4-2, 8px) !important;
+	--nav-item-padding: 1px var(--size-4-2, 8px) 1px var(--size-4-6, 24px) !important;
+	--nav-item-parent-padding: 1px var(--size-4-2, 8px) 1px var(--size-4-6, 24px) !important;
 }
 
 body.doom-sidebar-compact .tree-item-self {
@@ -614,8 +625,8 @@ body.doom-sidebar-compact .tree-item-self {
 }
 
 body.doom-sidebar-comfortable {
-	--nav-item-padding: 6px var(--size-4-2, 8px) !important;
-	--nav-item-parent-padding: 6px var(--size-4-2, 8px) !important;
+	--nav-item-padding: 6px var(--size-4-2, 8px) 6px var(--size-4-6, 24px) !important;
+	--nav-item-parent-padding: 6px var(--size-4-2, 8px) 6px var(--size-4-6, 24px) !important;
 }
 
 body.doom-sidebar-comfortable .tree-item-self {

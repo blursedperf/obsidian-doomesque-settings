@@ -3,7 +3,8 @@ export type DoomDarkPalette =
 	| "doom-palette-vibrant"
 	| "doom-palette-dracula"
 	| "doom-palette-tokyo-night"
-	| "doom-palette-gruvbox";
+	| "doom-palette-gruvbox"
+	| "doom-palette-cyberpunk";
 
 export type DoomLightPalette =
 	| "doom-palette-one-light"
@@ -53,6 +54,11 @@ export const DOOM_PALETTES: readonly DoomPaletteOption[] = [
 		id: "doom-palette-gruvbox",
 		label: "doom-gruvbox",
 		description: "Warm retro Gruvbox dark medium palette (#282828).",
+	},
+	{
+		id: "doom-palette-cyberpunk",
+		label: "doom-cyberpunk (Cyberpunk 2077)",
+		description: "High-contrast Night City neon aesthetic: electric cyan, signature yellow, and Samurai crimson on deep dark slate.",
 	},
 ];
 
@@ -104,6 +110,7 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-palette-dracula",
 	"doom-palette-tokyo-night",
 	"doom-palette-gruvbox",
+	"doom-palette-cyberpunk",
 	"doom-palette-one-light",
 	"doom-palette-nord-light",
 	"doom-palette-gruvbox-light",

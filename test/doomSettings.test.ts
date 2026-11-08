@@ -75,6 +75,9 @@ class MockDOMTokenList {
 	const gruvbox = computeDoomDomState(makeSettings({ darkPalette: "doom-palette-gruvbox" }));
 	assert.ok(gruvbox.activeClasses.includes("doom-palette-gruvbox"));
 
+	const cyberpunk = computeDoomDomState(makeSettings({ darkPalette: "doom-palette-cyberpunk" }));
+	assert.ok(cyberpunk.activeClasses.includes("doom-palette-cyberpunk"));
+
 	// Invalid dark palette fallback
 	const invalidDark = computeDoomDomState(makeSettings({ darkPalette: "doom-unknown" as any }));
 	assert.ok(invalidDark.activeClasses.includes("doom-palette-one"));
@@ -115,7 +118,8 @@ class MockDOMTokenList {
 	assert.strictEqual(getNextDarkPalette("doom-palette-vibrant"), "doom-palette-dracula");
 	assert.strictEqual(getNextDarkPalette("doom-palette-dracula"), "doom-palette-tokyo-night");
 	assert.strictEqual(getNextDarkPalette("doom-palette-tokyo-night"), "doom-palette-gruvbox");
-	assert.strictEqual(getNextDarkPalette("doom-palette-gruvbox"), "doom-palette-one");
+	assert.strictEqual(getNextDarkPalette("doom-palette-gruvbox"), "doom-palette-cyberpunk");
+	assert.strictEqual(getNextDarkPalette("doom-palette-cyberpunk"), "doom-palette-one");
 	assert.strictEqual(getNextDarkPalette("invalid" as any), "doom-palette-one");
 
 	assert.strictEqual(getNextLightPalette("doom-palette-one-light"), "doom-palette-nord-light");
@@ -710,6 +714,20 @@ class MockDOMTokenList {
 	assert.ok(
 		cssContent.includes("var(--table-header-background, var(--doom-base1, #1c1f24))"),
 		"styles.css must provide fallback for table-header-background"
+	);
+
+	// Verify header right padding offset and embed-actions button separation
+	assert.ok(
+		cssContent.includes("--bases-header-padding-end: 56px !important"),
+		"styles.css must reserve 56px right padding for CM6 embed actions button"
+	);
+	assert.ok(
+		cssContent.includes(".bases-embed .embed-actions"),
+		"styles.css must style Bases embed-actions container"
+	);
+	assert.ok(
+		cssContent.includes(".bases-embed .embed-action"),
+		"styles.css must style Bases embed-action expose syntax button"
 	);
 
 	console.log("✓ Obsidian Bases stylesheet compatibility & fallback tokens verified");

@@ -280,6 +280,18 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
 }
 
+/* Reserve comfortable space on the right for CM6 .embed-actions (expose syntax button) */
+.markdown-source-view.mod-cm6 .cm-content > .bases-embed,
+.markdown-source-view.mod-cm6 .cm-content > .cm-lang-base,
+.bases-embed,
+.block-language-base {
+	--bases-header-padding-end: 56px !important;
+}
+
+.workspace-leaf-content[data-type="bases"] .view-content {
+	--bases-header-padding-end: 12px !important;
+}
+
 .bases-embed .bases-view[data-view-type="table"],
 .bases-table-container {
 	background-color: var(--doom-bg, var(--background-primary)) !important;
@@ -289,8 +301,48 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 .bases-header {
 	background-color: var(--doom-bg-alt, var(--background-primary-alt)) !important;
 	border-bottom: 1px solid var(--table-border-color, var(--doom-base4, #3f444a)) !important;
-	padding: 6px 12px !important;
+	padding-top: 4px !important;
+	padding-bottom: 4px !important;
+	padding-inline-start: 12px !important;
+	padding-inline-end: var(--bases-header-padding-end, 56px) !important;
 	min-height: 38px;
+	box-sizing: border-box;
+}
+
+/* Expose Syntax / Edit Block Button in Bases Embed Header */
+.markdown-source-view.mod-cm6 .cm-content > .bases-embed .embed-actions,
+.markdown-source-view.mod-cm6 .cm-content > .cm-lang-base .embed-actions,
+.bases-embed .embed-actions {
+	opacity: 1 !important;
+	top: 6px !important;
+	inset-inline-end: 8px !important;
+	display: flex !important;
+	align-items: center !important;
+	gap: 4px !important;
+	z-index: 2;
+}
+
+.markdown-source-view.mod-cm6 .cm-content > .bases-embed .embed-action,
+.markdown-source-view.mod-cm6 .cm-content > .cm-lang-base .embed-action,
+.bases-embed .embed-action {
+	background-color: var(--doom-base0, var(--background-primary)) !important;
+	border: 1px solid var(--doom-base3, #23272e) !important;
+	border-radius: 3px !important;
+	color: var(--doom-base5, #5b6268) !important;
+	padding: 3px 6px !important;
+	height: 26px !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.markdown-source-view.mod-cm6 .cm-content > .bases-embed .embed-action:hover,
+.markdown-source-view.mod-cm6 .cm-content > .cm-lang-base .embed-action:hover,
+.bases-embed .embed-action:hover {
+	background-color: var(--doom-base2, #202328) !important;
+	border-color: var(--doom-base4, #3f444a) !important;
+	color: var(--doom-blue, #51afef) !important;
 }
 
 .bases-header .title {
@@ -332,6 +384,10 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 	font-family: var(--font-monospace-doom, monospace) !important;
 	color: var(--doom-base5, #5b6268) !important;
 	font-size: 0.82em !important;
+}
+
+.bases-toolbar .bases-toolbar-new-item-menu {
+	margin-inline-end: 4px !important;
 }
 
 /* Column Header Row (.bases-thead matching Org-table 2px blue accent underline) */

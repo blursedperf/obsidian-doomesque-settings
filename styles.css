@@ -124,18 +124,21 @@ body.doom-indent-style-none .mod-indent-guide {
 }
 
 body.doom-indent-style-dashed .markdown-source-view.mod-cm6 .cm-indent:before,
+body.doom-indent-style-dashed .markdown-source-view.mod-cm6 .cm-active-indent-guide:before,
 body.doom-indent-style-dashed .markdown-rendered.show-indentation-guide li > ul:before,
 body.doom-indent-style-dashed .markdown-rendered.show-indentation-guide li > ol:before {
 	border-inline-end-style: dashed !important;
 }
 
 body.doom-indent-style-dotted .markdown-source-view.mod-cm6 .cm-indent:before,
+body.doom-indent-style-dotted .markdown-source-view.mod-cm6 .cm-active-indent-guide:before,
 body.doom-indent-style-dotted .markdown-rendered.show-indentation-guide li > ul:before,
 body.doom-indent-style-dotted .markdown-rendered.show-indentation-guide li > ol:before {
 	border-inline-end-style: dotted !important;
 }
 
 body.doom-indent-style-double .markdown-source-view.mod-cm6 .cm-indent:before,
+body.doom-indent-style-double .markdown-source-view.mod-cm6 .cm-active-indent-guide:before,
 body.doom-indent-style-double .markdown-rendered.show-indentation-guide li > ul:before,
 body.doom-indent-style-double .markdown-rendered.show-indentation-guide li > ol:before {
 	border-inline-end-style: double !important;
@@ -143,6 +146,7 @@ body.doom-indent-style-double .markdown-rendered.show-indentation-guide li > ol:
 }
 
 body.doom-indent-style-solid .markdown-source-view.mod-cm6 .cm-indent:before,
+body.doom-indent-style-solid .markdown-source-view.mod-cm6 .cm-active-indent-guide:before,
 body.doom-indent-style-solid .markdown-rendered.show-indentation-guide li > ul:before,
 body.doom-indent-style-solid .markdown-rendered.show-indentation-guide li > ol:before {
 	border-inline-end-style: solid !important;
@@ -267,6 +271,8 @@ body.doom-no-h1-border .HyperMD-header-1 {
 	border-bottom: none !important;
 }
 
+body.doom-no-active-line-highlight .cm-activeLine,
+body.doom-no-active-line-highlight .cm-s-obsidian .cm-activeLine,
 body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 	background-color: transparent !important;
 }
@@ -584,14 +590,32 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 /* --------------------------------------------------------------------------
    Sidebar & File Explorer Densities & Tree Indentation
    -------------------------------------------------------------------------- */
+body {
+	--nav-item-children-padding-start: var(--doom-tree-indent, 14px);
+	--nav-item-children-padding-left: var(--doom-tree-indent, 14px);
+	--nav-item-children-margin-left: 0px;
+}
+
 body .tree-item-children {
-	margin-left: var(--doom-tree-indent, 14px) !important;
+	padding-inline-start: var(--doom-tree-indent, 14px) !important;
+	margin-inline-start: 0 !important;
+	margin-left: 0 !important;
+}
+
+body.doom-sidebar-compact {
+	--nav-item-padding: 1px var(--size-4-2, 8px) !important;
+	--nav-item-parent-padding: 1px var(--size-4-2, 8px) !important;
 }
 
 body.doom-sidebar-compact .tree-item-self {
 	padding-top: 1px !important;
 	padding-bottom: 1px !important;
 	font-size: 12px !important;
+}
+
+body.doom-sidebar-comfortable {
+	--nav-item-padding: 6px var(--size-4-2, 8px) !important;
+	--nav-item-parent-padding: 6px var(--size-4-2, 8px) !important;
 }
 
 body.doom-sidebar-comfortable .tree-item-self {
@@ -981,13 +1005,14 @@ body.doom-cursor-underline .cm-editor .cm-cursor,
 body.doom-cursor-underline .cm-s-obsidian .cm-cursor {
 	width: 0.6em !important;
 	border-left: none !important;
-	border-bottom: 2px solid var(--doom-cursor-color, var(--doom-blue, #51afef)) !important;
+	border-bottom: 2.5px solid var(--doom-cursor-color, var(--doom-blue, #51afef)) !important;
 	background-color: transparent !important;
-	height: 2px !important;
-	margin-top: 1.15em !important;
+	box-sizing: border-box !important;
 }
 
 body.doom-cursor-solid .cm-cursorLayer,
+body.doom-cursor-solid .cm-focused > .cm-scroller > .cm-cursorLayer,
+body.doom-cursor-solid .cm-editor.cm-focused > .cm-scroller > .cm-cursorLayer,
 body.doom-cursor-solid .cm-editor .cm-cursor,
 body.doom-cursor-solid .cm-s-obsidian .cm-cursor,
 body.doom-cursor-solid .cm-fat-cursor .cm-cursor,
@@ -1008,17 +1033,20 @@ body.doom-cursor-color-green { --doom-cursor-color: var(--doom-green, #98be65); 
 /* --------------------------------------------------------------------------
    Buffer Splitting & Solaire Inactive Pane Dimming
    -------------------------------------------------------------------------- */
+body.doom-dim-inactive-panes .mod-root .workspace-tabs:not(.mod-active) .view-content,
 body.doom-dim-inactive-panes .mod-root .workspace-leaf:not(.mod-active) .view-content {
 	opacity: 0.72 !important;
 	filter: brightness(0.92) !important;
 	transition: opacity 0.15s ease, filter 0.15s ease;
 }
 
+body.doom-dim-inactive-panes .mod-root .workspace-tabs.mod-active .workspace-leaf.mod-active .view-content,
 body.doom-dim-inactive-panes .mod-root .workspace-leaf.mod-active .view-content {
 	opacity: 1 !important;
 	filter: none !important;
 }
 
+body.doom-active-pane-border .mod-root .workspace-tabs.mod-active .workspace-leaf.mod-active .workspace-leaf-content,
 body.doom-active-pane-border .mod-root .workspace-leaf.mod-active .workspace-leaf-content {
 	box-shadow: inset 0 0 0 1.5px var(--doom-blue, #51afef) !important;
 }
@@ -1046,6 +1074,10 @@ body .status-bar {
 /* --------------------------------------------------------------------------
    Code Blocks (Org Babel)
    -------------------------------------------------------------------------- */
+body {
+	--code-size: calc(0.88em * var(--doom-code-font-scale, 1.0));
+}
+
 body.doom-code-accent-border .cm-line.HyperMD-codeblock {
 	border-left: 3px solid var(--doom-blue, #51afef) !important;
 	padding-left: 17px !important;
@@ -1057,9 +1089,10 @@ body.doom-code-accent-border .block-language-preview pre {
 	border-left: 3px solid var(--doom-blue, #51afef) !important;
 }
 
+.cm-s-obsidian .HyperMD-codeblock,
 .cm-s-obsidian .cm-embed-block pre,
 .markdown-rendered pre {
-	font-size: calc(var(--code-size, 0.88em) * var(--doom-code-font-scale, 1.0)) !important;
+	font-size: calc(0.88em * var(--doom-code-font-scale, 1.0)) !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -1067,6 +1100,7 @@ body.doom-code-accent-border .block-language-preview pre {
    -------------------------------------------------------------------------- */
 body.doom-no-table-zebra {
 	--table-row-alt-background: transparent !important;
+	--table-column-alt-background: transparent !important;
 }
 
 body.doom-no-table-zebra .markdown-rendered tbody tr:nth-child(even),
@@ -1077,19 +1111,21 @@ body.doom-no-table-zebra .cm-s-obsidian .cm-embed-block table tbody tr:nth-child
 }
 
 body.doom-table-compact {
-	--table-cell-padding-y: 3px !important;
+	--table-cell-padding-y: 2px !important;
 	--table-cell-padding-x: 6px !important;
-	--table-cell-padding: 3px 6px !important;
+	--table-cell-padding: 2px 6px !important;
+	--bases-table-cell-edge-padding: 4px !important;
 }
 
 body.doom-table-compact .markdown-rendered th,
 body.doom-table-compact .markdown-rendered td,
+body.doom-table-compact .cm-table-widget .table-cell-wrapper,
 body.doom-table-compact .cm-table-widget th,
 body.doom-table-compact .cm-table-widget td,
 body.doom-table-compact .bases-td,
 body.doom-table-compact .cm-s-obsidian .cm-embed-block table th,
 body.doom-table-compact .cm-s-obsidian .cm-embed-block table td {
-	padding: 3px 6px !important;
+	padding: 2px 6px !important;
 	font-size: 0.88em !important;
 }
 
@@ -1117,16 +1153,33 @@ body.doom-radius-sharp {
 	--radius-m: 0px !important;
 	--radius-l: 0px !important;
 	--radius-xl: 0px !important;
-	--tag-radius: 0px !important;
+	--button-radius: 0px !important;
+	--input-radius: 0px !important;
+	--callout-radius: 0px !important;
+	--checkbox-radius: 0px !important;
+	--code-radius: 0px !important;
+	--clickable-icon-radius: 0px !important;
+	--hotkey-radius: 0px !important;
+	--image-radius: 0px !important;
+	--nav-item-radius: 0px !important;
+	--nav-tag-radius: 0px !important;
+	--notice-radius: 0px !important;
+	--menu-radius: 0px !important;
+	--metadata-border-radius: 0px !important;
+	--modal-radius: 0px !important;
+	--pill-radius: 0px !important;
+	--search-input-radius: 0px !important;
+	--setting-items-radius: 0px !important;
 	--tab-radius: 0px !important;
 	--tab-radius-active: 0px !important;
-	--input-radius: 0px !important;
-	--modal-radius: 0px !important;
-	--button-radius: 0px !important;
-	--checkbox-radius: 0px !important;
+	--tag-radius: 0px !important;
+	--toggle-radius: 0px !important;
 	--toggle-thumb-radius: 0px !important;
-	--pill-radius: 0px !important;
-	--popover-radius: 0px !important;
+	--bases-embed-border-radius: 0px !important;
+	--bases-table-container-border-radius: 0px !important;
+	--bases-cards-radius: 0px !important;
+	--bases-kanban-column-radius: 0px !important;
+	--bases-kanban-card-radius: 0px !important;
 }
 
 body.doom-radius-sharp button,
@@ -1151,12 +1204,30 @@ body.doom-radius-rounded {
 	--radius-m: 10px !important;
 	--radius-l: 14px !important;
 	--radius-xl: 18px !important;
-	--tag-radius: 6px !important;
-	--tab-radius: 6px !important;
-	--input-radius: 6px !important;
-	--modal-radius: 12px !important;
 	--button-radius: 6px !important;
+	--input-radius: 6px !important;
+	--callout-radius: 8px !important;
+	--checkbox-radius: 4px !important;
+	--code-radius: 6px !important;
+	--clickable-icon-radius: 6px !important;
+	--hotkey-radius: 6px !important;
+	--image-radius: 8px !important;
+	--nav-item-radius: 6px !important;
+	--nav-tag-radius: 6px !important;
+	--notice-radius: 8px !important;
+	--menu-radius: 8px !important;
+	--metadata-border-radius: 8px !important;
+	--modal-radius: 12px !important;
+	--pill-radius: 8px !important;
+	--search-input-radius: 8px !important;
+	--setting-items-radius: 8px !important;
+	--tab-radius: 6px !important;
+	--tab-radius-active: 6px !important;
+	--tag-radius: 6px !important;
 	--popover-radius: 10px !important;
+	--bases-cards-radius: 8px !important;
+	--bases-kanban-column-radius: 8px !important;
+	--bases-kanban-card-radius: 6px !important;
 }
 
 body.doom-radius-rounded button,
@@ -1179,20 +1250,27 @@ body.doom-radius-rounded .modal {
    -------------------------------------------------------------------------- */
 body.doom-math-left .math-block,
 body.doom-math-left .math.math-block,
-body.doom-math-left .cm-embed-block:has(.math),
+body.doom-math-left .cm-embed-block.math-block,
+body.doom-math-left .markdown-source-view.mod-cm6 .math-block,
 body.doom-math-left .markdown-rendered .math {
 	text-align: left !important;
 	justify-content: flex-start !important;
+	align-items: flex-start !important;
 	padding-left: 1.5em !important;
 }
 
-body.doom-math-left .math-block > mjx-container[display="true"],
-body.doom-math-left .math > mjx-container[display="true"],
-body.doom-math-left mjx-container[jax="CHTML"][display="true"] {
+body.doom-math-left .math-block > mjx-container,
+body.doom-math-left mjx-container[display="true"] {
 	text-align: left !important;
 	margin-left: 0 !important;
 	margin-right: auto !important;
-	padding-left: 0 !important;
+	align-self: flex-start !important;
+}
+
+body.doom-math-left mjx-container[display="true"] > svg,
+body.doom-math-left mjx-container[display="true"] > mjx-math {
+	margin-left: 0 !important;
+	margin-right: auto !important;
 }
 
 body.doom-math-left .katex-display {

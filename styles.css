@@ -205,6 +205,37 @@ body.doom-rainbow-indent-guides .markdown-rendered.show-indentation-guide :is(ul
 	border-inline-end-color: var(--doom-cyan, #46d9ff) !important;
 }
 
+/* File Tree Rainbow Guides */
+body.doom-rainbow-indent-guides .tree-item-children {
+	border-inline-start-color: var(--doom-blue, #51afef) !important;
+	border-left-color: var(--doom-blue, #51afef) !important;
+}
+
+body.doom-rainbow-indent-guides .tree-item-children > .tree-item > .tree-item-children {
+	border-inline-start-color: var(--doom-magenta, #c678dd) !important;
+	border-left-color: var(--doom-magenta, #c678dd) !important;
+}
+
+body.doom-rainbow-indent-guides .tree-item-children > .tree-item > .tree-item-children > .tree-item > .tree-item-children {
+	border-inline-start-color: var(--doom-violet, #a9a1e1) !important;
+	border-left-color: var(--doom-violet, #a9a1e1) !important;
+}
+
+body.doom-rainbow-indent-guides .tree-item-children > .tree-item > .tree-item-children > .tree-item > .tree-item-children > .tree-item > .tree-item-children {
+	border-inline-start-color: var(--doom-orange, #da8548) !important;
+	border-left-color: var(--doom-orange, #da8548) !important;
+}
+
+body.doom-rainbow-indent-guides .tree-item-children > .tree-item > .tree-item-children > .tree-item > .tree-item-children > .tree-item > .tree-item-children > .tree-item > .tree-item-children {
+	border-inline-start-color: var(--doom-green, #98be65) !important;
+	border-left-color: var(--doom-green, #98be65) !important;
+}
+
+body.doom-rainbow-indent-guides .tree-item-children > .tree-item > .tree-item-children > .tree-item > .tree-item-children > .tree-item > .tree-item-children > .tree-item > .tree-item-children > .tree-item > .tree-item-children {
+	border-inline-start-color: var(--doom-cyan, #46d9ff) !important;
+	border-left-color: var(--doom-cyan, #46d9ff) !important;
+}
+
 /* --------------------------------------------------------------------------
    Properties Heading & Fold Indicators (Prevent clashing with left accent bars)
    -------------------------------------------------------------------------- */

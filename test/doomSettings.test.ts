@@ -3,6 +3,7 @@ import {
 	ALL_MANAGED_BODY_CLASSES,
 	ALL_MANAGED_CSS_VARS,
 	DEFAULT_DOOM_SETTINGS,
+	DOOM_PALETTES,
 	DoomEmacsStyleSettings,
 	applyDoomDomState,
 	clearDoomDomState,
@@ -1077,6 +1078,28 @@ void (async () => {
 		assert.ok(!(mockMobileDoc.body.classList as any).contains("doom-palette-retro-terminal"));
 
 		console.log("✓ Mobile platform fallback and iOS WebKit safety verified");
+	}
+
+	// -----------------------------------------------------------------------------
+	// 16. Retro Green Terminal (doom-palette-retro-terminal) Consistency Tests
+	// -----------------------------------------------------------------------------
+	{
+		const retroSettings = makeSettings({
+			darkPalette: "doom-palette-retro-terminal",
+			activeBlockHighlight: true,
+			showPopoverProperties: true,
+		});
+		const retroState = computeDoomDomState(retroSettings);
+		assert.ok(retroState.activeClasses.includes("doom-palette-retro-terminal"));
+		assert.ok(retroState.activeClasses.includes("doom-active-block-highlight"));
+		assert.ok(retroState.activeClasses.includes("doom-popover-properties"));
+
+		// Verify that retro terminal palette maps to valid DOOM_PALETTES
+		const retroPaletteDef = DOOM_PALETTES.find((p) => p.id === "doom-palette-retro-terminal");
+		assert.ok(retroPaletteDef !== undefined);
+		assert.strictEqual(retroPaletteDef?.label, "doom-retro-terminal (VT220 Green Screen)");
+
+		console.log("✓ Retro green terminal Bases and Properties styling consistency verified");
 	}
 
 	console.log("\nAll unit tests passed successfully!");

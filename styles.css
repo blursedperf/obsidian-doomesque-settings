@@ -819,6 +819,204 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 }
 
 /* --------------------------------------------------------------------------
+   Retro Green Terminal (doom-palette-retro-terminal) Polish
+   Phosphor green consistency across Bases, Properties & UI Elements
+   -------------------------------------------------------------------------- */
+
+/* 1. Bases Table & Database Views */
+body.doom-palette-retro-terminal .bases-header .title,
+body.doom-palette-retro-terminal .bases-thead .bases-table-header-label,
+body.doom-palette-retro-terminal .bases-table-header-icon,
+body.doom-palette-retro-terminal .bases-table-header-icon svg,
+body.doom-palette-retro-terminal .bases-table-header-sort,
+body.doom-palette-retro-terminal .bases-table-header-sort svg,
+body.doom-palette-retro-terminal .bases-table-summary-cell .summary-function-name,
+body.doom-palette-retro-terminal .bases-table-summary-cell .summary-content,
+body.doom-palette-retro-terminal .bases-group-property,
+body.doom-palette-retro-terminal .bases-group-value,
+body.doom-palette-retro-terminal .bases-cards-property,
+body.doom-palette-retro-terminal .bases-list-property,
+body.doom-palette-retro-terminal .bases-kanban-column-header,
+body.doom-palette-retro-terminal .bases-toolbar .text-icon-button,
+body.doom-palette-retro-terminal .bases-toolbar .text-icon-button svg,
+body.doom-palette-retro-terminal .bases-toolbar-menu-item-icon,
+body.doom-palette-retro-terminal .bases-toolbar-menu-item-icon svg,
+body.doom-palette-retro-terminal .bases-toolbar-menu-item-name,
+body.doom-palette-retro-terminal .bases-embed .embed-action,
+body.doom-palette-retro-terminal .bases-embed .embed-action svg {
+	color: var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .bases-table-cell,
+body.doom-palette-retro-terminal .bases-table-cell.bases-rendered-value,
+body.doom-palette-retro-terminal .bases-table-cell.bases-metadata-value,
+body.doom-palette-retro-terminal .bases-table-cell.metadata-property-value,
+body.doom-palette-retro-terminal .bases-table-cell input,
+body.doom-palette-retro-terminal .bases-table-cell .metadata-link,
+body.doom-palette-retro-terminal .bases-table-cell a.internal-link {
+	color: var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .bases-thead {
+	border-bottom: 2px solid var(--doom-fg, #33ff33) !important;
+	box-shadow: inset 0 -2px 0 var(--doom-fg, #33ff33), 0 -1px 0 var(--table-border-color, #1f381f) !important;
+}
+
+body.doom-palette-retro-terminal .bases-thead .bases-td:hover,
+body.doom-palette-retro-terminal .bases-thead .bases-td.has-active-menu {
+	background-color: var(--doom-base3, #162616) !important;
+}
+
+body.doom-palette-retro-terminal .bases-table-header-resizer:hover,
+body.doom-palette-retro-terminal .bases-table-header-resizer.is-active {
+	background-color: var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .bases-td:focus-within,
+body.doom-palette-retro-terminal .bases-table-active-cell {
+	box-shadow: inset 0 0 0 2px var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .bases-table-selection {
+	background-color: rgba(51, 255, 51, 0.18) !important;
+}
+
+body.doom-palette-retro-terminal .bases-toolbar .text-icon-button.is-active,
+body.doom-palette-retro-terminal .bases-toolbar .bases-toolbar-views-menu .text-icon-button {
+	border-color: var(--doom-fg, #33ff33) !important;
+	background-color: rgba(51, 255, 51, 0.15) !important;
+	color: var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .bases-toolbar .text-icon-button:hover,
+body.doom-palette-retro-terminal .bases-toolbar .bases-toolbar-item button:hover {
+	border-color: var(--doom-base6, #4a8a4a) !important;
+	color: var(--doom-base8, #a8ffa8) !important;
+}
+
+body.doom-palette-retro-terminal .bases-kanban-card {
+	border-left: 3px solid var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .bases-table .bases-group-heading {
+	border-left: 3px solid var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .bases-toolbar-menu-container,
+body.doom-palette-retro-terminal .bases-filter-page,
+body.doom-palette-retro-terminal .bases-groupby-container,
+body.doom-palette-retro-terminal .bases-sort-container {
+	border-color: var(--doom-fg, #33ff33) !important;
+}
+
+/* 2. Note Properties Drawer & Popover Properties */
+body.doom-palette-retro-terminal .metadata-container {
+	border-left: 3px solid var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .metadata-properties-heading {
+	color: var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .metadata-properties-heading .collapse-indicator,
+body.doom-palette-retro-terminal .metadata-properties-heading .collapse-indicator svg {
+	color: var(--doom-fg, #33ff33) !important;
+	opacity: 0.8 !important;
+}
+
+body.doom-palette-retro-terminal .metadata-properties-heading:hover .collapse-indicator,
+body.doom-palette-retro-terminal .metadata-container.is-collapsed .metadata-properties-heading .collapse-indicator {
+	color: var(--doom-base8, #a8ffa8) !important;
+	opacity: 1 !important;
+}
+
+body.doom-palette-retro-terminal .metadata-container .metadata-property-key,
+body.doom-palette-retro-terminal .metadata-container .metadata-property-key .metadata-property-key-input {
+	color: var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .metadata-container .metadata-property-key:focus-within {
+	border-color: var(--doom-fg, #33ff33) !important;
+	box-shadow: 0 0 0 2px rgba(51, 255, 51, 0.25) !important;
+}
+
+body.doom-palette-retro-terminal .metadata-property-icon,
+body.doom-palette-retro-terminal .metadata-property-icon svg {
+	color: var(--doom-base7, #66e666) !important;
+	stroke: currentColor !important;
+}
+
+body.doom-palette-retro-terminal .metadata-container .metadata-property-value,
+body.doom-palette-retro-terminal .metadata-container .metadata-property-value input,
+body.doom-palette-retro-terminal .metadata-container .metadata-property-value textarea,
+body.doom-palette-retro-terminal .metadata-container .metadata-property-value .metadata-input-longtext {
+	color: var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .metadata-container .metadata-property-value:focus-within {
+	border-color: var(--doom-fg, #33ff33) !important;
+	box-shadow: 0 0 0 2px rgba(51, 255, 51, 0.25) !important;
+}
+
+body.doom-palette-retro-terminal .metadata-container .multi-select-pill,
+body.doom-palette-retro-terminal .metadata-container .metadata-property[data-property-key="tags"] .multi-select-pill,
+body.doom-palette-retro-terminal .bases-table-cell .multi-select-pill {
+	color: var(--doom-fg, #33ff33) !important;
+	background-color: rgba(51, 255, 51, 0.12) !important;
+	border: 1px solid rgba(51, 255, 51, 0.35) !important;
+}
+
+body.doom-palette-retro-terminal .metadata-add-button,
+body.doom-palette-retro-terminal .metadata-add-button svg {
+	color: var(--doom-base7, #66e666) !important;
+	border-color: var(--doom-base5, #2d522d) !important;
+}
+
+body.doom-palette-retro-terminal .metadata-add-button:hover {
+	color: var(--doom-fg, #33ff33) !important;
+	border-color: var(--doom-fg, #33ff33) !important;
+	background-color: var(--doom-base2, #101c10) !important;
+}
+
+/* 3. Tags, Badges, Links & UI Symbols */
+body.doom-palette-retro-terminal .tag,
+body.doom-palette-retro-terminal a.tag,
+body.doom-palette-retro-terminal .cm-s-obsidian span.cm-hashtag,
+body.doom-palette-retro-terminal .cm-s-obsidian span.cm-hashtag-begin,
+body.doom-palette-retro-terminal .cm-s-obsidian span.cm-hashtag-end {
+	color: var(--doom-fg, #33ff33) !important;
+	background-color: rgba(51, 255, 51, 0.12) !important;
+	border-color: rgba(51, 255, 51, 0.32) !important;
+}
+
+body.doom-palette-retro-terminal .cm-s-obsidian .cm-link,
+body.doom-palette-retro-terminal .cm-s-obsidian .cm-hmd-internal-link,
+body.doom-palette-retro-terminal .markdown-rendered a.internal-link,
+body.doom-palette-retro-terminal .markdown-rendered a.external-link {
+	color: var(--doom-fg, #33ff33) !important;
+	text-decoration-color: var(--doom-base6, #4a8a4a) !important;
+}
+
+body.doom-palette-retro-terminal .cm-s-obsidian .cm-link:hover,
+body.doom-palette-retro-terminal .cm-s-obsidian .cm-hmd-internal-link:hover,
+body.doom-palette-retro-terminal .markdown-rendered a.internal-link:hover,
+body.doom-palette-retro-terminal .markdown-rendered a.external-link:hover {
+	color: var(--doom-base8, #a8ffa8) !important;
+	text-decoration-color: var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .callout {
+	border-color: rgba(51, 255, 51, 0.35) !important;
+	border-left-color: var(--doom-fg, #33ff33) !important;
+	background-color: rgba(51, 255, 51, 0.07) !important;
+}
+
+body.doom-palette-retro-terminal .callout-title,
+body.doom-palette-retro-terminal .callout-icon svg {
+	color: var(--doom-fg, #33ff33) !important;
+}
+
+/* --------------------------------------------------------------------------
    Sidebar & File Explorer Densities & Tree Indentation
    -------------------------------------------------------------------------- */
 body {

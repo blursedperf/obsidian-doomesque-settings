@@ -10,6 +10,7 @@ import {
 	getNextDarkPalette,
 	getNextLightPalette,
 	getNextIndentStyle,
+	getNextCursorStyle,
 	sanitizeFontFamily,
 } from "../src/settings";
 
@@ -46,6 +47,7 @@ class MockDOMTokenList {
 		"doom-palette-one-light",
 		"doom-indent-style-solid",
 		"doom-sidebar-normal",
+		"doom-cursor-bar",
 	]);
 
 	// In default state, all managed CSS variables should be null (theme fallback defaults)
@@ -77,6 +79,11 @@ class MockDOMTokenList {
 
 	const cyberpunk = computeDoomDomState(makeSettings({ darkPalette: "doom-palette-cyberpunk" }));
 	assert.ok(cyberpunk.activeClasses.includes("doom-palette-cyberpunk"));
+
+	const retro = computeDoomDomState(
+		makeSettings({ darkPalette: "doom-palette-retro-terminal" })
+	);
+	assert.ok(retro.activeClasses.includes("doom-palette-retro-terminal"));
 
 	// Invalid dark palette fallback
 	const invalidDark = computeDoomDomState(makeSettings({ darkPalette: "doom-unknown" as any }));
@@ -119,7 +126,14 @@ class MockDOMTokenList {
 	assert.strictEqual(getNextDarkPalette("doom-palette-dracula"), "doom-palette-tokyo-night");
 	assert.strictEqual(getNextDarkPalette("doom-palette-tokyo-night"), "doom-palette-gruvbox");
 	assert.strictEqual(getNextDarkPalette("doom-palette-gruvbox"), "doom-palette-cyberpunk");
-	assert.strictEqual(getNextDarkPalette("doom-palette-cyberpunk"), "doom-palette-one");
+	assert.strictEqual(
+		getNextDarkPalette("doom-palette-cyberpunk"),
+		"doom-palette-retro-terminal"
+	);
+	assert.strictEqual(
+		getNextDarkPalette("doom-palette-retro-terminal"),
+		"doom-palette-one"
+	);
 	assert.strictEqual(getNextDarkPalette("invalid" as any), "doom-palette-one");
 
 	assert.strictEqual(getNextLightPalette("doom-palette-one-light"), "doom-palette-nord-light");
@@ -140,7 +154,14 @@ class MockDOMTokenList {
 	assert.strictEqual(getNextIndentStyle("dotted"), "double");
 	assert.strictEqual(getNextIndentStyle("double"), "none");
 	assert.strictEqual(getNextIndentStyle("none"), "solid");
-	console.log("✓ Dark & light palette and indent guide cycling logic verified");
+
+	assert.strictEqual(getNextCursorStyle("bar"), "block");
+	assert.strictEqual(getNextCursorStyle("block"), "glow");
+	assert.strictEqual(getNextCursorStyle("glow"), "hollow");
+	assert.strictEqual(getNextCursorStyle("hollow"), "underline");
+	assert.strictEqual(getNextCursorStyle("underline"), "bar");
+	assert.strictEqual(getNextCursorStyle("invalid" as any), "bar");
+	console.log("✓ Dark & light palette, indent guide, and cursor cycling logic verified");
 }
 
 // -----------------------------------------------------------------------------
@@ -178,6 +199,18 @@ class MockDOMTokenList {
 	assert.ok(state.activeClasses.includes("doom-settings-flat"));
 	assert.ok(state.activeClasses.includes("doom-indent-style-dashed"));
 	assert.ok(state.activeClasses.includes("doom-sidebar-compact"));
+
+	const blockCursor = computeDoomDomState(makeSettings({ cursorStyle: "block" }));
+	assert.ok(blockCursor.activeClasses.includes("doom-cursor-block"));
+	const glowCursor = computeDoomDomState(makeSettings({ cursorStyle: "glow" }));
+	assert.ok(glowCursor.activeClasses.includes("doom-cursor-glow"));
+	const hollowCursor = computeDoomDomState(makeSettings({ cursorStyle: "hollow" }));
+	assert.ok(hollowCursor.activeClasses.includes("doom-cursor-hollow"));
+	const underlineCursor = computeDoomDomState(makeSettings({ cursorStyle: "underline" }));
+	assert.ok(underlineCursor.activeClasses.includes("doom-cursor-underline"));
+	const invalidCursor = computeDoomDomState(makeSettings({ cursorStyle: "invalid" as any }));
+	assert.ok(invalidCursor.activeClasses.includes("doom-cursor-bar"));
+
 	console.log("✓ All feature flags and class toggles are properly activated");
 }
 

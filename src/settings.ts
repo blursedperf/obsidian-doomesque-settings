@@ -4,7 +4,8 @@ export type DoomDarkPalette =
 	| "doom-palette-dracula"
 	| "doom-palette-tokyo-night"
 	| "doom-palette-gruvbox"
-	| "doom-palette-cyberpunk";
+	| "doom-palette-cyberpunk"
+	| "doom-palette-retro-terminal";
 
 export type DoomLightPalette =
 	| "doom-palette-one-light"
@@ -60,6 +61,11 @@ export const DOOM_PALETTES: readonly DoomPaletteOption[] = [
 		label: "doom-cyberpunk (Cyberpunk 2077)",
 		description: "High-contrast Night City neon aesthetic: electric cyan, signature yellow, and Samurai crimson on deep dark slate.",
 	},
+	{
+		id: "doom-palette-retro-terminal",
+		label: "doom-retro-terminal (VT220 Green Screen)",
+		description: "Authentic monochrome green phosphor CRT terminal (#080d08 / #33ff33).",
+	},
 ];
 
 export const DOOM_LIGHT_PALETTES: readonly DoomLightPaletteOption[] = [
@@ -104,6 +110,64 @@ export const SIDEBAR_DENSITY_CLASSES: Record<DoomSidebarDensity, string> = {
 	comfortable: "doom-sidebar-comfortable",
 };
 
+export type DoomCursorStyle = "bar" | "block" | "glow" | "hollow" | "underline";
+
+export interface DoomCursorStyleOption {
+	id: DoomCursorStyle;
+	label: string;
+	description: string;
+}
+
+export const DOOM_CURSOR_STYLES: readonly DoomCursorStyleOption[] = [
+	{
+		id: "bar",
+		label: "Modern Bar (Default 2px)",
+		description: "Clean modern 2px vertical bar with standard smooth blink.",
+	},
+	{
+		id: "block",
+		label: "Retro Block (Solid Inverted CRT Block)",
+		description: "Solid character block cursor with difference-blend glyph inversion and hard CRT 1s step blink.",
+	},
+	{
+		id: "glow",
+		label: "Retro Phosphor (Glowing Translucent Block)",
+		description: "Phosphor CRT glowing translucent block with neon bloom effect.",
+	},
+	{
+		id: "hollow",
+		label: "Retro Hollow (CRT Wireframe Box)",
+		description: "Hollow wireframe character box with CRT phosphor border.",
+	},
+	{
+		id: "underline",
+		label: "Retro Underline (Classic Terminal Prompt)",
+		description: "Classic VT100 / terminal prompt underline cursor.",
+	},
+];
+
+export const CURSOR_STYLE_CLASSES: Record<DoomCursorStyle, string> = {
+	bar: "doom-cursor-bar",
+	block: "doom-cursor-block",
+	glow: "doom-cursor-glow",
+	hollow: "doom-cursor-hollow",
+	underline: "doom-cursor-underline",
+};
+
+export const CURSOR_STYLES: readonly DoomCursorStyle[] = [
+	"bar",
+	"block",
+	"glow",
+	"hollow",
+	"underline",
+];
+
+export function getNextCursorStyle(current: DoomCursorStyle): DoomCursorStyle {
+	const idx = CURSOR_STYLES.indexOf(current);
+	if (idx === -1) return CURSOR_STYLES[0];
+	return CURSOR_STYLES[(idx + 1) % CURSOR_STYLES.length];
+}
+
 export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-palette-one",
 	"doom-palette-vibrant",
@@ -111,6 +175,7 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-palette-tokyo-night",
 	"doom-palette-gruvbox",
 	"doom-palette-cyberpunk",
+	"doom-palette-retro-terminal",
 	"doom-palette-one-light",
 	"doom-palette-nord-light",
 	"doom-palette-gruvbox-light",
@@ -131,6 +196,11 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-sidebar-compact",
 	"doom-sidebar-normal",
 	"doom-sidebar-comfortable",
+	"doom-cursor-bar",
+	"doom-cursor-block",
+	"doom-cursor-glow",
+	"doom-cursor-hollow",
+	"doom-cursor-underline",
 	"doom-sticky-hover-enabled",
 	"doom-settings-flat",
 	"doom-legal-outline",
@@ -196,6 +266,8 @@ export interface DoomEsqueStyleSettings {
 	customMonospaceFont: string;
 	/** Scale factor for Org-mode headings (1.0 = default). */
 	headingScale: number;
+	/** Text cursor style in the note editor (`bar` | `block` | `glow` | `hollow` | `underline`). Default: `bar`. */
+	cursorStyle: DoomCursorStyle;
 
 	// --- Spacing & Layout ---
 	/** Editor readable line width in `rem` (`--file-line-width`). Default: 46. */
@@ -262,6 +334,7 @@ export const DEFAULT_DOOMESQUE_SETTINGS: DoomEsqueStyleSettings = {
 	editorialEmphasis: false,
 	customMonospaceFont: "",
 	headingScale: 1.0,
+	cursorStyle: "bar",
 
 	fileLineWidthRem: 46,
 	lineHeightNormal: 1.65,
@@ -378,6 +451,12 @@ export function computeDoomDomState(settings: DoomEmacsStyleSettings): ComputedD
 			? settings.sidebarDensity
 			: DEFAULT_DOOM_SETTINGS.sidebarDensity;
 	activeClasses.push(SIDEBAR_DENSITY_CLASSES[density]);
+
+	const cursorStyle: DoomCursorStyle =
+		settings.cursorStyle in CURSOR_STYLE_CLASSES
+			? settings.cursorStyle
+			: DEFAULT_DOOM_SETTINGS.cursorStyle;
+	activeClasses.push(CURSOR_STYLE_CLASSES[cursorStyle]);
 
 	const sanitizedFont = sanitizeFontFamily(settings.customMonospaceFont ?? "");
 	const fontVar = sanitizedFont

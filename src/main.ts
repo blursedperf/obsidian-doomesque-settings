@@ -3,9 +3,11 @@ import { HoverPreviewManager } from "./hoverPreview";
 import {
 	DOOM_PALETTES,
 	DOOM_LIGHT_PALETTES,
+	DOOM_CURSOR_STYLES,
 	DEFAULT_DOOM_SETTINGS,
 	DoomDarkPalette,
 	DoomLightPalette,
+	DoomCursorStyle,
 	DoomEmacsStyleSettings,
 	DoomIndentGuideStyle,
 	DoomSidebarDensity,
@@ -15,6 +17,7 @@ import {
 	getNextDarkPalette,
 	getNextLightPalette,
 	getNextIndentStyle,
+	getNextCursorStyle,
 	sanitizeFontFamily,
 } from "./settings";
 
@@ -113,6 +116,19 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 				this.settings.indentGuideStyle = nextStyle;
 				await this.saveSettings();
 				new Notice(`DoomEsque: Indent guide style set to '${nextStyle}'`);
+			},
+		});
+
+		// Cursor style cycler
+		this.addCommand({
+			id: "cycle-cursor-style",
+			name: "Cycle text cursor style (Bar → Block → Phosphor → Hollow → Underline)",
+			callback: async () => {
+				const nextStyle = getNextCursorStyle(this.settings.cursorStyle);
+				this.settings.cursorStyle = nextStyle;
+				await this.saveSettings();
+				const opt = DOOM_CURSOR_STYLES.find((c) => c.id === nextStyle);
+				new Notice(`DoomEsque Cursor: ${opt?.label ?? nextStyle}`);
 			},
 		});
 
@@ -684,6 +700,22 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 						this.plugin.settings.disableMonospaceUi = val;
 						await this.plugin.saveSettings();
 					});
+			});
+
+		new Setting(containerEl)
+			.setName("Text cursor style")
+			.setDesc(
+				"Choose the text cursor style in the note editor (modern 2px bar, or retro terminal block, glow, hollow, and underline)."
+			)
+			.addDropdown((dropdown) => {
+				for (const opt of DOOM_CURSOR_STYLES) {
+					dropdown.addOption(opt.id, opt.label);
+				}
+				dropdown.setValue(this.plugin.settings.cursorStyle);
+				dropdown.onChange(async (val) => {
+					this.plugin.settings.cursorStyle = val as DoomCursorStyle;
+					await this.plugin.saveSettings();
+				});
 			});
 
 		new Setting(containerEl)

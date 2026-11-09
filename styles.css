@@ -501,6 +501,7 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 	padding: 0 !important;
 	line-height: 1.45;
 	font-size: var(--bases-table-font-size, 0.88em);
+	align-items: center !important;
 }
 
 .bases-table-cell,
@@ -518,22 +519,22 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 	border: none !important;
 	border-radius: 0 !important;
 	box-shadow: none !important;
-	min-height: 0 !important;
+	min-height: var(--bases-table-row-height, 30px) !important;
 	height: 100%;
 	width: 100%;
 }
 
 .bases-table-cell.bases-rendered-value {
 	padding: 0 10px !important;
-	display: flex;
-	align-items: center;
+	display: flex !important;
+	align-items: center !important;
 }
 
 .bases-table-cell.bases-metadata-value,
 .bases-table-cell.metadata-property-value {
 	padding: 0 !important;
-	display: flex;
-	align-items: center;
+	display: flex !important;
+	align-items: center !important;
 }
 
 .bases-table-cell .metadata-input-longtext,
@@ -553,7 +554,8 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 	box-shadow: none !important;
 	outline: none !important;
 	padding: 0 10px !important;
-	margin: 0 !important;
+	margin: auto 0 !important;
+	align-self: center !important;
 	min-height: 0 !important;
 	width: 100%;
 	font-family: var(--font-interface) !important;
@@ -573,6 +575,17 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 	background-color: var(--doom-base0, var(--background-primary)) !important;
 	box-shadow: inset 0 0 0 2px var(--doom-blue, #51afef) !important;
 	border-radius: 2px !important;
+	min-height: var(--bases-table-row-height, 30px) !important;
+	align-items: center !important;
+}
+
+.bases-td .bases-table-cell,
+.bases-td .bases-table-cell:focus-within,
+.bases-td .bases-table-cell.metadata-property-value:focus-within {
+	min-height: var(--bases-table-row-height, 30px) !important;
+	height: 100%;
+	display: flex !important;
+	align-items: center !important;
 }
 
 .bases-table-active-cell {

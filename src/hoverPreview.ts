@@ -1,4 +1,4 @@
-import { App, HoverPopover, Notice, TFile } from "obsidian";
+import { App, HoverPopover, Notice, Platform, TFile } from "obsidian";
 import type DoomEmacsSettingsPlugin from "./main";
 
 export interface HoveredLinkInfo {
@@ -34,6 +34,10 @@ export class HoverPreviewManager {
 	}
 
 	init(): void {
+		if (Platform.isMobile) {
+			// On mobile touch platforms, mouseover/hover popovers and desktop window tracking do not apply
+			return;
+		}
 		this.patchHoverPopoverPrototype();
 		this.registerWindow(window);
 		this.registerWorkspaceHoverListener();
@@ -51,11 +55,15 @@ export class HoverPreviewManager {
 		this.cleanupFns = [];
 
 		if (this.mutationObserver) {
-			this.mutationObserver.disconnect();
+			try {
+				this.mutationObserver.disconnect();
+			} catch {}
 			this.mutationObserver = null;
 		}
 
-		this.closeAllHoverPopovers(true);
+		try {
+			this.closeAllHoverPopovers(true);
+		} catch {}
 		this.activePopovers.clear();
 	}
 
@@ -80,22 +88,50 @@ export class HoverPreviewManager {
 	private patchHoverPopoverPrototype(): void {
 		if (this.isPatched) return;
 
-		const proto = (HoverPopover as any)?.prototype;
+		let proto: any = null;
+		try {
+			proto = (HoverPopover as any)?.prototype;
+		} catch (e) {
+			console.warn("DoomEsque Settings: HoverPopover prototype inaccessible", e);
+			return;
+		}
 		if (!proto) {
 			console.warn("DoomEsque Settings: HoverPopover prototype not accessible");
 			return;
 		}
 
-		this.originalShow = proto.show;
-		this.originalHide = proto.hide;
-		this.originalShouldShow = proto.shouldShow;
-		this.originalShouldShowSelf = proto.shouldShowSelf;
-		this.originalPosition = proto.position;
+		try {
+			this.originalShow = proto.show;
+			this.originalHide = proto.hide;
+			this.originalShouldShow = proto.shouldShow;
+			this.originalShouldShowSelf = proto.shouldShowSelf;
+			this.originalPosition = proto.position;
+		} catch (e) {
+			console.warn("DoomEsque Settings: Could not read HoverPopover prototype methods", e);
+			return;
+		}
 
 		const self = this;
 
+		// Helper to safely assign prototype properties without throwing if read-only
+		const safePatch = (name: string, fn: (...args: any[]) => any) => {
+			try {
+				Object.defineProperty(proto, name, {
+					value: fn,
+					writable: true,
+					configurable: true,
+				});
+			} catch {
+				try {
+					proto[name] = fn;
+				} catch (err) {
+					console.warn(`DoomEsque Settings: Failed to patch HoverPopover.${name}`, err);
+				}
+			}
+		};
+
 		// 1. show()
-		proto.show = function (this: any) {
+		safePatch("show", function (this: any) {
 			const ret = self.originalShow ? self.originalShow.apply(this, arguments) : undefined;
 			try {
 				self.onPopoverShow(this);
@@ -103,43 +139,43 @@ export class HoverPreviewManager {
 				console.error("DoomEsque Settings: error in HoverPopover.show handler", err);
 			}
 			return ret;
-		};
+		});
 
 		// 2. hide(force?: boolean)
 		// Obsidian calls hide() on outside click (W3), mouse timeout (transition), or embed blur.
 		// When _doomIsSticky is true, suppress dismissal unless force is explicitly true.
-		proto.hide = function (this: any, force?: boolean) {
+		safePatch("hide", function (this: any, force?: boolean) {
 			if (this._doomIsSticky && !force) {
 				return;
 			}
 			self.onPopoverHide(this);
 			return self.originalHide ? self.originalHide.apply(this, arguments) : undefined;
-		};
+		});
 
 		// 3. shouldShow()
 		// Obsidian's vLe mouse interval calls transition() -> shouldShow().
 		// If sticky, always return true so transition() never schedules hide().
-		proto.shouldShow = function (this: any) {
+		safePatch("shouldShow", function (this: any) {
 			if (this._doomIsSticky) {
 				return true;
 			}
 			return self.originalShouldShow ? self.originalShouldShow.apply(this, arguments) : true;
-		};
+		});
 
 		// 4. shouldShowSelf()
 		// Obsidian checks this in W3 outside click handler (!i.isFocused && ...).
-		proto.shouldShowSelf = function (this: any) {
+		safePatch("shouldShowSelf", function (this: any) {
 			if (this._doomIsSticky) {
 				return true;
 			}
 			return self.originalShouldShowSelf ? self.originalShouldShowSelf.apply(this, arguments) : true;
-		};
+		});
 
 		// 5. position()
 		// Obsidian re-evaluates position on watchResize (up to 10 times) or scroll.
 		// If the user has manually dragged the popover, or if it is sticky and already rendered,
 		// or if the user is actively hovering/interacting with the popover, lock coordinates to prevent jumping.
-		proto.position = function (this: any) {
+		safePatch("position", function (this: any) {
 			if (this._doomIsDragged || this.hoverEl?.classList.contains("mod-maximized")) {
 				return;
 			}
@@ -154,7 +190,7 @@ export class HoverPreviewManager {
 				this._doomHasRendered = true;
 			}
 			return ret;
-		};
+		});
 
 		this.isPatched = true;
 	}
@@ -164,13 +200,32 @@ export class HoverPreviewManager {
 	 */
 	private unpatchHoverPopoverPrototype(): void {
 		if (!this.isPatched) return;
-		const proto = (HoverPopover as any)?.prototype;
-		if (proto) {
-			if (this.originalShow) proto.show = this.originalShow;
-			if (this.originalHide) proto.hide = this.originalHide;
-			if (this.originalShouldShow) proto.shouldShow = this.originalShouldShow;
-			if (this.originalShouldShowSelf) proto.shouldShowSelf = this.originalShouldShowSelf;
-			if (this.originalPosition) proto.position = this.originalPosition;
+		try {
+			const proto = (HoverPopover as any)?.prototype;
+			if (proto) {
+				const safeRestore = (name: string, original: any) => {
+					if (!original) return;
+					try {
+						proto[name] = original;
+					} catch {
+						try {
+							Object.defineProperty(proto, name, {
+								value: original,
+								writable: true,
+								configurable: true,
+							});
+						} catch {}
+					}
+				};
+
+				safeRestore("show", this.originalShow);
+				safeRestore("hide", this.originalHide);
+				safeRestore("shouldShow", this.originalShouldShow);
+				safeRestore("shouldShowSelf", this.originalShouldShowSelf);
+				safeRestore("position", this.originalPosition);
+			}
+		} catch (e) {
+			console.warn("DoomEsque Settings: unpatchHoverPopoverPrototype skipped", e);
 		}
 		this.isPatched = false;
 	}
@@ -926,10 +981,7 @@ export class HoverPreviewManager {
 		});
 
 		// Expand right sidebar if collapsed
-		const rightSplit = this.app.workspace.rightSplit as unknown as {
-			collapsed?: boolean;
-			expand?: () => void;
-		};
+		const rightSplit = (this.app.workspace as any)?.rightSplit;
 		if (rightSplit && typeof rightSplit.expand === "function" && rightSplit.collapsed) {
 			rightSplit.expand();
 		}
@@ -1150,39 +1202,44 @@ export class HoverPreviewManager {
 	 * Updates dimensions and sticky state on all open hover popovers when settings change.
 	 */
 	updateOpenPopovers(): void {
-		const isSticky = Boolean(this.plugin.settings.stickyHoverPreviews);
-		const popovers = document.querySelectorAll<HTMLElement>(".popover.hover-popover");
+		if (Platform.isMobile) return;
+		try {
+			const isSticky = Boolean(this.plugin.settings.stickyHoverPreviews);
+			const popovers = document.querySelectorAll<HTMLElement>(".popover.hover-popover");
 
-		for (let i = 0; i < popovers.length; i++) {
-			const el = popovers[i];
-			const inst = (el as any)._doomPopover || this.findInstanceForEl(el);
+			for (let i = 0; i < popovers.length; i++) {
+				const el = popovers[i];
+				const inst = (el as any)._doomPopover || this.findInstanceForEl(el);
 
-			if (inst) {
-				inst._doomIsSticky = isSticky;
-				inst.isFocused = isSticky;
-			}
-
-			if (isSticky) {
-				el.classList.add("doom-sticky-popover");
-				const pinBtn = el.querySelector(".doom-popover-btn.mod-pin");
-				if (pinBtn) {
-					pinBtn.classList.add("is-active");
-					pinBtn.setAttribute("title", "Pinned (sticky until closed)");
+				if (inst) {
+					inst._doomIsSticky = isSticky;
+					inst.isFocused = isSticky;
 				}
-			} else {
-				el.classList.remove("doom-sticky-popover");
-				const pinBtn = el.querySelector(".doom-popover-btn.mod-pin");
-				if (pinBtn) {
-					pinBtn.classList.remove("is-active");
-					pinBtn.setAttribute("title", "Pin preview (make sticky)");
-				}
-			}
 
-			if (!el.classList.contains("mod-maximized")) {
-				el.style.width = `${this.plugin.settings.hoverPopoverWidthPx}px`;
-				el.style.height = `${this.plugin.settings.hoverPopoverHeightPx}px`;
+				if (isSticky) {
+					el.classList.add("doom-sticky-popover");
+					const pinBtn = el.querySelector(".doom-popover-btn.mod-pin");
+					if (pinBtn) {
+						pinBtn.classList.add("is-active");
+						pinBtn.setAttribute("title", "Pinned (sticky until closed)");
+					}
+				} else {
+					el.classList.remove("doom-sticky-popover");
+					const pinBtn = el.querySelector(".doom-popover-btn.mod-pin");
+					if (pinBtn) {
+						pinBtn.classList.remove("is-active");
+						pinBtn.setAttribute("title", "Pin preview (make sticky)");
+					}
+				}
+
+				if (!el.classList.contains("mod-maximized")) {
+					el.style.width = `${this.plugin.settings.hoverPopoverWidthPx}px`;
+					el.style.height = `${this.plugin.settings.hoverPopoverHeightPx}px`;
+				}
+				this.expandPopoverInnerContent(el);
 			}
-			this.expandPopoverInnerContent(el);
+		} catch (err) {
+			console.warn("DoomEsque Settings: updateOpenPopovers error", err);
 		}
 	}
 }

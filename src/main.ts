@@ -1,4 +1,4 @@
-import { App, Notice, Plugin, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, Platform, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { drawSelection } from "@codemirror/view";
 import { HoverPreviewManager } from "./hoverPreview";
 import {
@@ -28,24 +28,50 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 
 	async onload(): Promise<void> {
 		// Register CodeMirror 6 drawSelection extension so custom cursors
-		// (block, glow, hollow, underline) instantiate DOM elements (.cm-cursor)
-		this.registerEditorExtension(drawSelection());
-
-		await this.loadSettings();
-		this.applyAllSettings();
-		this.hoverManager.init();
-
-		// Update popout windows when opened (Obsidian 1.0+)
-		this.registerEvent(
-			this.app.workspace.on("window-open", (_leaf, win) => {
-				if (win?.document) {
-					this.applySettingsToDocument(win.document);
+		// (block, glow, hollow, underline) instantiate DOM elements (.cm-cursor).
+		// CodeMirror 6 drawSelection is desktop-only; on iOS/mobile touch devices,
+		// CodeMirror uses native WebKit selection for magnifier loupe and handles.
+		if (Platform.isDesktop) {
+			try {
+				if (typeof drawSelection === "function") {
+					this.registerEditorExtension(drawSelection());
 				}
-				if (win) {
-					this.hoverManager.registerWindow(win as unknown as Window);
-				}
-			})
-		);
+			} catch (err) {
+				console.warn("DoomEsque Settings: drawSelection registration skipped", err);
+			}
+		}
+
+		try {
+			await this.loadSettings();
+			this.applyAllSettings();
+		} catch (err) {
+			console.error("DoomEsque Settings: error loading or applying settings", err);
+		}
+
+		// Desktop-only hover preview popover enhancement and multi-window tracking
+		if (Platform.isDesktop) {
+			try {
+				this.hoverManager.init();
+			} catch (err) {
+				console.error("DoomEsque Settings: hover preview manager failed to init", err);
+			}
+
+			// Update popout windows when opened (Obsidian 1.0+ desktop Electron popouts)
+			try {
+				this.registerEvent(
+					this.app.workspace.on("window-open", (_leaf, win) => {
+						if (win?.document) {
+							this.applySettingsToDocument(win.document);
+						}
+						if (win) {
+							this.hoverManager.registerWindow(win as unknown as Window);
+						}
+					})
+				);
+			} catch (err) {
+				console.warn("DoomEsque Settings: window-open listener registration skipped", err);
+			}
+		}
 
 		// Palette switcher / cycler (dark)
 		this.addCommand({
@@ -189,78 +215,91 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			},
 		});
 
-		// Hover Preview: Open in Right Sidebar
-		this.addCommand({
-			id: "open-active-preview-in-right-sidebar",
-			name: "Open active preview in right sidebar",
-			callback: async () => {
-				const activePopover = this.hoverManager.getActiveHoverPopoverEl();
-				const linktext = activePopover?.dataset.doomLinktext;
-				const sourcePath = activePopover?.dataset.doomSourcePath || "";
-				if (linktext) {
-					await this.hoverManager.openInRightSidebar(linktext, sourcePath);
-				} else {
-					new Notice("DoomEsque: No active preview found");
-				}
-			},
-		});
+		// Hover preview commands (desktop-only mouse hover features)
+		if (Platform.isDesktop) {
+			// Hover Preview: Open in Right Sidebar
+			this.addCommand({
+				id: "open-active-preview-in-right-sidebar",
+				name: "Open active preview in right sidebar",
+				callback: async () => {
+					const activePopover = this.hoverManager.getActiveHoverPopoverEl();
+					const linktext = activePopover?.dataset.doomLinktext;
+					const sourcePath = activePopover?.dataset.doomSourcePath || "";
+					if (linktext) {
+						await this.hoverManager.openInRightSidebar(linktext, sourcePath);
+					} else {
+						new Notice("DoomEsque: No active preview found");
+					}
+				},
+			});
 
-		// Hover Preview: Toggle Sticky
-		this.addCommand({
-			id: "toggle-sticky-hover-previews",
-			name: "Toggle sticky hover preview windows",
-			callback: async () => {
-				this.settings.stickyHoverPreviews = !this.settings.stickyHoverPreviews;
-				await this.saveSettings();
-				new Notice(
-					`DoomEsque: Sticky hover previews ${this.settings.stickyHoverPreviews ? "enabled" : "disabled"}`
-				);
-			},
-		});
+			// Hover Preview: Toggle Sticky
+			this.addCommand({
+				id: "toggle-sticky-hover-previews",
+				name: "Toggle sticky hover preview windows",
+				callback: async () => {
+					this.settings.stickyHoverPreviews = !this.settings.stickyHoverPreviews;
+					await this.saveSettings();
+					new Notice(
+						`DoomEsque: Sticky hover previews ${this.settings.stickyHoverPreviews ? "enabled" : "disabled"}`
+					);
+				},
+			});
 
-		// Hover Preview: Toggle note properties
-		this.addCommand({
-			id: "toggle-popover-properties",
-			name: "Toggle note properties in hover previews",
-			callback: async () => {
-				this.settings.showPopoverProperties = !this.settings.showPopoverProperties;
-				await this.saveSettings();
-				new Notice(
-					`DoomEsque: ${
-						this.settings.showPopoverProperties ? "Showing" : "Hiding"
-					} properties in hover previews`
-				);
-			},
-		});
+			// Hover Preview: Toggle note properties
+			this.addCommand({
+				id: "toggle-popover-properties",
+				name: "Toggle note properties in hover previews",
+				callback: async () => {
+					this.settings.showPopoverProperties = !this.settings.showPopoverProperties;
+					await this.saveSettings();
+					new Notice(
+						`DoomEsque: ${
+							this.settings.showPopoverProperties ? "Showing" : "Hiding"
+						} properties in hover previews`
+					);
+				},
+			});
 
-		// Hover Preview: Close active popover
-		this.addCommand({
-			id: "close-active-hover-preview",
-			name: "Close active hover preview",
-			callback: () => {
-				const active = this.hoverManager.getActiveHoverPopoverEl();
-				if (active) {
-					this.hoverManager.closeHoverPopoverEl(active);
-				}
-			},
-		});
+			// Hover Preview: Close active popover
+			this.addCommand({
+				id: "close-active-hover-preview",
+				name: "Close active hover preview",
+				callback: () => {
+					const active = this.hoverManager.getActiveHoverPopoverEl();
+					if (active) {
+						this.hoverManager.closeHoverPopoverEl(active);
+					}
+				},
+			});
 
-		// Hover Preview: Close all popovers
-		this.addCommand({
-			id: "close-all-hover-previews",
-			name: "Close all hover previews",
-			callback: () => {
-				this.hoverManager.closeAllHoverPopovers(true);
-				new Notice("DoomEsque: Closed all hover preview windows");
-			},
-		});
+			// Hover Preview: Close all popovers
+			this.addCommand({
+				id: "close-all-hover-previews",
+				name: "Close all hover previews",
+				callback: () => {
+					this.hoverManager.closeAllHoverPopovers(true);
+					new Notice("DoomEsque: Closed all hover preview windows");
+				},
+			});
+		}
 
 		this.addSettingTab(new DoomEsqueSettingTab(this.app, this));
 	}
 
 	onunload(): void {
-		this.hoverManager.destroy();
-		this.clearAllDocuments();
+		if (Platform.isDesktop) {
+			try {
+				this.hoverManager.destroy();
+			} catch (err) {
+				console.warn("DoomEsque Settings: hoverManager cleanup skipped", err);
+			}
+		}
+		try {
+			this.clearAllDocuments();
+		} catch (err) {
+			console.warn("DoomEsque Settings: clearAllDocuments skipped", err);
+		}
 	}
 
 	async loadSettings(): Promise<void> {
@@ -271,7 +310,13 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);
 		this.applyAllSettings();
-		this.hoverManager.updateOpenPopovers();
+		if (Platform.isDesktop) {
+			try {
+				this.hoverManager.updateOpenPopovers();
+			} catch (err) {
+				console.warn("DoomEsque Settings: updateOpenPopovers skipped", err);
+			}
+		}
 	}
 
 	private getAllDocuments(): Document[] {
@@ -769,9 +814,9 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		});
 
 		// ---------------------------------------------------------------------
-		// 5. Hover Preview & Sidebar Pop-Open
+		// 5. Hover Preview & Sidebar Pop-Open (Desktop)
 		// ---------------------------------------------------------------------
-		new Setting(containerEl).setName("Hover preview & sidebar pop-open").setHeading();
+		new Setting(containerEl).setName("Hover preview & sidebar pop-open (Desktop)").setHeading();
 
 		this.createSliderSetting({
 			containerEl,

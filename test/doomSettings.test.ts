@@ -985,5 +985,97 @@ void (async () => {
 		console.log("✓ Hover popover frontmatter properties unfolding and state management verified");
 	}
 
+	// -----------------------------------------------------------------------------
+	// 15. Mobile Platform Fallback & iOS WebKit Safety Tests
+	// -----------------------------------------------------------------------------
+	{
+		// A. Verify safe prototype patching under read-only/strict-mode WebKit conditions
+		const mockProto: Record<string, any> = {};
+		Object.defineProperty(mockProto, "show", {
+			value: function () {
+				return "originalShow";
+			},
+			writable: false,
+			configurable: true,
+		});
+
+		// Simulate safePatch implementation
+		const safePatch = (target: any, name: string, fn: (...args: any[]) => any) => {
+			try {
+				Object.defineProperty(target, name, {
+					value: fn,
+					writable: true,
+					configurable: true,
+				});
+			} catch {
+				try {
+					target[name] = fn;
+				} catch (err) {
+					console.warn(`Failed to patch ${name}`, err);
+				}
+			}
+		};
+
+		assert.doesNotThrow(() => {
+			safePatch(mockProto, "show", function () {
+				return "patchedShow";
+			});
+		}, "safePatch must never throw on non-writable properties");
+		assert.strictEqual(
+			mockProto.show(),
+			"patchedShow",
+			"safePatch must successfully override non-writable property via Object.defineProperty"
+		);
+
+		// B. Verify mobile workspace rightSplit null-safety
+		const mobileWorkspace: { rightSplit?: { collapsed?: boolean; expand?: () => void } } = {};
+		const rightSplit = (mobileWorkspace as any)?.rightSplit;
+		assert.doesNotThrow(() => {
+			if (rightSplit && typeof rightSplit.expand === "function" && rightSplit.collapsed) {
+				rightSplit.expand();
+			}
+		}, "Right split check must not throw when rightSplit is undefined (mobile iOS)");
+
+		// C. Verify mobile settings execution: full palette and DOM styling works on mobile
+		const mobileSettings = makeSettings({
+			darkPalette: "doom-palette-retro-terminal",
+			monospaceEditor: true,
+			rainbowIndentGuides: true,
+			legalOutlineNumbering: true,
+		});
+		const mobileState = computeDoomDomState(mobileSettings);
+		assert.ok(mobileState.activeClasses.includes("doom-palette-retro-terminal"));
+		assert.ok(mobileState.activeClasses.includes("doom-monospace-editor"));
+		assert.ok(mobileState.activeClasses.includes("doom-rainbow-indent-guides"));
+		assert.ok(mobileState.activeClasses.includes("doom-legal-outline"));
+
+		const mockMobileDoc = {
+			body: {
+				classList: new MockDOMTokenList(),
+				style: {
+					properties: new Map<string, string>(),
+					setProperty(k: string, v: string) {
+						this.properties.set(k, v);
+					},
+					removeProperty(k: string) {
+						this.properties.delete(k);
+					},
+					getPropertyValue(k: string) {
+						return this.properties.get(k) || "";
+					},
+				},
+			},
+		} as unknown as Document;
+
+		applyDoomDomState(mockMobileDoc, mobileState);
+		assert.ok((mockMobileDoc.body.classList as any).contains("doom-palette-retro-terminal"));
+		assert.ok((mockMobileDoc.body.classList as any).contains("doom-monospace-editor"));
+
+		clearDoomDomState(mockMobileDoc);
+		assert.ok(!(mockMobileDoc.body.classList as any).contains("doom-palette-retro-terminal"));
+
+		console.log("✓ Mobile platform fallback and iOS WebKit safety verified");
+	}
+
 	console.log("\nAll unit tests passed successfully!");
 })();

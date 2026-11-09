@@ -137,13 +137,16 @@ export class HoverPreviewManager {
 
 		// 5. position()
 		// Obsidian re-evaluates position on watchResize (up to 10 times) or scroll.
-		// If the user has manually dragged the popover, or if it is sticky and the target
-		// element is no longer visible/connected during vault navigation, preserve its coordinates.
+		// If the user has manually dragged the popover, or if it is sticky and already rendered,
+		// or if the user is actively hovering/interacting with the popover, lock coordinates to prevent jumping.
 		proto.position = function (this: any) {
 			if (this._doomIsDragged || this.hoverEl?.classList.contains("mod-maximized")) {
 				return;
 			}
-			if (this._doomIsSticky && this._doomHasRendered && this.targetEl && !this.targetEl.isConnected) {
+			if (this._doomIsSticky && this._doomHasRendered) {
+				return;
+			}
+			if (this._doomHasRendered && (this.onHover || this.hoverEl?.matches(":hover"))) {
 				return;
 			}
 			const ret = self.originalPosition ? self.originalPosition.apply(this, arguments) : undefined;
@@ -494,12 +497,46 @@ export class HoverPreviewManager {
 			{ capture: true }
 		);
 
+		// Contain mouse wheel events within this popover so scrolling never leaks to the underlying note
+		popoverEl.addEventListener(
+			"wheel",
+			(evt: WheelEvent) => {
+				evt.stopPropagation();
+			},
+			{ passive: true }
+		);
+
 		this.buildPopoverHeader(popoverEl, resolvedLinktext, resolvedSourcePath, instance);
 
-		// Observe subsequent asynchronous embed mounting inside this popover to expand immediately
+		// Observe subsequent asynchronous embed mounting inside this popover to expand immediately,
+		// ignoring section changes from virtual scrolling so scroll loops never occur
 		try {
 			let expandRaf: number | null = null;
-			const childObserver = new MutationObserver(() => {
+			const childObserver = new MutationObserver((mutations) => {
+				let hasNewContainer = false;
+				for (let i = 0; i < mutations.length; i++) {
+					const added = mutations[i].addedNodes;
+					for (let j = 0; j < added.length; j++) {
+						const node = added[j] as HTMLElement;
+						if (node.nodeType === 1) {
+							const cls = node.className || "";
+							if (
+								typeof cls === "string" &&
+								(cls.includes("markdown-embed") ||
+									cls.includes("popover-content") ||
+									cls.includes("markdown-preview-view") ||
+									cls.includes("cm-editor") ||
+									cls.includes("bases-embed"))
+							) {
+								hasNewContainer = true;
+								break;
+							}
+						}
+					}
+					if (hasNewContainer) break;
+				}
+				if (!hasNewContainer) return;
+
 				if (expandRaf !== null) return;
 				expandRaf = requestAnimationFrame(() => {
 					expandRaf = null;

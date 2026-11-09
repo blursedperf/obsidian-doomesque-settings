@@ -810,6 +810,7 @@ body .popover.hover-popover {
 	display: flex !important;
 	flex-direction: column !important;
 	overflow: hidden !important;
+	overscroll-behavior: contain !important;
 	resize: both;
 	box-sizing: border-box !important;
 }
@@ -877,8 +878,24 @@ body .popover.hover-popover .markdown-embed-content:not([style*="display: none"]
 	background: transparent !important;
 }
 
-/* Make preview view, editor and scroller expand to fill entire area to the bottom with seamless background */
-body .popover.hover-popover .markdown-preview-view,
+/* Make Reading View scroll seamlessly with momentum and contained scroll chaining */
+body .popover.hover-popover .markdown-preview-view {
+	width: 100% !important;
+	max-width: 100% !important;
+	flex: 1 1 auto !important;
+	min-height: 0 !important;
+	height: 100% !important;
+	max-height: none !important;
+	box-sizing: border-box !important;
+	overflow-y: auto !important;
+	overflow-x: hidden !important;
+	overscroll-behavior: contain !important;
+	-webkit-overflow-scrolling: touch;
+	padding: 0 !important;
+	background-color: var(--doom-bg-alt, #21242b) !important;
+}
+
+/* In Live Preview, outer containers must NOT scroll so only .cm-scroller handles virtual line scrolling */
 body .popover.hover-popover .markdown-source-view.mod-cm6,
 body .popover.hover-popover .cm-editor {
 	width: 100% !important;
@@ -888,7 +905,7 @@ body .popover.hover-popover .cm-editor {
 	height: 100% !important;
 	max-height: none !important;
 	box-sizing: border-box !important;
-	overflow: auto !important;
+	overflow: hidden !important;
 	padding: 0 !important;
 	background-color: var(--doom-bg-alt, #21242b) !important;
 }
@@ -900,7 +917,10 @@ body .popover.hover-popover .cm-scroller {
 	min-height: 100% !important;
 	max-height: none !important;
 	box-sizing: border-box !important;
-	overflow: auto !important;
+	overflow-y: auto !important;
+	overflow-x: auto !important;
+	overscroll-behavior: contain !important;
+	-webkit-overflow-scrolling: touch;
 	padding: 0 !important;
 	background-color: var(--doom-bg-alt, #21242b) !important;
 }
@@ -920,12 +940,10 @@ body .popover.hover-popover .markdown-preview-sizer {
 body .popover.hover-popover .markdown-preview-section {
 	width: 100% !important;
 	max-width: 100% !important;
-	min-height: 100% !important;
 	box-sizing: border-box !important;
 }
 
-/* Hide virtual scroll pusher, footers, and embedded backlinks inside hover popovers to prevent blank bottom space */
-body .popover.hover-popover .markdown-preview-pusher,
+/* Hide footers and embedded backlinks inside hover popovers to prevent blank bottom space (pusher retained for virtual scroll calculation) */
 body .popover.hover-popover .embedded-backlinks,
 body .popover.hover-popover .mod-footer,
 body .popover.hover-popover .mod-ui {

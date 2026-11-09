@@ -339,6 +339,11 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 .bases-table-container {
 	background-color: var(--doom-bg, var(--background-primary)) !important;
 	border-radius: 0 !important;
+	--metadata-input-background: transparent;
+	--metadata-input-background-hover: transparent;
+	--metadata-input-background-active: transparent;
+	--metadata-input-padding: 0 10px;
+	--input-padding: 0 10px;
 }
 
 .bases-header {
@@ -493,9 +498,68 @@ body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
 
 .bases-td {
 	box-shadow: calc(var(--bases-table-column-border-width, 1px) * -1) 0 0 var(--table-border-color, #3f444a) !important;
-	padding: 0 10px;
+	padding: 0 !important;
 	line-height: 1.45;
-	font-size: 0.9em;
+	font-size: var(--bases-table-font-size, 0.88em);
+}
+
+.bases-table-cell,
+.bases-table-cell.bases-rendered-value,
+.bases-table-cell.bases-metadata-value,
+.bases-table-cell.metadata-property-value,
+.bases-table-cell.metadata-property-value:hover,
+.bases-table-cell.metadata-property-value:focus-within {
+	font-family: var(--font-interface) !important;
+	font-size: var(--bases-table-font-size, 0.88em) !important;
+	line-height: 1.45 !important;
+	color: var(--doom-fg, var(--text-normal));
+	background: transparent !important;
+	background-color: transparent !important;
+	border: none !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	min-height: 0 !important;
+	height: 100%;
+	width: 100%;
+}
+
+.bases-table-cell.bases-rendered-value {
+	padding: 0 10px !important;
+	display: flex;
+	align-items: center;
+}
+
+.bases-table-cell.bases-metadata-value,
+.bases-table-cell.metadata-property-value {
+	padding: 0 !important;
+	display: flex;
+	align-items: center;
+}
+
+.bases-table-cell .metadata-input-longtext,
+.bases-table-cell .metadata-input-text,
+.bases-table-cell .metadata-input-number,
+.bases-table-cell input:not([type="checkbox"]),
+.bases-table-cell input:not([type="checkbox"]):hover,
+.bases-table-cell input:not([type="checkbox"]):focus,
+.bases-table-cell .multi-select-container,
+.bases-table-cell .multi-select-container:hover,
+.bases-table-cell .multi-select-container:focus-within,
+.bases-table-cell .metadata-link {
+	background: transparent !important;
+	background-color: transparent !important;
+	border: none !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	outline: none !important;
+	padding: 0 10px !important;
+	margin: 0 !important;
+	min-height: 0 !important;
+	width: 100%;
+	font-family: var(--font-interface) !important;
+	font-size: inherit !important;
+	line-height: 1.45 !important;
+	color: var(--doom-fg, var(--text-normal)) !important;
 }
 
 .bases-table-cell[data-property-type="number"],

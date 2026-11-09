@@ -1,4 +1,5 @@
 import { App, Notice, Plugin, PluginSettingTab, Setting } from "obsidian";
+import { drawSelection } from "@codemirror/view";
 import { HoverPreviewManager } from "./hoverPreview";
 import {
 	DOOM_PALETTES,
@@ -26,6 +27,10 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 	hoverManager: HoverPreviewManager = new HoverPreviewManager(this);
 
 	async onload(): Promise<void> {
+		// Register CodeMirror 6 drawSelection extension so custom cursors
+		// (block, glow, hollow, underline) instantiate DOM elements (.cm-cursor)
+		this.registerEditorExtension(drawSelection());
+
 		await this.loadSettings();
 		this.applyAllSettings();
 		this.hoverManager.init();

@@ -24,8 +24,8 @@
 		"url": "https://github.com/blursedperf/obsidian-doomesque-settings.git"
 	},
 	"devDependencies": {
-		"@codemirror/state": "^6.7.6",
-		"@codemirror/view": "^6.43.15",
+		"@codemirror/state": "6.7.6",
+		"@codemirror/view": "6.43.13",
 		"@types/node": "^20.11.0",
 		"builtin-modules": "^3.3.0",
 		"esbuild": "0.21.5",

@@ -1096,6 +1096,54 @@ export class HoverPreviewManager {
 			embedLinks[i].setAttribute("aria-label", "Open note in new tab");
 			embedLinks[i].setAttribute("title", "Open note in new tab");
 		}
+
+		// 4. Ensure frontmatter properties are unfolded when showPopoverProperties is enabled
+		if (this.plugin.settings.showPopoverProperties) {
+			this.unfoldPopoverProperties(popoverEl);
+		}
+	}
+
+	/**
+	 * Unfolds frontmatter properties drawer inside a hover preview popover.
+	 */
+	unfoldPopoverProperties(popoverEl: HTMLElement, popoverInstance?: any): void {
+		if (!popoverEl) return;
+
+		const inst =
+			popoverInstance ||
+			(popoverEl as any)._doomPopover ||
+			this.findInstanceForEl(popoverEl);
+
+		// If the embed has a metadataEditor, ensure it is unfolded
+		const metadataEditor = inst?.embed?.metadataEditor;
+		if (metadataEditor) {
+			if (metadataEditor.collapsed) {
+				try {
+					metadataEditor.setCollapse(false, false);
+				} catch {}
+			}
+		}
+
+		// Also ensure kE constructor has collapseProperties = false so subsequent loads stay unfolded
+		const embedConstructor = inst?.embed?.constructor;
+		if (embedConstructor && "collapseProperties" in embedConstructor) {
+			embedConstructor.collapseProperties = false;
+		}
+
+		// In DOM, remove is-collapsed from .metadata-container if it has properties
+		const metaContainer = popoverEl.querySelector<HTMLElement>(".metadata-container");
+		if (metaContainer && metaContainer.getAttribute("data-property-count") !== "0") {
+			metaContainer.classList.remove("is-collapsed");
+			const heading = metaContainer.querySelector<HTMLElement>(".metadata-properties-heading");
+			if (heading) heading.classList.remove("is-collapsed");
+			const foldEl = metaContainer.querySelector<HTMLElement>(".collapse-indicator");
+			if (foldEl) foldEl.classList.remove("is-collapsed");
+			const content = metaContainer.querySelector<HTMLElement>(".metadata-content");
+			if (content && (content.style.display === "none" || content.hidden)) {
+				content.style.display = "";
+				content.hidden = false;
+			}
+		}
 	}
 
 	/**

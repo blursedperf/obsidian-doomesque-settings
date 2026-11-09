@@ -1251,6 +1251,99 @@ body .popover.hover-popover.doom-sticky-popover {
 }
 
 /* --------------------------------------------------------------------------
+   Frontmatter YAML Properties in Hover Preview Popovers
+   -------------------------------------------------------------------------- */
+body.doom-popover-properties .popover.hover-popover .metadata-container:not([data-property-count="0"]) {
+	display: block !important;
+	visibility: visible !important;
+	transform: none !important;
+	max-width: 100% !important;
+	width: 100% !important;
+	box-sizing: border-box !important;
+	margin-top: 0 !important;
+	margin-bottom: 12px !important;
+	padding: 8px 12px !important;
+	background-color: var(--doom-bg, #282c34) !important;
+	border: 1px solid var(--doom-base3, #3f444a) !important;
+	border-left: 3px solid var(--doom-violet, #c678dd) !important;
+	border-radius: 3px !important;
+	box-shadow: none !important;
+}
+
+body.doom-popover-properties .popover.hover-popover .metadata-container:not([data-property-count="0"]) .metadata-properties-heading {
+	color: var(--doom-violet, #c678dd) !important;
+	font-family: var(--font-interface, inherit) !important;
+	font-size: 0.76em !important;
+	font-weight: 700 !important;
+	text-transform: uppercase !important;
+	letter-spacing: 0.06em !important;
+	margin-bottom: 6px !important;
+	padding: 2px 4px 2px 20px !important;
+	cursor: pointer;
+}
+
+body.doom-popover-properties .popover.hover-popover .metadata-container:not([data-property-count="0"]) .metadata-properties-heading .collapse-indicator {
+	inset-inline-start: 2px !important;
+	color: var(--doom-violet, #c678dd) !important;
+	opacity: 0.7 !important;
+}
+
+body.doom-popover-properties .popover.hover-popover .metadata-container:not([data-property-count="0"]):not(.is-collapsed) .metadata-content {
+	display: block !important;
+	height: auto !important;
+}
+
+body.doom-popover-properties .popover.hover-popover .metadata-container:not([data-property-count="0"]):not(.is-collapsed) .metadata-properties {
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 4px !important;
+}
+
+body.doom-popover-properties .popover.hover-popover .metadata-container:not([data-property-count="0"]):not(.is-collapsed) .metadata-property {
+	display: flex !important;
+	align-items: stretch !important;
+	gap: 6px !important;
+	min-height: 24px !important;
+	background-color: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
+}
+
+body.doom-popover-properties .popover.hover-popover .metadata-container .metadata-property-key {
+	background-color: var(--doom-base0, #1b2229) !important;
+	border: 1px solid var(--doom-base3, #3f444a) !important;
+	border-radius: 3px !important;
+	padding: 2px 6px !important;
+	min-height: 24px !important;
+	font-size: 0.84em !important;
+	color: var(--doom-cyan, #46D9FF) !important;
+}
+
+body.doom-popover-properties .popover.hover-popover .metadata-container .metadata-property-value {
+	background-color: var(--doom-base0, #1b2229) !important;
+	border: 1px solid var(--doom-base3, #3f444a) !important;
+	border-radius: 3px !important;
+	padding: 2px 6px !important;
+	min-height: 24px !important;
+	font-size: 0.84em !important;
+	color: var(--doom-fg, #bbc2cf) !important;
+}
+
+body.doom-popover-properties .popover.hover-popover .metadata-container .multi-select-pill {
+	font-size: 0.8em !important;
+	padding: 1px 5px !important;
+	margin: 1px 3px 1px 0 !important;
+}
+
+body.doom-popover-properties .popover.hover-popover:not(.is-editing) .metadata-add-button {
+	display: none !important;
+}
+
+body.doom-popover-properties .popover.hover-popover .metadata-container[data-property-count="0"] {
+	display: none !important;
+}
+
+/* --------------------------------------------------------------------------
    Editor Text Cursor Styles (Modern Bar & Retro Terminal Options)
    -------------------------------------------------------------------------- */
 @keyframes doom-retro-cursor-blink {

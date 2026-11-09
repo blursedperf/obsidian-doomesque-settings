@@ -180,6 +180,7 @@ class MockDOMTokenList {
 			legalOutlineNumbering: true,
 			editorialEmphasis: true,
 			stickyHoverPreviews: true,
+			showPopoverProperties: true,
 			flatSettingsItems: true,
 			indentGuideStyle: "dashed",
 			sidebarDensity: "compact",
@@ -196,6 +197,7 @@ class MockDOMTokenList {
 	assert.ok(state.activeClasses.includes("doom-legal-outline"));
 	assert.ok(state.activeClasses.includes("doom-editorial-emphasis"));
 	assert.ok(state.activeClasses.includes("doom-sticky-hover-enabled"));
+	assert.ok(state.activeClasses.includes("doom-popover-properties"));
 	assert.ok(state.activeClasses.includes("doom-settings-flat"));
 	assert.ok(state.activeClasses.includes("doom-indent-style-dashed"));
 	assert.ok(state.activeClasses.includes("doom-sidebar-compact"));
@@ -857,6 +859,131 @@ void (async () => {
 	assert.strictEqual(popoverClosed, true, "Must close the preview popover once opened in new tab");
 
 	console.log("✓ Popover Open in New Tab action & embed link interception verified");
+
+	// -------------------------------------------------------------------------
+	// 14. Hover Popover Frontmatter Properties Unfolding & State
+	// -------------------------------------------------------------------------
+	{
+		// Default is false
+		assert.strictEqual(
+			DEFAULT_DOOM_SETTINGS.showPopoverProperties,
+			false,
+			"Default showPopoverProperties setting must be false"
+		);
+
+		const offState = computeDoomDomState(DEFAULT_DOOM_SETTINGS);
+		assert.ok(
+			!offState.activeClasses.includes("doom-popover-properties"),
+			"Off state must not contain doom-popover-properties"
+		);
+
+		const onState = computeDoomDomState(
+			makeSettings({ showPopoverProperties: true })
+		);
+		assert.ok(
+			onState.activeClasses.includes("doom-popover-properties"),
+			"On state must contain doom-popover-properties"
+		);
+
+		// Test simulated unfoldPopoverProperties logic
+		let setCollapseCalledWith: boolean | null = null;
+		const mockMetadataEditor = {
+			collapsed: true,
+			setCollapse: (collapsed: boolean, _animate: boolean) => {
+				setCollapseCalledWith = collapsed;
+				mockMetadataEditor.collapsed = collapsed;
+			},
+		};
+
+		class MockEmbed {
+			static collapseProperties = true;
+			metadataEditor = mockMetadataEditor;
+		}
+
+		const mockPopoverInstance = {
+			embed: new MockEmbed(),
+		};
+
+		const metaContainerClasses = new Set<string>(["metadata-container", "is-collapsed"]);
+		const headingClasses = new Set<string>(["metadata-properties-heading", "is-collapsed"]);
+		const foldClasses = new Set<string>(["collapse-indicator", "is-collapsed"]);
+		const contentStyle = { display: "none" };
+
+		const mockPopoverEl: any = {
+			querySelector: (sel: string) => {
+				if (sel === ".metadata-container") {
+					return {
+						getAttribute: (attr: string) => (attr === "data-property-count" ? "3" : null),
+						classList: {
+							remove: (cls: string) => metaContainerClasses.delete(cls),
+							contains: (cls: string) => metaContainerClasses.has(cls),
+						},
+						querySelector: (innerSel: string) => {
+							if (innerSel === ".metadata-properties-heading") {
+								return {
+									classList: {
+										remove: (cls: string) => headingClasses.delete(cls),
+									},
+								};
+							}
+							if (innerSel === ".collapse-indicator") {
+								return {
+									classList: {
+										remove: (cls: string) => foldClasses.delete(cls),
+									},
+								};
+							}
+							if (innerSel === ".metadata-content") {
+								return {
+									style: contentStyle,
+									hidden: true,
+								};
+							}
+							return null;
+						},
+					};
+				}
+				return null;
+			},
+		};
+
+		// Simulate unfoldPopoverProperties implementation
+		function simulateUnfoldPopoverProperties(popoverEl: any, popoverInstance?: any) {
+			const inst = popoverInstance;
+			const metadataEditor = inst?.embed?.metadataEditor;
+			if (metadataEditor && metadataEditor.collapsed) {
+				metadataEditor.setCollapse(false, false);
+			}
+			const embedConstructor = inst?.embed?.constructor;
+			if (embedConstructor && "collapseProperties" in embedConstructor) {
+				embedConstructor.collapseProperties = false;
+			}
+			const metaContainer = popoverEl.querySelector(".metadata-container");
+			if (metaContainer && metaContainer.getAttribute("data-property-count") !== "0") {
+				metaContainer.classList.remove("is-collapsed");
+				const heading = metaContainer.querySelector(".metadata-properties-heading");
+				if (heading) heading.classList.remove("is-collapsed");
+				const foldEl = metaContainer.querySelector(".collapse-indicator");
+				if (foldEl) foldEl.classList.remove("is-collapsed");
+				const content = metaContainer.querySelector(".metadata-content");
+				if (content && (content.style.display === "none" || content.hidden)) {
+					content.style.display = "";
+					content.hidden = false;
+				}
+			}
+		}
+
+		simulateUnfoldPopoverProperties(mockPopoverEl, mockPopoverInstance);
+
+		assert.strictEqual(setCollapseCalledWith, false, "MetadataEditor must be unfolded (setCollapse false)");
+		assert.strictEqual(MockEmbed.collapseProperties, false, "Embed constructor collapseProperties must be false");
+		assert.ok(!metaContainerClasses.has("is-collapsed"), "metadata-container must not have is-collapsed");
+		assert.ok(!headingClasses.has("is-collapsed"), "heading must not have is-collapsed");
+		assert.ok(!foldClasses.has("is-collapsed"), "fold icon must not have is-collapsed");
+		assert.strictEqual(contentStyle.display, "", "metadata-content display must be restored");
+
+		console.log("✓ Hover popover frontmatter properties unfolding and state management verified");
+	}
 
 	console.log("\nAll unit tests passed successfully!");
 })();

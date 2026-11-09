@@ -218,6 +218,21 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			},
 		});
 
+		// Hover Preview: Toggle note properties
+		this.addCommand({
+			id: "toggle-popover-properties",
+			name: "Toggle note properties in hover previews",
+			callback: async () => {
+				this.settings.showPopoverProperties = !this.settings.showPopoverProperties;
+				await this.saveSettings();
+				new Notice(
+					`DoomEsque: ${
+						this.settings.showPopoverProperties ? "Showing" : "Hiding"
+					} properties in hover previews`
+				);
+			},
+		});
+
 		// Hover Preview: Close active popover
 		this.addCommand({
 			id: "close-active-hover-preview",
@@ -827,6 +842,20 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.superKeyOpensRightSidebar)
 					.onChange(async (val) => {
 						this.plugin.settings.superKeyOpensRightSidebar = val;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Show note properties in hover previews")
+			.setDesc(
+				"Display frontmatter YAML properties (:PROPERTIES: drawer) at the top of note preview popover windows."
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.showPopoverProperties)
+					.onChange(async (val) => {
+						this.plugin.settings.showPopoverProperties = val;
 						await this.plugin.saveSettings();
 					});
 			});

@@ -202,6 +202,7 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-cursor-hollow",
 	"doom-cursor-underline",
 	"doom-sticky-hover-enabled",
+	"doom-popover-properties",
 	"doom-settings-flat",
 	"doom-legal-outline",
 	"doom-editorial-emphasis",
@@ -312,6 +313,8 @@ export interface DoomEsqueStyleSettings {
 	hoverPopoverFontScale: number;
 	/** Whether hover preview windows remain sticky until explicitly closed. Default: false. */
 	stickyHoverPreviews: boolean;
+	/** Show note frontmatter YAML properties (:PROPERTIES: drawer) at the top of hover preview popovers (`doom-popover-properties`). Default: false. */
+	showPopoverProperties: boolean;
 	/** Whether pressing the Super (Meta/Win) key pops open the previewed link in the right sidebar. Default: true. */
 	superKeyOpensRightSidebar: boolean;
 	/** Use clean border-delimited flat rows instead of rounded card boxes for settings items. Default: false. */
@@ -357,6 +360,7 @@ export const DEFAULT_DOOMESQUE_SETTINGS: DoomEsqueStyleSettings = {
 	hoverPopoverHeightPx: 420,
 	hoverPopoverFontScale: 1.0,
 	stickyHoverPreviews: false,
+	showPopoverProperties: false,
 	superKeyOpensRightSidebar: true,
 	flatSettingsItems: false,
 };
@@ -435,6 +439,9 @@ export function computeDoomDomState(settings: DoomEmacsStyleSettings): ComputedD
 	}
 	if (settings.stickyHoverPreviews) {
 		activeClasses.push("doom-sticky-hover-enabled");
+	}
+	if (settings.showPopoverProperties) {
+		activeClasses.push("doom-popover-properties");
 	}
 	if (settings.flatSettingsItems) {
 		activeClasses.push("doom-settings-flat");

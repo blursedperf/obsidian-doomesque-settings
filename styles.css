@@ -409,9 +409,25 @@ body.doom-no-h1-border .HyperMD-header-1 {
 	border-bottom: none !important;
 }
 
-body.doom-no-active-line-highlight .cm-activeLine,
-body.doom-no-active-line-highlight .cm-s-obsidian .cm-activeLine,
-body.doom-no-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
+body.doom-active-block-highlight .cm-s-obsidian .cm-activeLine,
+body.doom-active-block-highlight .cm-s-obsidian .cm-active.cm-line,
+body.doom-active-line-highlight .cm-s-obsidian .cm-activeLine,
+body.doom-active-line-highlight .cm-s-obsidian .cm-active.cm-line {
+	background-color: rgba(var(--doom-blue-rgb, 81, 175, 239), 0.06) !important;
+}
+
+body.doom-active-block-highlight .cm-s-obsidian .table-wrapper .cm-activeLine,
+body.doom-active-block-highlight .cm-s-obsidian .table-wrapper .cm-active.cm-line,
+body.doom-active-block-highlight .cm-s-obsidian .cm-table-widget .cm-activeLine,
+body.doom-active-block-highlight .cm-s-obsidian .cm-table-widget .cm-active.cm-line,
+body.doom-active-block-highlight .cm-s-obsidian .cm-embed-block table .cm-activeLine,
+body.doom-active-block-highlight .cm-s-obsidian .cm-embed-block table .cm-active.cm-line,
+body.doom-active-line-highlight .cm-s-obsidian .table-wrapper .cm-activeLine,
+body.doom-active-line-highlight .cm-s-obsidian .table-wrapper .cm-active.cm-line,
+body.doom-active-line-highlight .cm-s-obsidian .cm-table-widget .cm-activeLine,
+body.doom-active-line-highlight .cm-s-obsidian .cm-table-widget .cm-active.cm-line,
+body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-activeLine,
+body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.cm-line {
 	background-color: transparent !important;
 }
 

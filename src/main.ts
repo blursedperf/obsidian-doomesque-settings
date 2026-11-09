@@ -176,6 +176,20 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			},
 		});
 
+		// Active block highlight toggle
+		this.addCommand({
+			id: "toggle-active-block-highlight",
+			name: "Toggle active block highlight (hl-line-mode)",
+			callback: async () => {
+				this.settings.activeBlockHighlight = !this.settings.activeBlockHighlight;
+				this.settings.disableActiveLineHighlight = !this.settings.activeBlockHighlight;
+				await this.saveSettings();
+				new Notice(
+					`DoomEsque: Active block highlight ${this.settings.activeBlockHighlight ? "enabled" : "disabled"}`
+				);
+			},
+		});
+
 		// Flat settings rows toggle
 		this.addCommand({
 			id: "toggle-flat-settings-items",
@@ -305,6 +319,10 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 	async loadSettings(): Promise<void> {
 		const saved = (await this.loadData()) as Partial<DoomEmacsStyleSettings> | null;
 		this.settings = Object.assign({}, DEFAULT_DOOM_SETTINGS, saved);
+		// Migrate legacy disableActiveLineHighlight if activeBlockHighlight not explicitly set
+		if (saved?.activeBlockHighlight === undefined && saved?.disableActiveLineHighlight !== undefined) {
+			this.settings.activeBlockHighlight = !saved.disableActiveLineHighlight;
+		}
 	}
 
 	async saveSettings(): Promise<void> {
@@ -460,13 +478,16 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Disable active line highlight (hl-line-mode)")
-			.setDesc("Turn off the subtle horizontal background highlight on the cursor's active line.")
+			.setName("Active block highlight (hl-line-mode)")
+			.setDesc(
+				"Display a subtle horizontal background highlight on the cursor's active block / line (defaults to off)."
+			)
 			.addToggle((toggle) => {
 				toggle
-					.setValue(this.plugin.settings.disableActiveLineHighlight)
+					.setValue(this.plugin.settings.activeBlockHighlight)
 					.onChange(async (val) => {
-						this.plugin.settings.disableActiveLineHighlight = val;
+						this.plugin.settings.activeBlockHighlight = val;
+						this.plugin.settings.disableActiveLineHighlight = !val;
 						await this.plugin.saveSettings();
 					});
 			});

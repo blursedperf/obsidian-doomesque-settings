@@ -186,6 +186,8 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-disable-monospace-ui",
 	"doom-monochrome-headings",
 	"doom-no-h1-border",
+	"doom-active-block-highlight",
+	"doom-active-line-highlight",
 	"doom-no-active-line-highlight",
 	"doom-rainbow-indent-guides",
 	"doom-indent-style-solid",
@@ -253,8 +255,10 @@ export interface DoomEsqueStyleSettings {
 	monochromeHeadings: boolean;
 	/** Hide bottom underline border under H1 headings (`doom-no-h1-border`). */
 	disableH1Border: boolean;
-	/** Disable active editor line highlight (`hl-line-mode`) (`doom-no-active-line-highlight`). */
-	disableActiveLineHighlight: boolean;
+	/** Optional active editor block/line highlight (`hl-line-mode`) (`doom-active-block-highlight`). Defaults to false (off). */
+	activeBlockHighlight: boolean;
+	/** Backward compatibility alias for activeBlockHighlight. */
+	disableActiveLineHighlight?: boolean;
 
 	// --- Typography ---
 	/** Force monospace font in the note editor (`doom-monospace-editor`). */
@@ -330,6 +334,7 @@ export const DEFAULT_DOOMESQUE_SETTINGS: DoomEsqueStyleSettings = {
 	disableOrgTodoBadges: false,
 	monochromeHeadings: false,
 	disableH1Border: false,
+	activeBlockHighlight: false,
 	disableActiveLineHighlight: false,
 
 	monospaceEditor: false,
@@ -424,6 +429,9 @@ export function computeDoomDomState(settings: DoomEmacsStyleSettings): ComputedD
 	}
 	if (settings.disableH1Border) {
 		activeClasses.push("doom-no-h1-border");
+	}
+	if (settings.activeBlockHighlight) {
+		activeClasses.push("doom-active-block-highlight");
 	}
 	if (settings.disableActiveLineHighlight) {
 		activeClasses.push("doom-no-active-line-highlight");

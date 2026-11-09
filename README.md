@@ -89,7 +89,7 @@ Supercharge Obsidian page preview popovers (`.popover.hover-popover`) into flexi
 - **Heading Size Scale**: Proportional scale factor across all heading levels (`0.80x` to `1.40x`).
 - **Monochrome Headings**: Switch between Org rainbow headings and a clean, uniform Doom blue accent.
 - **H1 Accent Border**: Toggle the subtle bottom border under Level 1 headings.
-- **Active Line Highlight**: Toggle `hl-line-mode` editor line highlighting.
+- **Active Block Highlight**: Optional subtle background highlight on the cursor's active block / line (`hl-line-mode`, defaults to off).
 - **Org-Mode Task Badges**: Toggle explicit `TODO` and `DONE` prefix badges beside checkboxes.
 - **Editorial Emphasis**: High-contrast neutral text colors for bold and italic emphasis instead of syntax accents.
 

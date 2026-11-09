@@ -175,6 +175,7 @@ class MockDOMTokenList {
 			disableMonospaceUi: true,
 			monochromeHeadings: true,
 			disableH1Border: true,
+			activeBlockHighlight: true,
 			disableActiveLineHighlight: true,
 			rainbowIndentGuides: true,
 			legalOutlineNumbering: true,
@@ -192,6 +193,7 @@ class MockDOMTokenList {
 	assert.ok(state.activeClasses.includes("doom-disable-monospace-ui"));
 	assert.ok(state.activeClasses.includes("doom-monochrome-headings"));
 	assert.ok(state.activeClasses.includes("doom-no-h1-border"));
+	assert.ok(state.activeClasses.includes("doom-active-block-highlight"));
 	assert.ok(state.activeClasses.includes("doom-no-active-line-highlight"));
 	assert.ok(state.activeClasses.includes("doom-rainbow-indent-guides"));
 	assert.ok(state.activeClasses.includes("doom-legal-outline"));

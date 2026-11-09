@@ -119,11 +119,11 @@ body.doom-settings-flat .setting-item:not(.setting-item-heading):hover {
 }
 
 /* --------------------------------------------------------------------------
-   Settings Toggle Switches (.checkbox-container)
+   Settings Toggle Switches (.checkbox-container) — Square Retro Aesthetic
    -------------------------------------------------------------------------- */
 .modal.mod-settings .checkbox-container,
 .checkbox-container {
-	border-radius: 999px !important;
+	border-radius: 2px !important;
 	border: none !important;
 	background-color: var(--doom-base2, var(--background-modifier-border-hover)) !important;
 	box-shadow: inset 0 0 0 1px var(--doom-base4, var(--background-modifier-border)) !important;
@@ -148,7 +148,7 @@ body.doom-settings-flat .setting-item:not(.setting-item-heading):hover {
 
 .modal.mod-settings .checkbox-container::after,
 .checkbox-container::after {
-	border-radius: 50% !important;
+	border-radius: 2px !important;
 	background-color: #ffffff !important;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35) !important;
 	transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),

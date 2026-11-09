@@ -99,7 +99,7 @@ Supercharge Obsidian page preview popovers (`.popover.hover-popover`) into flexi
 
 - **Rounded Card Containers**: Generous 18px horizontal padding with subtle borders and 6px rounded geometry.
 - **Flat Settings Rows**: Option to use clean border-delimited flat rows instead of card boxes.
-- **Pill Toggles**: Custom circular thumb switches with smooth transition animations and glowing active accents.
+- **Square Toggles**: Rectangular track switches with square sliding thumbs and glowing active accents, designed to harmonize with Doom's crisp buffer geometry.
 
 ---
 

@@ -585,7 +585,7 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	border-radius: 3px !important;
 	color: var(--doom-fg, var(--text-normal)) !important;
 	font-family: var(--font-interface) !important;
-	font-size: 0.76em !important;
+	font-size: 0.70em !important;
 	padding: 2px 6px !important;
 	gap: 4px !important;
 	transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
@@ -644,7 +644,7 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	overflow: visible !important;
 	font-family: var(--font-interface) !important;
 	color: var(--doom-base5, #5b6268) !important;
-	font-size: 0.76em !important;
+	font-size: 0.70em !important;
 }
 
 .bases-toolbar :is(.bases-toolbar-result-count, .bases-toolbar-results-menu) .text-icon-button,

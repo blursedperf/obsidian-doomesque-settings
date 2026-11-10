@@ -816,6 +816,20 @@ class MockDOMTokenList {
 		"styles.css must disable ellipsis truncation on views menu label"
 	);
 
+	// Verify Bases results count button full-word layout (preventing truncation)
+	assert.ok(
+		cssContent.includes(".bases-toolbar .bases-toolbar-result-count"),
+		"styles.css must target .bases-toolbar .bases-toolbar-result-count"
+	);
+	assert.ok(
+		cssContent.includes(".bases-toolbar :is(.bases-toolbar-result-count, .bases-toolbar-results-menu) .text-button-label"),
+		"styles.css must target result count text-button-label"
+	);
+	assert.ok(
+		cssContent.includes(".bases-toolbar {") && cssContent.includes("overflow-x: auto !important;"),
+		"styles.css must allow horizontal scroll on .bases-toolbar to prevent squashing"
+	);
+
 	console.log("✓ Obsidian Bases stylesheet compatibility & fallback tokens verified");
 }
 

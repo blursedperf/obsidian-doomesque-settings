@@ -396,12 +396,12 @@ body.doom-rainbow-indent-guides .tree-item-children > .tree-item > .tree-item-ch
    Headings & Borders
    -------------------------------------------------------------------------- */
 body.doom-monochrome-headings {
-	--h1-color: var(--doom-blue, #51afef) !important;
-	--h2-color: var(--doom-blue, #51afef) !important;
-	--h3-color: var(--doom-blue, #51afef) !important;
-	--h4-color: var(--doom-blue, #51afef) !important;
-	--h5-color: var(--doom-blue, #51afef) !important;
-	--h6-color: var(--doom-blue, #51afef) !important;
+	--h1-color: var(--doom-blue, #51afef);
+	--h2-color: var(--doom-blue, #51afef);
+	--h3-color: var(--doom-blue, #51afef);
+	--h4-color: var(--doom-blue, #51afef);
+	--h5-color: var(--doom-blue, #51afef);
+	--h6-color: var(--doom-blue, #51afef);
 }
 
 body.doom-no-h1-border .markdown-rendered h1,
@@ -445,15 +445,9 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 
 .cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) .table-cell-wrapper {
 	box-sizing: border-box !important;
-	scrollbar-width: none !important;
 }
 
 /* Prevent horizontal scrollbars inside table cell editors when typing reaches right edge */
-.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) :is(.table-cell-wrapper, .cm-editor, .cm-scroller) {
-	scrollbar-width: none !important;
-	-ms-overflow-style: none !important;
-}
-
 .cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) :is(.table-cell-wrapper, .cm-editor, .cm-scroller)::-webkit-scrollbar {
 	display: none !important;
 	width: 0 !important;
@@ -486,11 +480,11 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 .markdown-source-view.mod-cm6 .cm-content > .cm-lang-base,
 .bases-embed,
 .block-language-base {
-	--bases-header-padding-end: 56px !important;
+	--bases-header-padding-end: 56px;
 }
 
 .workspace-leaf-content[data-type="bases"] .view-content {
-	--bases-header-padding-end: 12px !important;
+	--bases-header-padding-end: 12px;
 }
 
 .bases-embed .bases-view[data-view-type="table"],
@@ -562,9 +556,6 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 .bases-toolbar {
 	max-width: 100% !important;
 	overflow-x: auto !important;
-	scrollbar-width: none !important;
-	-ms-overflow-style: none !important;
-	column-gap: 3px !important;
 	gap: 3px !important;
 }
 
@@ -737,7 +728,6 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	align-items: center !important;
 	box-sizing: border-box !important;
 	min-width: max(var(--bases-column-width, 80px), 80px);
-	scrollbar-width: none !important;
 }
 
 .bases-table-cell,
@@ -759,7 +749,6 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	height: 100%;
 	width: 100%;
 	box-sizing: border-box !important;
-	scrollbar-width: none !important;
 }
 
 .bases-td::-webkit-scrollbar,
@@ -810,7 +799,6 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	line-height: 1.45 !important;
 	color: var(--doom-fg, var(--text-normal)) !important;
 	overflow-x: hidden !important;
-	scrollbar-width: none !important;
 }
 
 .bases-table-cell .metadata-input-longtext::-webkit-scrollbar,
@@ -1138,6 +1126,7 @@ body.doom-palette-retro-terminal .cm-s-obsidian span.cm-hashtag-end {
 	border-color: rgba(51, 255, 51, 0.32) !important;
 }
 
+/* stylelint-disable plugin/no-unsupported-browser-features -- text-decoration-color supported in Chrome 57+ (Obsidian 1.4.5 is Chrome 114) */
 body.doom-palette-retro-terminal .cm-s-obsidian .cm-link,
 body.doom-palette-retro-terminal .cm-s-obsidian .cm-hmd-internal-link,
 body.doom-palette-retro-terminal .markdown-rendered a.internal-link,
@@ -1153,6 +1142,7 @@ body.doom-palette-retro-terminal .markdown-rendered a.external-link:hover {
 	color: var(--doom-base8, #a8ffa8) !important;
 	text-decoration-color: var(--doom-fg, #33ff33) !important;
 }
+/* stylelint-enable plugin/no-unsupported-browser-features */
 
 body.doom-palette-retro-terminal .callout {
 	border-color: rgba(51, 255, 51, 0.35) !important;
@@ -1333,8 +1323,8 @@ body .recent-changes-container .tree-item-children {
 }
 
 body.doom-sidebar-compact {
-	--nav-item-padding: 1px var(--size-4-2, 8px) 1px var(--size-4-6, 24px) !important;
-	--nav-item-parent-padding: 1px var(--size-4-2, 8px) 1px var(--size-4-6, 24px) !important;
+	--nav-item-padding: 1px var(--size-4-2, 8px) 1px var(--size-4-6, 24px);
+	--nav-item-parent-padding: 1px var(--size-4-2, 8px) 1px var(--size-4-6, 24px);
 }
 
 body.doom-sidebar-compact .tree-item-self {
@@ -1344,8 +1334,8 @@ body.doom-sidebar-compact .tree-item-self {
 }
 
 body.doom-sidebar-comfortable {
-	--nav-item-padding: 6px var(--size-4-2, 8px) 6px var(--size-4-6, 24px) !important;
-	--nav-item-parent-padding: 6px var(--size-4-2, 8px) 6px var(--size-4-6, 24px) !important;
+	--nav-item-padding: 6px var(--size-4-2, 8px) 6px var(--size-4-6, 24px);
+	--nav-item-parent-padding: 6px var(--size-4-2, 8px) 6px var(--size-4-6, 24px);
 }
 
 body.doom-sidebar-comfortable .tree-item-self {
@@ -1377,8 +1367,8 @@ body.doom-legal-outline .markdown-rendered ol ol ol ol ol ol {
 }
 
 body.doom-editorial-emphasis {
-	--bold-color: var(--doom-base8, var(--text-normal)) !important;
-	--italic-color: var(--doom-fg, var(--text-normal)) !important;
+	--bold-color: var(--doom-base8, var(--text-normal));
+	--italic-color: var(--doom-fg, var(--text-normal));
 }
 
 /* --------------------------------------------------------------------------
@@ -1390,7 +1380,7 @@ body.doom-monospace-editor .markdown-preview-view {
 }
 
 body.doom-disable-monospace-ui {
-	--font-interface-theme: var(--font-default) !important;
+	--font-interface-theme: var(--font-default);
 }
 
 body.doom-disable-monospace-ui .workspace-tab-header,
@@ -1406,8 +1396,8 @@ body.doom-disable-monospace-ui .prompt {
    Hover Preview Sizing, Content Expansion, Sticky State & Modeline Header
    -------------------------------------------------------------------------- */
 body .popover.hover-popover {
-	--popover-height: 100% !important;
-	--popover-max-height: 100% !important;
+	--popover-height: 100%;
+	--popover-max-height: 100%;
 	width: var(--doom-popover-width, var(--popover-width, 550px));
 	height: var(--doom-popover-height, var(--popover-height, 420px));
 	min-width: 320px;

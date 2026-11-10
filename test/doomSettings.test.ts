@@ -786,7 +786,7 @@ class MockDOMTokenList {
 
 	// Verify header right padding offset and embed-actions button separation
 	assert.ok(
-		cssContent.includes("--bases-header-padding-end: 56px !important"),
+		cssContent.includes("--bases-header-padding-end: 56px"),
 		"styles.css must reserve 56px right padding for CM6 embed actions button"
 	);
 	assert.ok(
@@ -1303,8 +1303,8 @@ void (async () => {
 
 		// 1. Verify Markdown Table Editor cell scrollbar suppression & min-width in styles.css
 		assert.ok(
-			stylesContent.includes("scrollbar-width: none !important;"),
-			"styles.css must include scrollbar-width: none for cell text inputs"
+			stylesContent.includes("::-webkit-scrollbar") && stylesContent.includes("display: none !important;"),
+			"styles.css must suppress scrollbars on cell editors via ::-webkit-scrollbar"
 		);
 		assert.ok(
 			stylesContent.includes(":is(.table-cell-wrapper, .cm-editor, .cm-scroller)"),

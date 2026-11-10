@@ -1102,5 +1102,73 @@ void (async () => {
 		console.log("✓ Retro green terminal Bases and Properties styling consistency verified");
 	}
 
+	// -----------------------------------------------------------------------------
+	// 17. Mobile Caret Visibility & Styling Tests
+	// -----------------------------------------------------------------------------
+	{
+		const fs = require("node:fs");
+		const path = require("node:path");
+		const cssPath = path.resolve(process.cwd(), "styles.css");
+		const themeCssPath = path.resolve(process.cwd(), "../obsidian-theme-doomesque/theme.css");
+
+		assert.ok(fs.existsSync(cssPath), "styles.css must exist");
+		const stylesContent = fs.readFileSync(cssPath, "utf-8");
+
+		// 1. Ensure desktop-only gating of transparent caret
+		assert.ok(
+			stylesContent.includes("body:not(.is-mobile).doom-cursor-block"),
+			"styles.css must gate transparent caret behind body:not(.is-mobile) for block cursor"
+		);
+		assert.ok(
+			stylesContent.includes("body:not(.is-mobile).doom-cursor-glow"),
+			"styles.css must gate transparent caret behind body:not(.is-mobile) for glow cursor"
+		);
+		assert.ok(
+			stylesContent.includes("body:not(.is-mobile).doom-cursor-hollow"),
+			"styles.css must gate transparent caret behind body:not(.is-mobile) for hollow cursor"
+		);
+		assert.ok(
+			stylesContent.includes("body:not(.is-mobile).doom-cursor-underline"),
+			"styles.css must gate transparent caret behind body:not(.is-mobile) for underline cursor"
+		);
+
+		// 2. Ensure mobile explicit caret-color rules are present
+		assert.ok(
+			stylesContent.includes(".is-mobile .markdown-source-view.mod-cm6 .cm-content"),
+			"styles.css must style caret-color on mobile markdown source view"
+		);
+		assert.ok(
+			stylesContent.includes("caret-color: var(--text-accent, var(--doom-blue, #51afef)) !important;"),
+			"styles.css must set mobile caret-color to theme accent"
+		);
+		assert.ok(
+			stylesContent.includes("body.is-mobile.doom-palette-retro-terminal"),
+			"styles.css must set retro-terminal mobile caret-color"
+		);
+		assert.ok(
+			stylesContent.includes("caret-color: var(--doom-fg, #33ff33) !important;"),
+			"styles.css must set retro-terminal caret-color to phosphor green"
+		);
+
+		// 3. Verify matching rules in theme.css if present in workspace
+		if (fs.existsSync(themeCssPath)) {
+			const themeContent = fs.readFileSync(themeCssPath, "utf-8");
+			assert.ok(
+				themeContent.includes("body:not(.is-mobile).doom-cursor-block"),
+				"theme.css must gate transparent caret behind body:not(.is-mobile)"
+			);
+			assert.ok(
+				themeContent.includes(".is-mobile .markdown-source-view.mod-cm6 .cm-content"),
+				"theme.css must style caret-color on mobile"
+			);
+			assert.ok(
+				themeContent.includes("caret-color: var(--doom-fg, #33ff33) !important;"),
+				"theme.css must set retro-terminal caret-color to phosphor green"
+			);
+		}
+
+		console.log("✓ Mobile caret visibility and theme accent styling verified");
+	}
+
 	console.log("\nAll unit tests passed successfully!");
 })();

@@ -1571,12 +1571,34 @@ body.doom-popover-properties .popover.hover-popover .metadata-container[data-pro
 	}
 }
 
-/* Hide native OS caret when retro cursor styles are active */
-body.doom-cursor-block .markdown-source-view.mod-cm6 .cm-content,
-body.doom-cursor-glow .markdown-source-view.mod-cm6 .cm-content,
-body.doom-cursor-hollow .markdown-source-view.mod-cm6 .cm-content,
-body.doom-cursor-underline .markdown-source-view.mod-cm6 .cm-content {
+/* Hide native OS caret when retro cursor styles are active ONLY on desktop,
+   where CodeMirror's synthetic .cm-cursor elements are rendered */
+body:not(.is-mobile).doom-cursor-block .markdown-source-view.mod-cm6 .cm-content,
+body:not(.is-mobile).doom-cursor-glow .markdown-source-view.mod-cm6 .cm-content,
+body:not(.is-mobile).doom-cursor-hollow .markdown-source-view.mod-cm6 .cm-content,
+body:not(.is-mobile).doom-cursor-underline .markdown-source-view.mod-cm6 .cm-content {
 	caret-color: transparent !important;
+}
+
+/* On mobile touch devices (iOS/Android), CodeMirror relies on the native OS caret
+   for touch positioning, selection handles, and magnifier loupe.
+   Always ensure high-visibility caret-color matching the active palette accent. */
+.is-mobile .markdown-source-view.mod-cm6 .cm-content,
+.is-mobile .cm-editor .cm-content,
+.is-mobile .cm-content {
+	caret-color: var(--text-accent, var(--doom-blue, #51afef)) !important;
+}
+
+body.is-mobile.doom-palette-retro-terminal .markdown-source-view.mod-cm6 .cm-content,
+body.is-mobile.doom-palette-retro-terminal .cm-editor .cm-content,
+body.is-mobile.doom-palette-retro-terminal .cm-content {
+	caret-color: var(--doom-fg, #33ff33) !important;
+}
+
+body.is-mobile input[type="text"],
+body.is-mobile input[type="search"],
+body.is-mobile textarea {
+	caret-color: var(--text-accent, var(--doom-blue, #51afef)) !important;
 }
 
 body.doom-cursor-bar .markdown-source-view.mod-cm6 .cm-cursor,

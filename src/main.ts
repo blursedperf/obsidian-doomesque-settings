@@ -791,7 +791,7 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Text cursor style")
 			.setDesc(
-				"Choose the text cursor style in the note editor (modern 2px bar, or retro terminal block, glow, hollow, and underline)."
+				"Choose the text cursor style in the note editor (modern 2px bar, or retro terminal block, glow, hollow, and underline; mobile devices use the native OS caret styled with theme accent)."
 			)
 			.addDropdown((dropdown) => {
 				for (const opt of DOOM_CURSOR_STYLES) {

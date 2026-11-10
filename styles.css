@@ -1126,13 +1126,11 @@ body.doom-palette-retro-terminal .cm-s-obsidian span.cm-hashtag-end {
 	border-color: rgba(51, 255, 51, 0.32);
 }
 
-/* stylelint-disable plugin/no-unsupported-browser-features -- text-decoration-color supported in Chrome 57+ (Obsidian 1.4.5 is Chrome 114) */
 body.doom-palette-retro-terminal .cm-s-obsidian .cm-link,
 body.doom-palette-retro-terminal .cm-s-obsidian .cm-hmd-internal-link,
 body.doom-palette-retro-terminal .markdown-rendered a.internal-link,
 body.doom-palette-retro-terminal .markdown-rendered a.external-link {
 	color: var(--doom-fg, #33ff33);
-	text-decoration-color: var(--doom-base6, #4a8a4a);
 }
 
 body.doom-palette-retro-terminal .cm-s-obsidian .cm-link:hover,
@@ -1140,9 +1138,7 @@ body.doom-palette-retro-terminal .cm-s-obsidian .cm-hmd-internal-link:hover,
 body.doom-palette-retro-terminal .markdown-rendered a.internal-link:hover,
 body.doom-palette-retro-terminal .markdown-rendered a.external-link:hover {
 	color: var(--doom-base8, #a8ffa8);
-	text-decoration-color: var(--doom-fg, #33ff33);
 }
-/* stylelint-enable plugin/no-unsupported-browser-features */
 
 body.doom-palette-retro-terminal .callout {
 	border-color: rgba(51, 255, 51, 0.35);

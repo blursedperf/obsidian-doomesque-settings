@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-doomesque-settings",
 	"version": "1.0.7",
-	"description": "Obsidian plugin to customize style settings in the DoomEsque theme.",
+	"description": "Obsidian plugin to customize palettes, typography, and layout in the DoomEsque theme.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
@@ -14,7 +14,7 @@
 		"doomesque",
 		"doom-emacs",
 		"theme",
-		"style-settings",
+		"theme-settings",
 		"hover-preview"
 	],
 	"author": "blursedperf",

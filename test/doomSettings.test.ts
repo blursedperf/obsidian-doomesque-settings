@@ -798,6 +798,24 @@ class MockDOMTokenList {
 		"styles.css must style Bases embed-action expose syntax button"
 	);
 
+	// Verify Bases view selector button full-word layout (preventing truncation)
+	assert.ok(
+		cssContent.includes(".bases-toolbar .bases-toolbar-views-menu"),
+		"styles.css must target .bases-toolbar .bases-toolbar-views-menu"
+	);
+	assert.ok(
+		cssContent.includes(".bases-toolbar .bases-toolbar-views-menu .text-button-label"),
+		"styles.css must target .bases-toolbar .bases-toolbar-views-menu .text-button-label"
+	);
+	assert.ok(
+		cssContent.includes("min-width: max-content !important;"),
+		"styles.css must enforce max-content width on views menu button to show full word"
+	);
+	assert.ok(
+		cssContent.includes("text-overflow: clip !important;"),
+		"styles.css must disable ellipsis truncation on views menu label"
+	);
+
 	console.log("✓ Obsidian Bases stylesheet compatibility & fallback tokens verified");
 }
 

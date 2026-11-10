@@ -578,12 +578,41 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	color: var(--doom-blue, #51afef) !important;
 }
 
+.bases-toolbar .bases-toolbar-views-menu,
+.bases-toolbar .bases-toolbar-item.bases-toolbar-views-menu {
+	flex-shrink: 0 !important;
+	min-width: max-content !important;
+	overflow: visible !important;
+}
+
 .bases-toolbar .text-icon-button.is-active,
 .bases-toolbar .bases-toolbar-views-menu .text-icon-button {
 	border-color: var(--doom-blue, #51afef) !important;
 	background-color: rgba(var(--doom-blue-rgb, 81, 175, 239), 0.12) !important;
 	color: var(--doom-blue, #51afef) !important;
 	font-weight: 700 !important;
+	flex-shrink: 0 !important;
+	min-width: max-content !important;
+	max-width: none !important;
+	overflow: visible !important;
+	white-space: nowrap !important;
+	gap: 6px !important;
+	padding: 3px 10px !important;
+}
+
+.bases-toolbar .bases-toolbar-views-menu .text-button-label,
+.bases-toolbar .bases-toolbar-item.bases-toolbar-views-menu .text-button-label {
+	overflow: visible !important;
+	text-overflow: clip !important;
+	white-space: nowrap !important;
+	max-width: none !important;
+	flex-shrink: 0 !important;
+	padding-inline-end: 2px !important;
+}
+
+.bases-toolbar .bases-toolbar-views-menu .text-button-icon,
+.bases-toolbar .bases-toolbar-views-menu .mod-aux {
+	flex-shrink: 0 !important;
 }
 
 .bases-toolbar .bases-toolbar-result-count {
@@ -875,6 +904,20 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	border: 1px solid var(--doom-blue, #51afef) !important;
 	border-radius: 4px !important;
 	font-family: var(--font-monospace-doom, monospace);
+	max-width: 500px !important;
+	min-width: 220px !important;
+}
+
+.bases-toolbar-menu-container .bases-toolbar-menu-item {
+	min-width: max-content !important;
+}
+
+.bases-toolbar-menu-container .bases-toolbar-menu-item-name,
+.bases-toolbar-menu-container .menu-title-inner {
+	white-space: nowrap !important;
+	overflow: visible !important;
+	text-overflow: clip !important;
+	max-width: none !important;
 }
 
 /* --------------------------------------------------------------------------

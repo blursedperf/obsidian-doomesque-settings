@@ -1,4 +1,4 @@
-import { App, HoverPopover, Notice, Platform, TFile } from "obsidian";
+import { App, EventRef, HoverPopover, Notice, Platform, TFile } from "obsidian";
 import type DoomEmacsSettingsPlugin from "./main";
 
 export interface HoveredLinkInfo {
@@ -6,6 +6,64 @@ export interface HoveredLinkInfo {
 	sourcePath: string;
 	targetEl: HTMLElement;
 	timestamp: number;
+}
+
+export interface PopoverMetadataEditor {
+	collapsed?: boolean;
+	setCollapse(collapsed: boolean, animate?: boolean): void;
+}
+
+export interface PopoverEmbedComponent {
+	linktext?: string;
+	sourcePath?: string;
+	metadataEditor?: PopoverMetadataEditor;
+	constructor?: {
+		collapseProperties?: boolean;
+	};
+}
+
+export interface PatchedHoverPopover {
+	_doomIsSticky?: boolean;
+	_doomIsDragged?: boolean;
+	_doomHasRendered?: boolean;
+	_doomPopoverEl?: HTMLElement;
+	hoverEl?: HTMLElement;
+	targetEl?: HTMLElement;
+	isFocused?: boolean;
+	onHover?: boolean;
+	embed?: PopoverEmbedComponent;
+	hide?: (force?: boolean) => void;
+	show?: () => void;
+	shouldShow?: () => boolean;
+	shouldShowSelf?: () => boolean;
+	position?: () => void;
+}
+
+export interface PopoverHTMLElement extends HTMLElement {
+	_doomPopover?: PatchedHoverPopover;
+	_doomChildObserver?: MutationObserver;
+	dataset: DOMStringMap & {
+		doomLinktext?: string;
+		doomSourcePath?: string;
+		hasDragged?: string;
+	};
+}
+
+interface HoverLinkTarget {
+	event?: MouseEvent;
+	source?: string;
+	hoverParent?: unknown;
+	targetEl?: HTMLElement | null;
+	linktext?: string;
+	sourcePath?: string;
+}
+
+interface HoverPopoverProto {
+	show?: (...args: unknown[]) => unknown;
+	hide?: (...args: unknown[]) => unknown;
+	shouldShow?: (...args: unknown[]) => boolean;
+	shouldShowSelf?: (...args: unknown[]) => boolean;
+	position?: (...args: unknown[]) => unknown;
 }
 
 let topPopoverZIndex = 100;
@@ -22,15 +80,15 @@ export class HoverPreviewManager {
 	private isSuperKeyDown = false;
 	private mutationObserver: MutationObserver | null = null;
 	private cleanupFns: Array<() => void> = [];
-	private activePopovers: Set<any> = new Set();
+	private activePopovers: Set<PatchedHoverPopover> = new Set();
 	private isPatched = false;
 
 	// Original HoverPopover prototype methods
-	private originalShow: ((...args: any[]) => any) | null = null;
-	private originalHide: ((...args: any[]) => any) | null = null;
-	private originalShouldShow: ((...args: any[]) => any) | null = null;
-	private originalShouldShowSelf: ((...args: any[]) => any) | null = null;
-	private originalPosition: ((...args: any[]) => any) | null = null;
+	private originalShow: ((...args: unknown[]) => unknown) | null = null;
+	private originalHide: ((...args: unknown[]) => unknown) | null = null;
+	private originalShouldShow: ((...args: unknown[]) => boolean) | null = null;
+	private originalShouldShowSelf: ((...args: unknown[]) => boolean) | null = null;
+	private originalPosition: ((...args: unknown[]) => unknown) | null = null;
 
 	constructor(plugin: DoomEmacsSettingsPlugin) {
 		this.plugin = plugin;
@@ -54,20 +112,26 @@ export class HoverPreviewManager {
 		for (const fn of this.cleanupFns) {
 			try {
 				fn();
-			} catch {}
+			} catch {
+				/* ignore cleanup errors */
+			}
 		}
 		this.cleanupFns = [];
 
 		if (this.mutationObserver) {
 			try {
 				this.mutationObserver.disconnect();
-			} catch {}
+			} catch {
+				/* ignore disconnect error */
+			}
 			this.mutationObserver = null;
 		}
 
 		try {
 			this.closeAllHoverPopovers(true);
-		} catch {}
+		} catch {
+			/* ignore close error */
+		}
 		this.activePopovers.clear();
 	}
 
@@ -92,9 +156,9 @@ export class HoverPreviewManager {
 	private patchHoverPopoverPrototype(): void {
 		if (this.isPatched) return;
 
-		let proto: any = null;
+		let proto: (HoverPopoverProto & Record<string, unknown>) | null = null;
 		try {
-			proto = (HoverPopover as any)?.prototype;
+			proto = HoverPopover.prototype as unknown as HoverPopoverProto & Record<string, unknown>;
 		} catch (e) {
 			console.warn("DoomEsque Settings: HoverPopover prototype inaccessible", e);
 			return;
@@ -105,20 +169,18 @@ export class HoverPreviewManager {
 		}
 
 		try {
-			this.originalShow = proto.show;
-			this.originalHide = proto.hide;
-			this.originalShouldShow = proto.shouldShow;
-			this.originalShouldShowSelf = proto.shouldShowSelf;
-			this.originalPosition = proto.position;
+			this.originalShow = proto.show ?? null;
+			this.originalHide = proto.hide ?? null;
+			this.originalShouldShow = proto.shouldShow ?? null;
+			this.originalShouldShowSelf = proto.shouldShowSelf ?? null;
+			this.originalPosition = proto.position ?? null;
 		} catch (e) {
 			console.warn("DoomEsque Settings: Could not read HoverPopover prototype methods", e);
 			return;
 		}
 
-		const self = this;
-
 		// Helper to safely assign prototype properties without throwing if read-only
-		const safePatch = (name: string, fn: (...args: any[]) => any) => {
+		const safePatch = (name: string, fn: (...args: unknown[]) => unknown): void => {
 			try {
 				Object.defineProperty(proto, name, {
 					value: fn,
@@ -127,18 +189,22 @@ export class HoverPreviewManager {
 				});
 			} catch {
 				try {
-					proto[name] = fn;
+					(proto as Record<string, unknown>)[name] = fn;
 				} catch (err) {
 					console.warn(`DoomEsque Settings: Failed to patch HoverPopover.${name}`, err);
 				}
 			}
 		};
 
+		const { originalShow, originalHide, originalShouldShow, originalShouldShowSelf, originalPosition } = this;
+		const onPopoverShow = this.onPopoverShow.bind(this);
+		const onPopoverHide = this.onPopoverHide.bind(this);
+
 		// 1. show()
-		safePatch("show", function (this: any) {
-			const ret = self.originalShow ? self.originalShow.apply(this, arguments) : undefined;
+		safePatch("show", function (this: PatchedHoverPopover, ...args: unknown[]) {
+			const ret = originalShow ? originalShow.apply(this, args) : undefined;
 			try {
-				self.onPopoverShow(this);
+				onPopoverShow(this);
 			} catch (err) {
 				console.error("DoomEsque Settings: error in HoverPopover.show handler", err);
 			}
@@ -148,38 +214,39 @@ export class HoverPreviewManager {
 		// 2. hide(force?: boolean)
 		// Obsidian calls hide() on outside click (W3), mouse timeout (transition), or embed blur.
 		// When _doomIsSticky is true, suppress dismissal unless force is explicitly true.
-		safePatch("hide", function (this: any, force?: boolean) {
+		safePatch("hide", function (this: PatchedHoverPopover, ...args: unknown[]) {
+			const force = Boolean(args[0]);
 			if (this._doomIsSticky && !force) {
 				return;
 			}
-			self.onPopoverHide(this);
-			return self.originalHide ? self.originalHide.apply(this, arguments) : undefined;
+			onPopoverHide(this);
+			return originalHide ? originalHide.apply(this, args) : undefined;
 		});
 
 		// 3. shouldShow()
 		// Obsidian's vLe mouse interval calls transition() -> shouldShow().
 		// If sticky, always return true so transition() never schedules hide().
-		safePatch("shouldShow", function (this: any) {
+		safePatch("shouldShow", function (this: PatchedHoverPopover, ...args: unknown[]) {
 			if (this._doomIsSticky) {
 				return true;
 			}
-			return self.originalShouldShow ? self.originalShouldShow.apply(this, arguments) : true;
+			return originalShouldShow ? Boolean(originalShouldShow.apply(this, args)) : true;
 		});
 
 		// 4. shouldShowSelf()
 		// Obsidian checks this in W3 outside click handler (!i.isFocused && ...).
-		safePatch("shouldShowSelf", function (this: any) {
+		safePatch("shouldShowSelf", function (this: PatchedHoverPopover, ...args: unknown[]) {
 			if (this._doomIsSticky) {
 				return true;
 			}
-			return self.originalShouldShowSelf ? self.originalShouldShowSelf.apply(this, arguments) : true;
+			return originalShouldShowSelf ? Boolean(originalShouldShowSelf.apply(this, args)) : true;
 		});
 
 		// 5. position()
 		// Obsidian re-evaluates position on watchResize (up to 10 times) or scroll.
 		// If the user has manually dragged the popover, or if it is sticky and already rendered,
 		// or if the user is actively hovering/interacting with the popover, lock coordinates to prevent jumping.
-		safePatch("position", function (this: any) {
+		safePatch("position", function (this: PatchedHoverPopover, ...args: unknown[]) {
 			if (this._doomIsDragged || this.hoverEl?.classList.contains("mod-maximized")) {
 				return;
 			}
@@ -189,7 +256,7 @@ export class HoverPreviewManager {
 			if (this._doomHasRendered && (this.onHover || this.hoverEl?.matches(":hover"))) {
 				return;
 			}
-			const ret = self.originalPosition ? self.originalPosition.apply(this, arguments) : undefined;
+			const ret = originalPosition ? originalPosition.apply(this, args) : undefined;
 			if (this.hoverEl && (this.hoverEl.style.left || this.hoverEl.style.top)) {
 				this._doomHasRendered = true;
 			}
@@ -205,9 +272,9 @@ export class HoverPreviewManager {
 	private unpatchHoverPopoverPrototype(): void {
 		if (!this.isPatched) return;
 		try {
-			const proto = (HoverPopover as any)?.prototype;
+			const proto = HoverPopover.prototype as unknown as HoverPopoverProto & Record<string, unknown>;
 			if (proto) {
-				const safeRestore = (name: string, original: any) => {
+				const safeRestore = (name: string, original: ((...args: unknown[]) => unknown) | null): void => {
 					if (!original) return;
 					try {
 						proto[name] = original;
@@ -218,7 +285,9 @@ export class HoverPreviewManager {
 								writable: true,
 								configurable: true,
 							});
-						} catch {}
+						} catch {
+							/* ignore restore failure */
+						}
 					}
 				};
 
@@ -237,13 +306,13 @@ export class HoverPreviewManager {
 	/**
 	 * Called immediately when a HoverPopover instance shows on screen.
 	 */
-	private onPopoverShow(instance: any): void {
+	private onPopoverShow(instance: PatchedHoverPopover): void {
 		if (!instance) return;
 		this.activePopovers.add(instance);
 
-		const hoverEl = instance.hoverEl as HTMLElement | undefined;
+		const hoverEl = instance.hoverEl;
 		if (hoverEl) {
-			(hoverEl as any)._doomPopover = instance;
+			(hoverEl as PopoverHTMLElement)._doomPopover = instance;
 			instance._doomPopoverEl = hoverEl;
 
 			// Store link info on element if available
@@ -276,7 +345,7 @@ export class HoverPreviewManager {
 	/**
 	 * Called when a HoverPopover instance is closed.
 	 */
-	private onPopoverHide(instance: any): void {
+	private onPopoverHide(instance: PatchedHoverPopover): void {
 		this.activePopovers.delete(instance);
 	}
 
@@ -288,7 +357,7 @@ export class HoverPreviewManager {
 			const target = evt.target as HTMLElement | null;
 			if (!target) return;
 
-			const linkEl = target.closest("a.internal-link, .cm-hmd-internal-link, [data-href]") as HTMLElement | null;
+			const linkEl = target.closest<HTMLElement>("a.internal-link, .cm-hmd-internal-link, [data-href]");
 			if (!linkEl) return;
 
 			const linktext =
@@ -329,7 +398,9 @@ export class HoverPreviewManager {
 			try {
 				win.removeEventListener("mouseover", onMouseOver, { capture: true });
 				win.removeEventListener("mouseout", onMouseOut, { capture: true });
-			} catch {}
+			} catch {
+				/* cleanup failed */
+			}
 		});
 	}
 
@@ -355,7 +426,7 @@ export class HoverPreviewManager {
 			if (this.currentlyHoveredLink) {
 				evt.preventDefault();
 				evt.stopPropagation();
-				this.openInRightSidebar(
+				void this.openInRightSidebar(
 					this.currentlyHoveredLink.linktext,
 					this.currentlyHoveredLink.sourcePath
 				);
@@ -370,7 +441,7 @@ export class HoverPreviewManager {
 				if (linktext) {
 					evt.preventDefault();
 					evt.stopPropagation();
-					this.openInRightSidebar(linktext, sourcePath);
+					void this.openInRightSidebar(linktext, sourcePath);
 					this.closeHoverPopoverEl(activePopover);
 				}
 			}
@@ -389,7 +460,9 @@ export class HoverPreviewManager {
 			try {
 				win.removeEventListener("keydown", onKeyDown, { capture: true });
 				win.removeEventListener("keyup", onKeyUp, { capture: true });
-			} catch {}
+			} catch {
+				/* cleanup failed */
+			}
 		});
 	}
 
@@ -397,31 +470,27 @@ export class HoverPreviewManager {
 	 * Intercepts Obsidian workspace 'hover-link' event to handle Super key or store active link info.
 	 */
 	private registerWorkspaceHoverListener(): void {
-		const onHoverLink = (data: {
-			event?: MouseEvent;
-			source?: string;
-			hoverParent?: any;
-			targetEl?: HTMLElement | null;
-			linktext?: string;
-			sourcePath?: string;
-		}): void => {
+		const onHoverLink = (data: HoverLinkTarget): void => {
 			if (!data || !data.linktext) return;
 
 			this.lastHoveredLink = {
 				linktext: data.linktext,
 				sourcePath: data.sourcePath || "",
-				targetEl: data.targetEl || document.body,
+				targetEl: data.targetEl || activeDocument.body,
 				timestamp: Date.now(),
 			};
 
 			// If Super key was held when hover-link fired, open directly in right sidebar
 			const heldSuper = this.isSuperKeyDown || Boolean(data.event && data.event.metaKey);
 			if (this.plugin.settings.superKeyOpensRightSidebar && heldSuper) {
-				this.openInRightSidebar(data.linktext, data.sourcePath || "");
+				void this.openInRightSidebar(data.linktext, data.sourcePath || "");
 			}
 		};
 
-		this.plugin.registerEvent(this.app.workspace.on("hover-link" as any, onHoverLink as any));
+		const workspaceWithHoverLink = this.app.workspace as unknown as {
+			on(name: "hover-link", callback: (data: HoverLinkTarget) => void): EventRef;
+		};
+		this.plugin.registerEvent(workspaceWithHoverLink.on("hover-link", onHoverLink));
 	}
 
 	/**
@@ -429,13 +498,14 @@ export class HoverPreviewManager {
 	 */
 	private registerDomPopoverObserver(): void {
 		const checkAndEnhancePopovers = (): void => {
-			const popovers = document.querySelectorAll<HTMLElement>(
+			const popovers = activeDocument.querySelectorAll<HTMLElement>(
 				".popover.hover-popover:not(.doom-popover-initialized)"
 			);
 			for (let i = 0; i < popovers.length; i++) {
 				const el = popovers[i];
-				const instance = (el as any)._doomPopover || this.findInstanceForEl(el);
-				this.enhanceHoverPopover(el, instance);
+				const customEl = el as PopoverHTMLElement;
+				const instance = customEl._doomPopover || this.findInstanceForEl(customEl);
+				this.enhanceHoverPopover(customEl, instance ?? undefined);
 			}
 		};
 
@@ -443,7 +513,7 @@ export class HoverPreviewManager {
 			checkAndEnhancePopovers();
 		});
 
-		this.mutationObserver.observe(document.body, {
+		this.mutationObserver.observe(activeDocument.body, {
 			childList: true,
 			subtree: true,
 		});
@@ -451,7 +521,7 @@ export class HoverPreviewManager {
 		checkAndEnhancePopovers();
 	}
 
-	private findInstanceForEl(el: HTMLElement): any {
+	private findInstanceForEl(el: HTMLElement): PatchedHoverPopover | null {
 		for (const inst of this.activePopovers) {
 			if (inst.hoverEl === el || inst._doomPopoverEl === el) {
 				return inst;
@@ -463,21 +533,22 @@ export class HoverPreviewManager {
 	/**
 	 * Decorates a hover popover element with Doom styling, metadata, and controls.
 	 */
-	enhanceHoverPopover(popoverEl: HTMLElement, popoverInstance?: any): void {
-		if (popoverEl.classList.contains("doom-popover-initialized")) {
+	enhanceHoverPopover(popoverEl: HTMLElement, popoverInstance?: PatchedHoverPopover): void {
+		const customEl = popoverEl as PopoverHTMLElement;
+		if (customEl.classList.contains("doom-popover-initialized")) {
 			// Re-apply sticky status or headers if needed
 			if (popoverInstance) {
-				(popoverEl as any)._doomPopover = popoverInstance;
+				customEl._doomPopover = popoverInstance;
 			}
 			return;
 		}
 
-		popoverEl.classList.add("doom-popover-initialized");
+		customEl.classList.add("doom-popover-initialized");
 
-		const instance = popoverInstance || (popoverEl as any)._doomPopover || this.findInstanceForEl(popoverEl);
+		const instance = popoverInstance || customEl._doomPopover || this.findInstanceForEl(customEl);
 		if (instance) {
-			(popoverEl as any)._doomPopover = instance;
-			instance._doomPopoverEl = popoverEl;
+			customEl._doomPopover = instance;
+			instance._doomPopoverEl = customEl;
 		}
 
 		// Associate linktext and sourcePath with popover DOM element
@@ -488,7 +559,7 @@ export class HoverPreviewManager {
 				: null);
 
 		const resolvedLinktext =
-			popoverEl.dataset.doomLinktext ||
+			customEl.dataset.doomLinktext ||
 			instance?.embed?.linktext ||
 			instance?.targetEl?.getAttribute("data-href") ||
 			instance?.targetEl?.getAttribute("href") ||
@@ -496,28 +567,28 @@ export class HoverPreviewManager {
 			"Page Preview";
 
 		const resolvedSourcePath =
-			popoverEl.dataset.doomSourcePath ||
+			customEl.dataset.doomSourcePath ||
 			instance?.embed?.sourcePath ||
 			recentLink?.sourcePath ||
 			"";
 
-		popoverEl.dataset.doomLinktext = resolvedLinktext;
-		popoverEl.dataset.doomSourcePath = resolvedSourcePath;
+		customEl.dataset.doomLinktext = resolvedLinktext;
+		customEl.dataset.doomSourcePath = resolvedSourcePath;
 
 		// Set initial dimensions from settings if not manually resized
-		if (!popoverEl.style.width) {
-			popoverEl.style.width = `${this.plugin.settings.hoverPopoverWidthPx}px`;
+		if (!customEl.style.width) {
+			customEl.setCssStyles({ width: `${this.plugin.settings.hoverPopoverWidthPx}px` });
 		}
-		if (!popoverEl.style.height) {
-			popoverEl.style.height = `${this.plugin.settings.hoverPopoverHeightPx}px`;
+		if (!customEl.style.height) {
+			customEl.setCssStyles({ height: `${this.plugin.settings.hoverPopoverHeightPx}px` });
 		}
 
 		// Ensure child content container expands to fill full popover width and height
-		this.expandPopoverInnerContent(popoverEl);
+		this.expandPopoverInnerContent(customEl);
 
 		const isStickyDefault = Boolean(this.plugin.settings.stickyHoverPreviews);
 		if (isStickyDefault || instance?._doomIsSticky) {
-			popoverEl.classList.add("doom-sticky-popover");
+			customEl.classList.add("doom-sticky-popover");
 			if (instance) {
 				instance._doomIsSticky = true;
 				instance.isFocused = true;
@@ -525,39 +596,41 @@ export class HoverPreviewManager {
 		}
 
 		// Bring to front on click
-		popoverEl.addEventListener(
+		customEl.addEventListener(
 			"pointerdown",
 			() => {
 				topPopoverZIndex++;
-				popoverEl.style.zIndex = `${topPopoverZIndex}`;
+				customEl.setCssStyles({ zIndex: `${topPopoverZIndex}` });
 			},
 			{ capture: true }
 		);
 
 		// Intercept clicks on any embed link button within this popover so it opens in a new tab
-		popoverEl.addEventListener(
+		customEl.addEventListener(
 			"click",
-			async (evt: MouseEvent) => {
-				const target = evt.target as HTMLElement | null;
-				if (!target) return;
-				const embedLink = target.closest(".markdown-embed-link, .file-embed-link") as HTMLElement | null;
-				if (!embedLink) return;
+			(evt: MouseEvent) => {
+				void (async () => {
+					const target = evt.target as HTMLElement | null;
+					if (!target) return;
+					const embedLink = target.closest<HTMLElement>(".markdown-embed-link, .file-embed-link");
+					if (!embedLink) return;
 
-				evt.preventDefault();
-				evt.stopPropagation();
-				evt.stopImmediatePropagation();
+					evt.preventDefault();
+					evt.stopPropagation();
+					evt.stopImmediatePropagation();
 
-				const curLink = popoverEl.dataset.doomLinktext || resolvedLinktext;
-				const curSource = popoverEl.dataset.doomSourcePath || resolvedSourcePath;
-				if (curLink) {
-					await this.openInNewTab(curLink, curSource, instance, popoverEl);
-				}
+					const curLink = customEl.dataset.doomLinktext || resolvedLinktext;
+					const curSource = customEl.dataset.doomSourcePath || resolvedSourcePath;
+					if (curLink) {
+						await this.openInNewTab(curLink, curSource, instance ?? undefined, customEl);
+					}
+				})();
 			},
 			{ capture: true }
 		);
 
 		// Contain mouse wheel events within this popover so scrolling never leaks to the underlying note
-		popoverEl.addEventListener(
+		customEl.addEventListener(
 			"wheel",
 			(evt: WheelEvent) => {
 				evt.stopPropagation();
@@ -565,7 +638,7 @@ export class HoverPreviewManager {
 			{ passive: true }
 		);
 
-		this.buildPopoverHeader(popoverEl, resolvedLinktext, resolvedSourcePath, instance);
+		this.buildPopoverHeader(customEl, resolvedLinktext, resolvedSourcePath, instance ?? undefined);
 
 		// Observe subsequent asynchronous embed mounting inside this popover to expand immediately,
 		// ignoring section changes from virtual scrolling so scroll loops never occur
@@ -597,14 +670,16 @@ export class HoverPreviewManager {
 				if (!hasNewContainer) return;
 
 				if (expandRaf !== null) return;
-				expandRaf = requestAnimationFrame(() => {
+				expandRaf = window.requestAnimationFrame(() => {
 					expandRaf = null;
-					this.expandPopoverInnerContent(popoverEl);
+					this.expandPopoverInnerContent(customEl);
 				});
 			});
-			childObserver.observe(popoverEl, { childList: true, subtree: true });
-			(popoverEl as any)._doomChildObserver = childObserver;
-		} catch {}
+			childObserver.observe(customEl, { childList: true, subtree: true });
+			customEl._doomChildObserver = childObserver;
+		} catch {
+			/* ignore observer setup error */
+		}
 	}
 
 	/**
@@ -614,72 +689,78 @@ export class HoverPreviewManager {
 		popoverEl: HTMLElement,
 		linktext: string,
 		sourcePath: string,
-		popoverInstance: any
+		popoverInstance?: PatchedHoverPopover
 	): void {
 		if (popoverEl.querySelector(".doom-popover-header")) {
 			return;
 		}
 
-		const header = document.createElement("div");
-		header.className = "doom-popover-header";
+		const header = createDiv({ cls: "doom-popover-header" });
 
 		// Title & Drag Handle
-		const titleEl = document.createElement("span");
-		titleEl.className = "doom-popover-title";
-		titleEl.title = "Open note in new tab";
-		const titleIcon = titleEl.createSpan();
+		const titleEl = createSpan({
+			cls: "doom-popover-title",
+			title: "Open note in new tab",
+		});
+		const titleIcon = titleEl.createSpan({ cls: "doom-popover-title-icon" });
 		titleIcon.setText("📄");
-		titleIcon.style.fontSize = "12px";
 		const titleText = titleEl.createSpan();
 		titleText.setText(linktext);
-		titleEl.onclick = async (e) => {
+		titleEl.onclick = (e) => {
 			if (header.dataset.hasDragged === "true") return;
 			e.stopPropagation();
 			e.preventDefault();
-			const curLink = popoverEl.dataset.doomLinktext || linktext;
-			const curSource = popoverEl.dataset.doomSourcePath || sourcePath;
-			await this.openInNewTab(curLink, curSource, popoverInstance, popoverEl);
+			const customEl = popoverEl as PopoverHTMLElement;
+			const curLink = customEl.dataset.doomLinktext || linktext;
+			const curSource = customEl.dataset.doomSourcePath || sourcePath;
+			void this.openInNewTab(curLink, curSource, popoverInstance, popoverEl);
 		};
 		header.appendChild(titleEl);
 
 		// Action buttons container
-		const actionsEl = document.createElement("div");
-		actionsEl.className = "doom-popover-actions";
+		const actionsEl = createDiv({ cls: "doom-popover-actions" });
 
 		// 1. Open note in new tab button (↗)
-		const openBtn = document.createElement("button");
-		openBtn.className = "doom-popover-btn mod-open-tab";
-		openBtn.title = "Open note in new tab";
-		openBtn.setText("↗");
-		openBtn.onclick = async (e) => {
+		const openBtn = createEl("button", {
+			cls: "doom-popover-btn mod-open-tab",
+			title: "Open note in new tab",
+			text: "↗",
+		});
+		openBtn.onclick = (e) => {
 			e.stopPropagation();
 			e.preventDefault();
-			const curLink = popoverEl.dataset.doomLinktext || linktext;
-			const curSource = popoverEl.dataset.doomSourcePath || sourcePath;
-			await this.openInNewTab(curLink, curSource, popoverInstance, popoverEl);
+			const customEl = popoverEl as PopoverHTMLElement;
+			const curLink = customEl.dataset.doomLinktext || linktext;
+			const curSource = customEl.dataset.doomSourcePath || sourcePath;
+			void this.openInNewTab(curLink, curSource, popoverInstance, popoverEl);
 		};
 		actionsEl.appendChild(openBtn);
 
 		// 2. Pop to Right Sidebar button (⇥)
-		const sidebarBtn = document.createElement("button");
-		sidebarBtn.className = "doom-popover-btn mod-sidebar";
-		sidebarBtn.title = "Pop open in right sidebar (Super key)";
-		sidebarBtn.setText("⇥");
-		sidebarBtn.onclick = async (e) => {
+		const sidebarBtn = createEl("button", {
+			cls: "doom-popover-btn mod-sidebar",
+			title: "Pop open in right sidebar (Super key)",
+			text: "⇥",
+		});
+		sidebarBtn.onclick = (e) => {
 			e.stopPropagation();
 			e.preventDefault();
-			const curLink = popoverEl.dataset.doomLinktext || linktext;
-			const curSource = popoverEl.dataset.doomSourcePath || sourcePath;
-			await this.openInRightSidebar(curLink, curSource);
-			this.closeHoverPopoverEl(popoverEl, popoverInstance);
+			const customEl = popoverEl as PopoverHTMLElement;
+			const curLink = customEl.dataset.doomLinktext || linktext;
+			const curSource = customEl.dataset.doomSourcePath || sourcePath;
+			void (async () => {
+				await this.openInRightSidebar(curLink, curSource);
+				this.closeHoverPopoverEl(popoverEl, popoverInstance);
+			})();
 		};
 		actionsEl.appendChild(sidebarBtn);
 
-		// 2. Maximize / Restore Toggle button (⤢)
-		const maxBtn = document.createElement("button");
-		maxBtn.className = "doom-popover-btn mod-maximize";
-		maxBtn.title = "Maximize / restore preview window";
-		maxBtn.setText("⤢");
+		// 3. Maximize / Restore Toggle button (⤢)
+		const maxBtn = createEl("button", {
+			cls: "doom-popover-btn mod-maximize",
+			title: "Maximize / restore preview window",
+			text: "⤢",
+		});
 		let isMaximized = false;
 		let prevStyle = { left: "", top: "", width: "", height: "", position: "" };
 
@@ -697,22 +778,26 @@ export class HoverPreviewManager {
 					position: popoverEl.style.position,
 				};
 				popoverEl.classList.add("mod-maximized");
-				popoverEl.style.position = "fixed";
-				popoverEl.style.left = "4vw";
-				popoverEl.style.top = "5vh";
-				popoverEl.style.width = "92vw";
-				popoverEl.style.height = "90vh";
-				popoverEl.style.margin = "0";
+				popoverEl.setCssStyles({
+					position: "",
+					left: "",
+					top: "",
+					width: "",
+					height: "",
+					margin: "",
+				});
 				maxBtn.classList.add("is-active");
 				maxBtn.setText("🗗");
 				maxBtn.title = "Restore preview window size";
 			} else {
 				popoverEl.classList.remove("mod-maximized");
-				popoverEl.style.position = prevStyle.position || "absolute";
-				popoverEl.style.left = prevStyle.left;
-				popoverEl.style.top = prevStyle.top;
-				popoverEl.style.width = prevStyle.width || `${this.plugin.settings.hoverPopoverWidthPx}px`;
-				popoverEl.style.height = prevStyle.height || `${this.plugin.settings.hoverPopoverHeightPx}px`;
+				popoverEl.setCssStyles({
+					position: prevStyle.position || "",
+					left: prevStyle.left,
+					top: prevStyle.top,
+					width: prevStyle.width || `${this.plugin.settings.hoverPopoverWidthPx}px`,
+					height: prevStyle.height || `${this.plugin.settings.hoverPopoverHeightPx}px`,
+				});
 				maxBtn.classList.remove("is-active");
 				maxBtn.setText("⤢");
 				maxBtn.title = "Maximize preview window";
@@ -721,14 +806,15 @@ export class HoverPreviewManager {
 		};
 		actionsEl.appendChild(maxBtn);
 
-		// 3. Sticky Pin Toggle button (themeable symbol conforming to active colorscheme)
-		const pinBtn = document.createElement("button");
+		// 4. Sticky Pin Toggle button (themeable symbol conforming to active colorscheme)
 		const isCurrentlySticky =
 			popoverEl.classList.contains("doom-sticky-popover") ||
 			Boolean(popoverInstance?._doomIsSticky);
 
-		pinBtn.className = `doom-popover-btn mod-pin ${isCurrentlySticky ? "is-active" : ""}`;
-		pinBtn.title = isCurrentlySticky ? "Pinned (sticky until closed)" : "Pin preview (make sticky)";
+		const pinBtn = createEl("button", {
+			cls: `doom-popover-btn mod-pin ${isCurrentlySticky ? "is-active" : ""}`,
+			title: isCurrentlySticky ? "Pinned (sticky until closed)" : "Pin preview (make sticky)",
+		});
 		renderPinIcon(pinBtn);
 
 		pinBtn.onclick = (e) => {
@@ -736,7 +822,8 @@ export class HoverPreviewManager {
 			e.preventDefault();
 			const wasSticky = popoverEl.classList.contains("doom-sticky-popover");
 			const nowSticky = !wasSticky;
-			const inst = popoverInstance || (popoverEl as any)._doomPopover;
+			const customEl = popoverEl as PopoverHTMLElement;
+			const inst = popoverInstance || customEl._doomPopover;
 
 			if (nowSticky) {
 				popoverEl.classList.add("doom-sticky-popover");
@@ -758,11 +845,12 @@ export class HoverPreviewManager {
 		};
 		actionsEl.appendChild(pinBtn);
 
-		// 4. Close button (✕)
-		const closeBtn = document.createElement("button");
-		closeBtn.className = "doom-popover-btn mod-close";
-		closeBtn.title = "Close preview (Esc)";
-		closeBtn.setText("✕");
+		// 5. Close button (✕)
+		const closeBtn = createEl("button", {
+			cls: "doom-popover-btn mod-close",
+			title: "Close preview (Esc)",
+			text: "✕",
+		});
 		closeBtn.onclick = (e) => {
 			e.stopPropagation();
 			e.preventDefault();
@@ -804,18 +892,21 @@ export class HoverPreviewManager {
 			initialTop = rect.top;
 
 			// Mark instance as dragged so Obsidian's internal position() never jumps back to link
-			const inst = (popoverEl as any)._doomPopover;
+			const customEl = popoverEl as PopoverHTMLElement;
+			const inst = customEl._doomPopover;
 			if (inst) {
 				inst._doomIsDragged = true;
 			}
 
 			// Bring to top
 			topPopoverZIndex++;
-			popoverEl.style.zIndex = `${topPopoverZIndex}`;
+			popoverEl.setCssStyles({ zIndex: `${topPopoverZIndex}` });
 
 			try {
 				handleEl.setPointerCapture(e.pointerId);
-			} catch {}
+			} catch {
+				/* pointer capture not available */
+			}
 			e.preventDefault();
 		};
 
@@ -832,19 +923,18 @@ export class HoverPreviewManager {
 
 			if (rafId !== null) return;
 
-			rafId = requestAnimationFrame(() => {
+			rafId = window.requestAnimationFrame(() => {
 				rafId = null;
 				if (!isDragging) return;
 
 				const maxLeft = Math.max(10, (window.innerWidth || 1200) - 80);
 				const maxTop = Math.max(10, (window.innerHeight || 800) - 50);
 
-				popoverEl.style.position = "fixed";
-				popoverEl.style.left = `${Math.min(maxLeft, Math.max(10, initialLeft + dx))}px`;
-				popoverEl.style.top = `${Math.min(maxTop, Math.max(10, initialTop + dy))}px`;
-				popoverEl.style.right = "auto";
-				popoverEl.style.bottom = "auto";
-				popoverEl.style.margin = "0";
+				popoverEl.classList.add("mod-dragged");
+				popoverEl.setCssStyles({
+					left: `${Math.min(maxLeft, Math.max(10, initialLeft + dx))}px`,
+					top: `${Math.min(maxTop, Math.max(10, initialTop + dy))}px`,
+				});
 			});
 		};
 
@@ -852,13 +942,15 @@ export class HoverPreviewManager {
 			if (!isDragging) return;
 			isDragging = false;
 			if (rafId !== null) {
-				cancelAnimationFrame(rafId);
+				window.cancelAnimationFrame(rafId);
 				rafId = null;
 			}
 			try {
 				handleEl.releasePointerCapture(e.pointerId);
-			} catch {}
-			setTimeout(() => {
+			} catch {
+				/* pointer capture release failed */
+			}
+			window.setTimeout(() => {
 				handleEl.dataset.hasDragged = "false";
 			}, 150);
 		};
@@ -877,7 +969,7 @@ export class HoverPreviewManager {
 			if (evt.key !== "Escape") return;
 
 			// Don't intercept if user is in an Obsidian modal (e.g. Command Palette, Settings)
-			if (document.querySelector(".modal-container")) {
+			if (activeDocument.querySelector(".modal-container")) {
 				return;
 			}
 
@@ -893,7 +985,9 @@ export class HoverPreviewManager {
 		this.cleanupFns.push(() => {
 			try {
 				win.removeEventListener("keydown", onKeyDown, { capture: true });
-			} catch {}
+			} catch {
+				/* cleanup failed */
+			}
 		});
 	}
 
@@ -902,37 +996,42 @@ export class HoverPreviewManager {
 	 * in the top right of hover preview popovers, ensuring notes open in a new tab rather than the same tab.
 	 */
 	private registerEmbedLinkInterceptor(win: Window): void {
-		const onEmbedLinkClick = async (evt: MouseEvent): Promise<void> => {
+		const handleEmbedLinkClick = async (evt: MouseEvent): Promise<void> => {
 			if (evt.button !== 0 && evt.button !== 1) return;
 
 			const target = evt.target as HTMLElement | null;
 			if (!target) return;
 
-			const embedLink = target.closest(".markdown-embed-link, .file-embed-link") as HTMLElement | null;
+			const embedLink = target.closest<HTMLElement>(".markdown-embed-link, .file-embed-link");
 			if (!embedLink) return;
 
-			const popoverEl = embedLink.closest(".popover.hover-popover") as HTMLElement | null;
+			const popoverEl = embedLink.closest<HTMLElement>(".popover.hover-popover");
 			if (!popoverEl) return;
 
 			evt.preventDefault();
 			evt.stopPropagation();
 			evt.stopImmediatePropagation();
 
-			const instance = (popoverEl as any)._doomPopover || this.findInstanceForEl(popoverEl);
+			const customEl = popoverEl as PopoverHTMLElement;
+			const instance = customEl._doomPopover || this.findInstanceForEl(customEl);
 			const curLink =
-				popoverEl.dataset.doomLinktext ||
+				customEl.dataset.doomLinktext ||
 				instance?.embed?.linktext ||
 				this.currentlyHoveredLink?.linktext ||
 				"";
 			const curSource =
-				popoverEl.dataset.doomSourcePath ||
+				customEl.dataset.doomSourcePath ||
 				instance?.embed?.sourcePath ||
 				this.currentlyHoveredLink?.sourcePath ||
 				"";
 
 			if (curLink) {
-				await this.openInNewTab(curLink, curSource, instance, popoverEl);
+				await this.openInNewTab(curLink, curSource, instance ?? undefined, popoverEl);
 			}
+		};
+
+		const onEmbedLinkClick = (evt: MouseEvent): void => {
+			void handleEmbedLinkClick(evt);
 		};
 
 		this.plugin.registerDomEvent(win, "click", onEmbedLinkClick, { capture: true });
@@ -940,7 +1039,9 @@ export class HoverPreviewManager {
 		this.cleanupFns.push(() => {
 			try {
 				win.removeEventListener("click", onEmbedLinkClick, { capture: true });
-			} catch {}
+			} catch {
+				/* cleanup failed */
+			}
 		});
 	}
 
@@ -985,7 +1086,7 @@ export class HoverPreviewManager {
 		});
 
 		// Expand right sidebar if collapsed
-		const rightSplit = (this.app.workspace as any)?.rightSplit;
+		const rightSplit = this.app.workspace.rightSplit;
 		if (rightSplit && typeof rightSplit.expand === "function" && rightSplit.collapsed) {
 			rightSplit.expand();
 		}
@@ -1001,7 +1102,7 @@ export class HoverPreviewManager {
 	async openInNewTab(
 		linktext: string,
 		sourcePath = "",
-		popoverInstance?: any,
+		popoverInstance?: PatchedHoverPopover,
 		popoverEl?: HTMLElement
 	): Promise<boolean> {
 		const rawPath = linktext.split("#")[0].split("^")[0].trim();
@@ -1052,12 +1153,15 @@ export class HoverPreviewManager {
 	/**
 	 * Closes a specific popover element and cleanly tears down its internal HoverPopover component.
 	 */
-	closeHoverPopoverEl(popoverEl: HTMLElement, popoverInstance?: any): void {
+	closeHoverPopoverEl(popoverEl: HTMLElement, popoverInstance?: PatchedHoverPopover): void {
+		const customEl = popoverEl as PopoverHTMLElement;
 		try {
-			(popoverEl as any)?._doomChildObserver?.disconnect();
-		} catch {}
+			customEl._doomChildObserver?.disconnect();
+		} catch {
+			/* ignore disconnect error */
+		}
 
-		const instance = popoverInstance || (popoverEl as any)?._doomPopover || this.findInstanceForEl(popoverEl);
+		const instance = popoverInstance || customEl._doomPopover || this.findInstanceForEl(customEl);
 		if (instance) {
 			instance._doomIsSticky = false;
 			instance.isFocused = false;
@@ -1073,14 +1177,16 @@ export class HoverPreviewManager {
 
 		try {
 			popoverEl.remove();
-		} catch {}
+		} catch {
+			/* ignore remove error */
+		}
 	}
 
 	/**
 	 * Returns the most recent/topmost active hover popover in the DOM.
 	 */
 	getActiveHoverPopoverEl(): HTMLElement | null {
-		const popovers = document.querySelectorAll<HTMLElement>(".popover.hover-popover");
+		const popovers = activeDocument.querySelectorAll<HTMLElement>(".popover.hover-popover");
 		if (popovers.length === 0) return null;
 		return popovers[popovers.length - 1];
 	}
@@ -1089,7 +1195,7 @@ export class HoverPreviewManager {
 	 * Closes all open hover popover elements.
 	 */
 	closeAllHoverPopovers(force = false): void {
-		const popovers = Array.from(document.querySelectorAll<HTMLElement>(".popover.hover-popover"));
+		const popovers = Array.from(activeDocument.querySelectorAll<HTMLElement>(".popover.hover-popover"));
 		for (const el of popovers) {
 			if (force || el.classList.contains("doom-sticky-popover")) {
 				this.closeHoverPopoverEl(el);
@@ -1098,53 +1204,12 @@ export class HoverPreviewManager {
 	}
 
 	/**
-	 * Unconstrains inner embed elements so they expand to 100% of the resized window.
+	 * Expands popover inner content and updates tooltips.
 	 */
 	expandPopoverInnerContent(popoverEl: HTMLElement): void {
 		if (!popoverEl) return;
 
-		// 1. Unconstrain direct container children
-		const directChildren = Array.from(popoverEl.children || []) as HTMLElement[];
-		for (const child of directChildren) {
-			if (!child.classList.contains("doom-popover-header")) {
-				child.style.width = "100%";
-				child.style.maxWidth = "100%";
-				child.style.height = "100%";
-				child.style.maxHeight = "none";
-			}
-		}
-
-		// 2. Unconstrain nested embed components and views
-		const embeds = popoverEl.querySelectorAll<HTMLElement>(
-			".markdown-embed, .markdown-embed-content, .markdown-preview-view, .markdown-preview-sizer, .popover-content, .cm-editor, .cm-scroller, .bases-embed"
-		);
-		for (let i = 0; i < embeds.length; i++) {
-			const el = embeds[i];
-			// Do not disturb hidden elements (e.g. inactive editorEl inside embeds)
-			if (el.style.display === "none" || el.getAttribute("style")?.includes("display: none")) {
-				continue;
-			}
-			el.style.maxWidth = "100%";
-			el.style.maxHeight = "none";
-			if (el.classList.contains("markdown-preview-sizer")) {
-				el.style.width = "100%";
-				el.style.minHeight = "100%";
-				el.style.margin = "0";
-				el.style.paddingBottom = "24px";
-			} else if (
-				el.classList.contains("markdown-embed") ||
-				el.classList.contains("markdown-embed-content") ||
-				el.classList.contains("markdown-preview-view") ||
-				el.classList.contains("cm-scroller") ||
-				el.classList.contains("cm-editor") ||
-				el.classList.contains("bases-embed") ||
-				el.classList.contains("popover-content")
-			) {
-				el.style.height = "100%";
-			}
-		}
-
-		// 3. Update tooltip / aria-label on embed link buttons
+		// 1. Update tooltip / aria-label on embed link buttons
 		const embedLinks = popoverEl.querySelectorAll<HTMLElement>(
 			".markdown-embed-link, .file-embed-link"
 		);
@@ -1162,13 +1227,14 @@ export class HoverPreviewManager {
 	/**
 	 * Unfolds frontmatter properties drawer inside a hover preview popover.
 	 */
-	unfoldPopoverProperties(popoverEl: HTMLElement, popoverInstance?: any): void {
+	unfoldPopoverProperties(popoverEl: HTMLElement, popoverInstance?: PatchedHoverPopover): void {
 		if (!popoverEl) return;
 
+		const customEl = popoverEl as PopoverHTMLElement;
 		const inst =
 			popoverInstance ||
-			(popoverEl as any)._doomPopover ||
-			this.findInstanceForEl(popoverEl);
+			customEl._doomPopover ||
+			this.findInstanceForEl(customEl);
 
 		// If the embed has a metadataEditor, ensure it is unfolded
 		const metadataEditor = inst?.embed?.metadataEditor;
@@ -1176,7 +1242,9 @@ export class HoverPreviewManager {
 			if (metadataEditor.collapsed) {
 				try {
 					metadataEditor.setCollapse(false, false);
-				} catch {}
+				} catch {
+					/* ignore failure */
+				}
 			}
 		}
 
@@ -1196,7 +1264,7 @@ export class HoverPreviewManager {
 			if (foldEl) foldEl.classList.remove("is-collapsed");
 			const content = metaContainer.querySelector<HTMLElement>(".metadata-content");
 			if (content && (content.style.display === "none" || content.hidden)) {
-				content.style.display = "";
+				content.setCssStyles({ display: "" });
 				content.hidden = false;
 			}
 		}
@@ -1209,11 +1277,12 @@ export class HoverPreviewManager {
 		if (Platform.isMobile) return;
 		try {
 			const isSticky = Boolean(this.plugin.settings.stickyHoverPreviews);
-			const popovers = document.querySelectorAll<HTMLElement>(".popover.hover-popover");
+			const popovers = activeDocument.querySelectorAll<HTMLElement>(".popover.hover-popover");
 
 			for (let i = 0; i < popovers.length; i++) {
 				const el = popovers[i];
-				const inst = (el as any)._doomPopover || this.findInstanceForEl(el);
+				const customEl = el as PopoverHTMLElement;
+				const inst = customEl._doomPopover || this.findInstanceForEl(customEl);
 
 				if (inst) {
 					inst._doomIsSticky = isSticky;
@@ -1222,7 +1291,7 @@ export class HoverPreviewManager {
 
 				if (isSticky) {
 					el.classList.add("doom-sticky-popover");
-					const pinBtn = el.querySelector(".doom-popover-btn.mod-pin") as HTMLElement | null;
+					const pinBtn = el.querySelector<HTMLElement>(".doom-popover-btn.mod-pin");
 					if (pinBtn) {
 						pinBtn.classList.add("is-active");
 						pinBtn.setAttribute("title", "Pinned (sticky until closed)");
@@ -1232,7 +1301,7 @@ export class HoverPreviewManager {
 					}
 				} else {
 					el.classList.remove("doom-sticky-popover");
-					const pinBtn = el.querySelector(".doom-popover-btn.mod-pin") as HTMLElement | null;
+					const pinBtn = el.querySelector<HTMLElement>(".doom-popover-btn.mod-pin");
 					if (pinBtn) {
 						pinBtn.classList.remove("is-active");
 						pinBtn.setAttribute("title", "Pin preview (make sticky)");
@@ -1243,8 +1312,10 @@ export class HoverPreviewManager {
 				}
 
 				if (!el.classList.contains("mod-maximized")) {
-					el.style.width = `${this.plugin.settings.hoverPopoverWidthPx}px`;
-					el.style.height = `${this.plugin.settings.hoverPopoverHeightPx}px`;
+					el.setCssStyles({
+						width: `${this.plugin.settings.hoverPopoverWidthPx}px`,
+						height: `${this.plugin.settings.hoverPopoverHeightPx}px`,
+					});
 				}
 				this.expandPopoverInnerContent(el);
 			}

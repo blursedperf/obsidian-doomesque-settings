@@ -64,7 +64,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 							this.applySettingsToDocument(win.document);
 						}
 						if (win) {
-							this.hoverManager.registerWindow(win as unknown as Window);
+							this.hoverManager.registerWindow(win);
 						}
 					})
 				);
@@ -339,8 +339,8 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 
 	private getAllDocuments(): Document[] {
 		const docs: Document[] = [];
-		if (typeof document !== "undefined" && document) {
-			docs.push(document);
+		if (typeof activeDocument !== "undefined" && activeDocument) {
+			docs.push(activeDocument);
 		}
 
 		// Handle Obsidian popout/floating windows
@@ -937,7 +937,7 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 			.addButton((button) => {
 				button
 					.setButtonText("Reset to Defaults")
-					.setWarning()
+					.setDestructive()
 					.onClick(async () => {
 						this.plugin.settings = { ...DEFAULT_DOOM_SETTINGS };
 						await this.plugin.saveSettings();
@@ -971,7 +971,6 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 			slider
 				.setLimits(options.min, options.max, options.step)
 				.setValue(options.value)
-				.setDynamicTooltip()
 				.onChange(async (val) => {
 					valueBadge.setText(options.formatValue(val));
 					await options.onChange(val);

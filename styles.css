@@ -1668,6 +1668,18 @@ body .popover.hover-popover.doom-sticky-popover {
 	color: var(--doom-teal, #4db5bd);
 }
 
+.doom-popover-title-icon {
+	font-size: 12px;
+	line-height: 1;
+}
+
+body .popover.hover-popover.mod-dragged {
+	position: fixed;
+	right: auto;
+	bottom: auto;
+	margin: 0;
+}
+
 .doom-popover-actions {
 	display: flex;
 	align-items: center;

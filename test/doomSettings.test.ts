@@ -1256,5 +1256,69 @@ void (async () => {
 		console.log("✓ Suit and Tie sartorial palette definitions and polish styling verified");
 	}
 
+	// -----------------------------------------------------------------------------
+	// 19. Table Cell Typing & Horizontal Scrollbar Suppression Tests
+	// -----------------------------------------------------------------------------
+	{
+		const fs = require("node:fs");
+		const path = require("node:path");
+		const cssPath = path.resolve(process.cwd(), "styles.css");
+		const themeCssPath = path.resolve(process.cwd(), "../obsidian-theme-doomesque/theme.css");
+
+		assert.ok(fs.existsSync(cssPath), "styles.css must exist");
+		const stylesContent = fs.readFileSync(cssPath, "utf-8");
+
+		// 1. Verify Markdown Table Editor cell scrollbar suppression in styles.css
+		assert.ok(
+			stylesContent.includes("overflow-x: hidden !important;"),
+			"styles.css must include overflow-x: hidden for cell text inputs"
+		);
+		assert.ok(
+			stylesContent.includes(":is(.table-cell-wrapper, .cm-editor, .cm-scroller)"),
+			"styles.css must target table-cell-wrapper, cm-editor, cm-scroller for overflow suppression"
+		);
+		assert.ok(
+			stylesContent.includes("white-space: pre-wrap !important;"),
+			"styles.css must wrap text in table cell editor content"
+		);
+		assert.ok(
+			stylesContent.includes("word-break: break-word !important;"),
+			"styles.css must break words to prevent horizontal cell expansion"
+		);
+
+		// 2. Verify Bases cell scrollbar suppression in styles.css
+		assert.ok(
+			stylesContent.includes(".bases-td"),
+			"styles.css must target .bases-td"
+		);
+		assert.ok(
+			stylesContent.includes(".bases-table-cell"),
+			"styles.css must target .bases-table-cell"
+		);
+
+		// 3. Verify theme.css rules if present in workspace
+		if (fs.existsSync(themeCssPath)) {
+			const themeContent = fs.readFileSync(themeCssPath, "utf-8");
+			assert.ok(
+				themeContent.includes("--table-white-space: normal;"),
+				"theme.css must declare --table-white-space: normal"
+			);
+			assert.ok(
+				themeContent.includes("--bases-table-white-space: normal;"),
+				"theme.css must declare --bases-table-white-space: normal"
+			);
+			assert.ok(
+				themeContent.includes(":is(.table-cell-wrapper, .cm-editor, .cm-scroller)"),
+				"theme.css must target table-cell-wrapper, cm-editor, cm-scroller"
+			);
+			assert.ok(
+				themeContent.includes("white-space: pre-wrap !important;"),
+				"theme.css must wrap text in table cell editors"
+			);
+		}
+
+		console.log("✓ Table cell typing & horizontal scrollbar suppression verified");
+	}
+
 	console.log("\nAll unit tests passed successfully!");
 })();

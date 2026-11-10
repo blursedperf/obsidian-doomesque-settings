@@ -432,6 +432,48 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 }
 
 /* --------------------------------------------------------------------------
+   Table & Cell Text Input Scrollbar Prevention (Clean, zero-shift typing)
+   -------------------------------------------------------------------------- */
+.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) table.table-editor th,
+.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) table.table-editor td {
+	overflow-x: hidden !important;
+}
+
+.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) .table-cell-wrapper {
+	box-sizing: border-box !important;
+	overflow-x: hidden !important;
+	scrollbar-width: none !important;
+	word-break: break-word !important;
+	overflow-wrap: break-word !important;
+}
+
+/* Prevent horizontal scrollbars inside table cell editors when typing reaches right edge */
+.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) :is(.table-cell-wrapper, .cm-editor, .cm-scroller) {
+	overflow-x: hidden !important;
+	scrollbar-width: none !important;
+}
+
+.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) :is(.table-cell-wrapper, .cm-editor, .cm-scroller)::-webkit-scrollbar {
+	display: none !important;
+	width: 0 !important;
+	height: 0 !important;
+}
+
+/* Ensure text in table cells wraps naturally at the right edge without horizontal overflow */
+.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) :is(.cm-content, .cm-line) {
+	white-space: pre-wrap !important;
+	word-break: break-word !important;
+	overflow-wrap: break-word !important;
+}
+
+.markdown-rendered :is(th, td),
+.cm-s-obsidian .table-wrapper table.table-editor :is(th, td) {
+	white-space: normal !important;
+	word-break: break-word;
+	overflow-wrap: break-word;
+}
+
+/* --------------------------------------------------------------------------
    Obsidian Bases / Database Views (Matching Org-table polish and clarity)
    -------------------------------------------------------------------------- */
 .block-language-base,
@@ -625,6 +667,10 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	line-height: 1.45;
 	font-size: var(--bases-table-font-size, 0.88em);
 	align-items: center !important;
+	overflow: hidden !important;
+	overflow-x: hidden !important;
+	box-sizing: border-box !important;
+	scrollbar-width: none !important;
 }
 
 .bases-table-cell,
@@ -645,6 +691,17 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	min-height: var(--bases-table-row-height, 30px) !important;
 	height: 100%;
 	width: 100%;
+	overflow: hidden !important;
+	overflow-x: hidden !important;
+	box-sizing: border-box !important;
+	scrollbar-width: none !important;
+}
+
+.bases-td::-webkit-scrollbar,
+.bases-table-cell::-webkit-scrollbar {
+	display: none !important;
+	width: 0 !important;
+	height: 0 !important;
 }
 
 .bases-table-cell.bases-rendered-value {
@@ -681,10 +738,22 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	align-self: center !important;
 	min-height: 0 !important;
 	width: 100%;
+	max-width: 100% !important;
+	box-sizing: border-box !important;
 	font-family: var(--font-interface) !important;
 	font-size: inherit !important;
 	line-height: 1.45 !important;
 	color: var(--doom-fg, var(--text-normal)) !important;
+	overflow-x: hidden !important;
+	scrollbar-width: none !important;
+}
+
+.bases-table-cell .metadata-input-longtext::-webkit-scrollbar,
+.bases-table-cell .metadata-input-text::-webkit-scrollbar,
+.bases-table-cell input:not([type="checkbox"])::-webkit-scrollbar {
+	display: none !important;
+	width: 0 !important;
+	height: 0 !important;
 }
 
 .bases-table-cell[data-property-type="number"],

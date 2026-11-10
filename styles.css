@@ -1017,6 +1017,86 @@ body.doom-palette-retro-terminal .callout-icon svg {
 }
 
 /* --------------------------------------------------------------------------
+   Suit and Tie (doom-palette-suit-and-tie) Sartorial Polish & Details
+   Crisp pinstripe borders, bespoke tailoring accents, and refined contrast
+   -------------------------------------------------------------------------- */
+
+/* Tailored crisp pinstripe H1 underline border */
+body.doom-palette-suit-and-tie .markdown-rendered h1,
+body.doom-palette-suit-and-tie .HyperMD-header-1,
+body.doom-palette-suit-and-tie-light .markdown-rendered h1,
+body.doom-palette-suit-and-tie-light .HyperMD-header-1 {
+	border-bottom: 1px solid rgba(var(--doom-blue-rgb, 75, 150, 230), 0.32);
+	padding-bottom: 0.22em;
+}
+
+/* Crisp pinstripe structural dividers */
+body.doom-palette-suit-and-tie hr,
+body.doom-palette-suit-and-tie-light hr {
+	border: none;
+	border-top: 1px solid var(--doom-base3, #232732);
+	height: 1px;
+}
+
+/* Bespoke tailored blockquotes with silk-tie accent */
+body.doom-palette-suit-and-tie blockquote,
+body.doom-palette-suit-and-tie .cm-quote,
+body.doom-palette-suit-and-tie-light blockquote,
+body.doom-palette-suit-and-tie-light .cm-quote {
+	border-left: 2.5px solid var(--doom-blue, #4b96e6) !important;
+	background-color: rgba(var(--doom-blue-rgb, 75, 150, 230), 0.04);
+}
+
+/* Tailored lapel pin tags */
+body.doom-palette-suit-and-tie .tag,
+body.doom-palette-suit-and-tie a.tag,
+body.doom-palette-suit-and-tie .cm-s-obsidian span.cm-hashtag,
+body.doom-palette-suit-and-tie-light .tag,
+body.doom-palette-suit-and-tie-light a.tag,
+body.doom-palette-suit-and-tie-light .cm-s-obsidian span.cm-hashtag {
+	border-radius: 3px;
+	font-weight: 500;
+	letter-spacing: 0.02em;
+}
+
+/* Crisp inline code pill */
+body.doom-palette-suit-and-tie code:not(pre code),
+body.doom-palette-suit-and-tie-light code:not(pre code) {
+	border: 1px solid var(--doom-base3, #232732);
+	background-color: var(--doom-base1, #15181e);
+	border-radius: 3px;
+	padding: 0.15em 0.35em;
+}
+
+/* Subtle tailored active block highlight */
+body.doom-palette-suit-and-tie.doom-active-block-highlight .cm-active,
+body.doom-palette-suit-and-tie.doom-active-line-highlight .cm-active,
+body.doom-palette-suit-and-tie-light.doom-active-block-highlight .cm-active,
+body.doom-palette-suit-and-tie-light.doom-active-line-highlight .cm-active {
+	background-color: rgba(var(--doom-blue-rgb, 75, 150, 230), 0.065) !important;
+}
+
+/* Crisp sidebar active tab pinstripe top border */
+body.doom-palette-suit-and-tie .workspace-tab-header.is-active::before,
+body.doom-palette-suit-and-tie-light .workspace-tab-header.is-active::before {
+	background-color: var(--doom-blue, #4b96e6);
+	height: 2px;
+}
+
+/* Modeline tailored status bar accent */
+body.doom-palette-suit-and-tie .status-bar,
+body.doom-palette-suit-and-tie-light .status-bar {
+	border-top: 1px solid var(--doom-base3, #232732);
+}
+
+/* Hover preview window crisp border and tailored shadow */
+body.doom-palette-suit-and-tie .popover.hover-popover,
+body.doom-palette-suit-and-tie-light .popover.hover-popover {
+	border: 1px solid var(--doom-base3, #232732);
+	box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+}
+
+/* --------------------------------------------------------------------------
    Sidebar & File Explorer Densities & Tree Indentation
    -------------------------------------------------------------------------- */
 body {

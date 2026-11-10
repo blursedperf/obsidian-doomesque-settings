@@ -10,7 +10,7 @@ A dedicated companion plugin to customize and manipulate style settings, layout 
 
 Seamlessly switch between authentic Doom Emacs dark and light color palettes via plugin settings, Style Settings, or Command Palette hotkeys:
 
-#### Dark Mode Palettes (7 Schemes)
+#### Dark Mode Palettes (8 Schemes)
 - **`doom-one` (Default)**: Flagship Atom One Dark inspired Doom palette (`#282c34` background, `#51afef` blue, `#c678dd` magenta, `#98be65` green).
 - **`doom-vibrant`**: Deeper `#242730` canvas with high-saturation syntax accents.
 - **`doom-dracula`**: Classic Dracula purple/pink/cyan adaptation for Doom.
@@ -18,13 +18,15 @@ Seamlessly switch between authentic Doom Emacs dark and light color palettes via
 - **`doom-gruvbox`**: Warm retro Gruvbox dark medium palette (`#282828`).
 - **`doom-cyberpunk`**: High-contrast Night City neon aesthetic featuring electric cyan (`#00ffff`), signature yellow (`#fee801`), and Samurai crimson (`#ff003c`) on deep dark slate (`#0d1117`).
 - **`doom-retro-terminal`**: Authentic monochrome VT220 green phosphor CRT terminal aesthetic (`#080d08` deep phosphor background, `#33ff33` vibrant glowing green text).
+- **`doom-suit-and-tie`**: Clean modern bespoke tailoring palette. Deep tailored charcoal slate canvas (`#191c22`), crisp French cuff dress shirt white (`#edf1f7`), silk crimson tie (`#e24a58`), and steel blue accents (`#4b96e6`) with subtle pinstripe structural dividers.
 
-#### Light Mode Palettes (5 Schemes)
+#### Light Mode Palettes (6 Schemes)
 - **`doom-one-light` (Default)**: Clean Atom One Light port (`#fafafa` base) with vivid syntax accents.
 - **`doom-nord-light`**: Arctic pastel light scheme (`#e5e9f0` base) with cool slate and pine accents.
 - **`doom-gruvbox-light`**: Warm retro Gruvbox light medium palette (`#fbf1c7` base) with earthy tones.
 - **`doom-solarized-light`**: Classic Ethan Schoonover solarized light palette (`#fdf6e3` base).
 - **`doom-tomorrow-day`**: Crisp white Chris Kempson Tomorrow Day palette (`#ffffff` base).
+- **`doom-suit-and-tie-light`**: Crisp summer linen and Egyptian cotton base (`#f6f8fb`) with tailored navy (`#2a6fc2`), silver cufflink tones, and silk burgundy tie accents (`#bf3243`).
 
 ---
 

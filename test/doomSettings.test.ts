@@ -4,6 +4,7 @@ import {
 	ALL_MANAGED_CSS_VARS,
 	DEFAULT_DOOM_SETTINGS,
 	DOOM_PALETTES,
+	DOOM_LIGHT_PALETTES,
 	DoomEmacsStyleSettings,
 	applyDoomDomState,
 	clearDoomDomState,
@@ -86,6 +87,11 @@ class MockDOMTokenList {
 	);
 	assert.ok(retro.activeClasses.includes("doom-palette-retro-terminal"));
 
+	const suitAndTie = computeDoomDomState(
+		makeSettings({ darkPalette: "doom-palette-suit-and-tie" })
+	);
+	assert.ok(suitAndTie.activeClasses.includes("doom-palette-suit-and-tie"));
+
 	// Invalid dark palette fallback
 	const invalidDark = computeDoomDomState(makeSettings({ darkPalette: "doom-unknown" as any }));
 	assert.ok(invalidDark.activeClasses.includes("doom-palette-one"));
@@ -112,6 +118,11 @@ class MockDOMTokenList {
 	);
 	assert.ok(tomorrowDay.activeClasses.includes("doom-palette-tomorrow-day"));
 
+	const suitAndTieLight = computeDoomDomState(
+		makeSettings({ lightPalette: "doom-palette-suit-and-tie-light" })
+	);
+	assert.ok(suitAndTieLight.activeClasses.includes("doom-palette-suit-and-tie-light"));
+
 	// Invalid light palette fallback
 	const invalidLight = computeDoomDomState(makeSettings({ lightPalette: "doom-unknown" as any }));
 	assert.ok(invalidLight.activeClasses.includes("doom-palette-one-light"));
@@ -133,6 +144,10 @@ class MockDOMTokenList {
 	);
 	assert.strictEqual(
 		getNextDarkPalette("doom-palette-retro-terminal"),
+		"doom-palette-suit-and-tie"
+	);
+	assert.strictEqual(
+		getNextDarkPalette("doom-palette-suit-and-tie"),
 		"doom-palette-one"
 	);
 	assert.strictEqual(getNextDarkPalette("invalid" as any), "doom-palette-one");
@@ -147,7 +162,14 @@ class MockDOMTokenList {
 		getNextLightPalette("doom-palette-solarized-light"),
 		"doom-palette-tomorrow-day"
 	);
-	assert.strictEqual(getNextLightPalette("doom-palette-tomorrow-day"), "doom-palette-one-light");
+	assert.strictEqual(
+		getNextLightPalette("doom-palette-tomorrow-day"),
+		"doom-palette-suit-and-tie-light"
+	);
+	assert.strictEqual(
+		getNextLightPalette("doom-palette-suit-and-tie-light"),
+		"doom-palette-one-light"
+	);
 	assert.strictEqual(getNextLightPalette("invalid" as any), "doom-palette-one-light");
 
 	assert.strictEqual(getNextIndentStyle("solid"), "dashed");
@@ -1168,6 +1190,70 @@ void (async () => {
 		}
 
 		console.log("✓ Mobile caret visibility and theme accent styling verified");
+	}
+
+	// -----------------------------------------------------------------------------
+	// 18. Suit and Tie (doom-palette-suit-and-tie) Sartorial Palette Tests
+	// -----------------------------------------------------------------------------
+	{
+		const fs = require("node:fs");
+		const path = require("node:path");
+		const cssPath = path.resolve(process.cwd(), "styles.css");
+		const themeCssPath = path.resolve(process.cwd(), "../obsidian-theme-doomesque/theme.css");
+
+		// 1. Verify palette registry definitions
+		const suitDark = DOOM_PALETTES.find((p) => p.id === "doom-palette-suit-and-tie");
+		assert.ok(suitDark !== undefined, "doom-palette-suit-and-tie must exist in DOOM_PALETTES");
+		assert.ok(suitDark?.label.includes("suit-and-tie"));
+
+		const suitLight = DOOM_LIGHT_PALETTES.find((p) => p.id === "doom-palette-suit-and-tie-light");
+		assert.ok(suitLight !== undefined, "doom-palette-suit-and-tie-light must exist in DOOM_LIGHT_PALETTES");
+		assert.ok(suitLight?.label.includes("suit-and-tie-light"));
+
+		// 2. Verify DOM state computation and active classes
+		const suitSettings = makeSettings({
+			darkPalette: "doom-palette-suit-and-tie",
+			lightPalette: "doom-palette-suit-and-tie-light",
+		});
+		const suitState = computeDoomDomState(suitSettings);
+		assert.ok(
+			suitState.activeClasses.includes("doom-palette-suit-and-tie"),
+			"Active classes must include doom-palette-suit-and-tie"
+		);
+
+		// 3. Verify CSS rules in styles.css
+		const stylesContent = fs.readFileSync(cssPath, "utf-8");
+		assert.ok(
+			stylesContent.includes("body.doom-palette-suit-and-tie"),
+			"styles.css must contain body.doom-palette-suit-and-tie polish selectors"
+		);
+		assert.ok(
+			stylesContent.includes("body.doom-palette-suit-and-tie .markdown-rendered h1"),
+			"styles.css must contain tailored H1 styling for suit-and-tie"
+		);
+
+		// 4. Verify CSS rules in theme.css
+		if (fs.existsSync(themeCssPath)) {
+			const themeContent = fs.readFileSync(themeCssPath, "utf-8");
+			assert.ok(
+				themeContent.includes("body.theme-dark.doom-palette-suit-and-tie"),
+				"theme.css must define dark palette for doom-palette-suit-and-tie"
+			);
+			assert.ok(
+				themeContent.includes("body.theme-light.doom-palette-suit-and-tie"),
+				"theme.css must define light palette for doom-palette-suit-and-tie"
+			);
+			assert.ok(
+				themeContent.includes("--doom-bg: #191c22;"),
+				"theme.css must use #191c22 tailored charcoal background"
+			);
+			assert.ok(
+				themeContent.includes("--doom-fg: #edf1f7;"),
+				"theme.css must use #edf1f7 crisp shirt white foreground"
+			);
+		}
+
+		console.log("✓ Suit and Tie sartorial palette definitions and polish styling verified");
 	}
 
 	console.log("\nAll unit tests passed successfully!");

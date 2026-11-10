@@ -5,14 +5,16 @@ export type DoomDarkPalette =
 	| "doom-palette-tokyo-night"
 	| "doom-palette-gruvbox"
 	| "doom-palette-cyberpunk"
-	| "doom-palette-retro-terminal";
+	| "doom-palette-retro-terminal"
+	| "doom-palette-suit-and-tie";
 
 export type DoomLightPalette =
 	| "doom-palette-one-light"
 	| "doom-palette-nord-light"
 	| "doom-palette-gruvbox-light"
 	| "doom-palette-solarized-light"
-	| "doom-palette-tomorrow-day";
+	| "doom-palette-tomorrow-day"
+	| "doom-palette-suit-and-tie-light";
 
 export type DoomIndentGuideStyle = "solid" | "dashed" | "dotted" | "double" | "none";
 
@@ -66,6 +68,11 @@ export const DOOM_PALETTES: readonly DoomPaletteOption[] = [
 		label: "doom-retro-terminal (VT220 Green Screen)",
 		description: "Authentic monochrome green phosphor CRT terminal (#080d08 / #33ff33).",
 	},
+	{
+		id: "doom-palette-suit-and-tie",
+		label: "doom-suit-and-tie (Modern Sartorial)",
+		description: "Clean modern bespoke suiting palette: tailored charcoal slate with crisp white shirt contrast, silk crimson tie, and steel blue accents.",
+	},
 ];
 
 export const DOOM_LIGHT_PALETTES: readonly DoomLightPaletteOption[] = [
@@ -93,6 +100,11 @@ export const DOOM_LIGHT_PALETTES: readonly DoomLightPaletteOption[] = [
 		id: "doom-palette-tomorrow-day",
 		label: "doom-tomorrow-day",
 		description: "Crisp white Chris Kempson Tomorrow Day palette (#ffffff).",
+	},
+	{
+		id: "doom-palette-suit-and-tie-light",
+		label: "doom-suit-and-tie-light (Linen & Silk)",
+		description: "Crisp modern light sartorial palette: warm off-white linen shirt background with tailored navy and silk burgundy accents.",
 	},
 ];
 
@@ -176,11 +188,13 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-palette-gruvbox",
 	"doom-palette-cyberpunk",
 	"doom-palette-retro-terminal",
+	"doom-palette-suit-and-tie",
 	"doom-palette-one-light",
 	"doom-palette-nord-light",
 	"doom-palette-gruvbox-light",
 	"doom-palette-solarized-light",
 	"doom-palette-tomorrow-day",
+	"doom-palette-suit-and-tie-light",
 	"doom-no-org-todo",
 	"doom-monospace-editor",
 	"doom-disable-monospace-ui",

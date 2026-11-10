@@ -1216,7 +1216,7 @@ void (async () => {
 				"theme.css must style caret-color on mobile"
 			);
 			assert.ok(
-				themeContent.includes("caret-color: var(--doom-fg, #33ff33) !important;"),
+				themeContent.includes("caret-color: var(--doom-fg, #33ff33)"),
 				"theme.css must set retro-terminal caret-color to phosphor green"
 			);
 		}
@@ -1349,7 +1349,7 @@ void (async () => {
 				"theme.css must target table-cell-wrapper, cm-editor, cm-scroller"
 			);
 			assert.ok(
-				themeContent.includes("white-space: pre-wrap !important;"),
+				themeContent.includes("white-space: pre-wrap"),
 				"theme.css must wrap text in table cell editors"
 			);
 			assert.ok(

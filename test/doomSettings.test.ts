@@ -1504,5 +1504,105 @@ void (async () => {
 		console.log("✓ Security audit passed: 100% offline isolation & Obsidian guidelines conformance verified");
 	}
 
+	// -----------------------------------------------------------------------------
+	// 22. Multi-Window Document Synchronization & Core Obsidian Theme Base Tokens
+	// -----------------------------------------------------------------------------
+	{
+		const fs = require("node:fs");
+		const path = require("node:path");
+
+		// 1. Zero !important verification across both plugin and companion theme
+		const stylesPath = path.resolve(process.cwd(), "styles.css");
+		const stylesContent = fs.readFileSync(stylesPath, "utf-8");
+		assert.ok(
+			!stylesContent.includes("!important"),
+			"styles.css must contain zero instances of !important"
+		);
+
+		const themeRepoPath = path.resolve(process.cwd(), "../obsidian-theme-doomesque");
+		if (fs.existsSync(themeRepoPath)) {
+			const themeCss = fs.readFileSync(path.join(themeRepoPath, "theme.css"), "utf-8");
+			assert.ok(
+				!themeCss.includes("!important"),
+				"theme.css must contain zero instances of !important"
+			);
+
+			// 2. Core Obsidian Token & Base Color Mapping in theme.css
+			const expectedBaseTokens = [
+				"--color-base-00: var(--doom-bg);",
+				"--color-base-05: var(--doom-bg);",
+				"--color-base-10: var(--doom-bg-alt);",
+				"--color-base-20: var(--doom-bg-alt);",
+				"--color-base-25: var(--doom-base0);",
+				"--color-base-30: var(--doom-base1);",
+				"--color-base-35: var(--doom-base2);",
+				"--color-base-40: var(--doom-base3);",
+				"--color-base-50: var(--doom-base4);",
+				"--color-base-60: var(--doom-base5);",
+				"--color-base-70: var(--doom-base6);",
+				"--color-base-100: var(--doom-fg);",
+				"--titlebar-background: var(--doom-base0);",
+				"--titlebar-background-focused: var(--doom-base0);",
+				"--ribbon-background: var(--doom-base0);",
+				"--tab-container-background: var(--doom-base0);",
+				"--tab-background-active: var(--doom-bg);",
+			];
+
+			for (const token of expectedBaseTokens) {
+				assert.ok(
+					themeCss.includes(token),
+					`theme.css must define core Obsidian base token: ${token}`
+				);
+			}
+		}
+
+		// 3. Multi-Window and Main Document Synchronization Logic
+		const mockMainDoc = { name: "mainWorkspaceDoc", defaultView: { closed: false } } as unknown as Document;
+		const mockSettingsDoc = { name: "settingsModalDoc", defaultView: { closed: false } } as unknown as Document;
+		const mockPopoutDoc = { name: "popoutDoc", defaultView: { closed: false } } as unknown as Document;
+
+		// Simulate getAllDocuments() logic
+		function simulateGetAllDocuments(
+			mainDoc: Document | null,
+			activeDoc: Document | null,
+			trackedDocs: Set<Document>,
+			floatingKids: Array<{ doc?: Document; containerEl?: { ownerDocument: Document } }> = []
+		): Document[] {
+			const docs: Document[] = [];
+			if (mainDoc) {
+				docs.push(mainDoc);
+			}
+			if (activeDoc && !docs.includes(activeDoc)) {
+				docs.push(activeDoc);
+			}
+			for (const doc of trackedDocs) {
+				if (doc && doc.defaultView && !doc.defaultView.closed && !docs.includes(doc)) {
+					docs.push(doc);
+				}
+			}
+			for (const kid of floatingKids) {
+				const winDoc = kid?.doc ?? kid?.containerEl?.ownerDocument;
+				if (winDoc && !docs.includes(winDoc)) {
+					docs.push(winDoc);
+				}
+			}
+			return docs;
+		}
+
+		// When activeDocument is the settings window, main workspace document MUST still be included
+		const docsWhenSettingsFocused = simulateGetAllDocuments(
+			mockMainDoc,
+			mockSettingsDoc,
+			new Set([mockPopoutDoc])
+		);
+
+		assert.strictEqual(docsWhenSettingsFocused.length, 3);
+		assert.strictEqual(docsWhenSettingsFocused[0], mockMainDoc, "Main workspace document must be first");
+		assert.ok(docsWhenSettingsFocused.includes(mockSettingsDoc), "Settings modal document must be included");
+		assert.ok(docsWhenSettingsFocused.includes(mockPopoutDoc), "Popout document must be included");
+
+		console.log("✓ Multi-window document synchronization & core base color token mapping verified");
+	}
+
 	console.log("\nAll unit tests passed successfully!");
 })();

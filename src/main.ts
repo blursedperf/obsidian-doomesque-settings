@@ -25,6 +25,7 @@ import {
 export default class DoomEsqueSettingsPlugin extends Plugin {
 	settings: DoomEmacsStyleSettings = { ...DEFAULT_DOOM_SETTINGS };
 	hoverManager: HoverPreviewManager = new HoverPreviewManager(this);
+	private trackedDocuments = new Set<Document>();
 
 	async onload(): Promise<void> {
 		// Register CodeMirror 6 drawSelection extension so custom cursors
@@ -61,6 +62,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 				this.registerEvent(
 					this.app.workspace.on("window-open", (_leaf, win) => {
 						if (win?.document) {
+							this.trackedDocuments.add(win.document);
 							this.applySettingsToDocument(win.document);
 						}
 						if (win) {
@@ -71,6 +73,17 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			} catch (err) {
 				console.warn("DoomEsque Settings: window-open listener registration skipped", err);
 			}
+		}
+
+		// Re-apply settings on workspace layout changes (closing modals, pane splits)
+		try {
+			this.registerEvent(
+				this.app.workspace.on("layout-change", () => {
+					this.applyAllSettings();
+				})
+			);
+		} catch (err) {
+			console.warn("DoomEsque Settings: layout-change listener registration skipped", err);
 		}
 
 		// Palette switcher / cycler (dark)
@@ -314,6 +327,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 		} catch (err) {
 			console.warn("DoomEsque Settings: clearAllDocuments skipped", err);
 		}
+		this.trackedDocuments.clear();
 	}
 
 	async loadSettings(): Promise<void> {
@@ -339,8 +353,27 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 
 	private getAllDocuments(): Document[] {
 		const docs: Document[] = [];
-		if (typeof activeDocument !== "undefined" && activeDocument) {
+		const mainDoc = this.app.workspace.containerEl?.ownerDocument;
+		if (mainDoc) {
+			docs.push(mainDoc);
+		}
+
+		if (
+			typeof activeDocument !== "undefined" &&
+			activeDocument &&
+			!docs.includes(activeDocument)
+		) {
 			docs.push(activeDocument);
+		}
+
+		for (const doc of this.trackedDocuments) {
+			try {
+				if (doc && doc.defaultView && !doc.defaultView.closed && !docs.includes(doc)) {
+					docs.push(doc);
+				}
+			} catch {
+				/* ignore detached window checks */
+			}
 		}
 
 		// Handle Obsidian popout/floating windows
@@ -360,14 +393,6 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 					docs.push(winDoc);
 				}
 			}
-		}
-
-		if (
-			typeof activeDocument !== "undefined" &&
-			activeDocument &&
-			!docs.includes(activeDocument)
-		) {
-			docs.push(activeDocument);
 		}
 
 		return docs;

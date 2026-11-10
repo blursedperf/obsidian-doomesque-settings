@@ -404,8 +404,6 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		new Setting(containerEl).setName("DoomEsque Settings").setHeading();
-
 		// ---------------------------------------------------------------------
 		// 1. Color Palette & Faces
 		// ---------------------------------------------------------------------

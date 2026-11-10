@@ -1440,5 +1440,69 @@ void (async () => {
 		console.log("✓ Popover pin button capital 'P' symbol & color scheme conformance verified");
 	}
 
+	// -----------------------------------------------------------------------------
+	// 21. Security, 100% Offline Isolation & Obsidian Guidelines Conformance
+	// -----------------------------------------------------------------------------
+	{
+		const fs = require("node:fs");
+		const path = require("node:path");
+
+		const pluginManifestPath = path.resolve(process.cwd(), "manifest.json");
+		const pluginManifest = JSON.parse(fs.readFileSync(pluginManifestPath, "utf-8"));
+		const packageJsonPath = path.resolve(process.cwd(), "package.json");
+		const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+		const versionsPath = path.resolve(process.cwd(), "versions.json");
+		const versions = JSON.parse(fs.readFileSync(versionsPath, "utf-8"));
+
+		// 1. Manifest & Version Consistency
+		assert.strictEqual(pluginManifest.id, "doomesque-settings", "Plugin id must be doomesque-settings");
+		assert.strictEqual(pluginManifest.version, packageJson.version, "Manifest version must match package.json");
+		assert.ok(versions[pluginManifest.version], "versions.json must record current release version");
+		assert.ok(pluginManifest.minAppVersion, "manifest.json must specify minAppVersion");
+
+		// 2. Strict Offline Guarantee in Plugin CSS
+		const stylesPath = path.resolve(process.cwd(), "styles.css");
+		const stylesContent = fs.readFileSync(stylesPath, "utf-8");
+		assert.ok(!stylesContent.includes("@import"), "styles.css must not use @import");
+		assert.ok(!stylesContent.toLowerCase().includes("http://"), "styles.css must not contain http://");
+		assert.ok(!stylesContent.toLowerCase().includes("https://"), "styles.css must not contain https://");
+		assert.ok(!stylesContent.toLowerCase().includes("url("), "styles.css must not make remote url() requests");
+
+		// 3. Strict Offline & Safe DOM Guarantees in TypeScript Source
+		const srcDir = path.resolve(process.cwd(), "src");
+		const srcFiles = fs.readdirSync(srcDir).filter((f: string) => f.endsWith(".ts"));
+		for (const file of srcFiles) {
+			const content = fs.readFileSync(path.join(srcDir, file), "utf-8");
+			assert.ok(!content.includes("fetch("), `${file} must not call fetch()`);
+			assert.ok(!content.includes("XMLHttpRequest"), `${file} must not use XMLHttpRequest`);
+			assert.ok(!content.includes("WebSocket"), `${file} must not use WebSocket`);
+			assert.ok(!content.includes("eval("), `${file} must not use eval()`);
+			assert.ok(!content.includes("new Function("), `${file} must not use new Function()`);
+			assert.ok(!content.includes("innerHTML"), `${file} must not use innerHTML`);
+			assert.ok(!content.includes("outerHTML"), `${file} must not use outerHTML`);
+			assert.ok(!content.includes("document.write"), `${file} must not use document.write`);
+			assert.ok(!content.includes("child_process"), `${file} must not import child_process`);
+		}
+
+		// 4. Strict Offline Guarantee in Companion Theme
+		const themeRepoPath = path.resolve(process.cwd(), "../obsidian-theme-doomesque");
+		if (fs.existsSync(themeRepoPath)) {
+			const themeManifest = JSON.parse(
+				fs.readFileSync(path.join(themeRepoPath, "manifest.json"), "utf-8")
+			);
+			assert.strictEqual(themeManifest.name, "DoomEsque", "Theme manifest name must be DoomEsque");
+			assert.ok(themeManifest.version, "Theme manifest must have version");
+			assert.ok(themeManifest.minAppVersion, "Theme manifest must have minAppVersion");
+
+			const themeCss = fs.readFileSync(path.join(themeRepoPath, "theme.css"), "utf-8");
+			assert.ok(!themeCss.includes("@import"), "theme.css must not use @import");
+			assert.ok(!themeCss.toLowerCase().includes("http://"), "theme.css must not contain http://");
+			assert.ok(!themeCss.toLowerCase().includes("https://"), "theme.css must not contain https://");
+			assert.ok(!themeCss.toLowerCase().includes("url("), "theme.css must not make remote url() requests");
+		}
+
+		console.log("✓ Security audit passed: 100% offline isolation & Obsidian guidelines conformance verified");
+	}
+
 	console.log("\nAll unit tests passed successfully!");
 })();

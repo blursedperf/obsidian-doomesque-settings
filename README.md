@@ -181,4 +181,4 @@ npm run dev
 
 ## 📄 License
 
-[MIT License](./LICENSE) © 2026 Jason Gunst
+[MIT License](./LICENSE) © 2026 blursedperf

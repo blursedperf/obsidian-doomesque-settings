@@ -1366,7 +1366,7 @@ void (async () => {
 	}
 
 	// -----------------------------------------------------------------------------
-	// 20. Themeable Popover Pin Symbol & Color Scheme Conformance Tests
+	// 20. Popover Pin Button Capital 'P' Symbol & Color Scheme Conformance Tests
 	// -----------------------------------------------------------------------------
 	{
 		const fs = require("node:fs");
@@ -1378,34 +1378,30 @@ void (async () => {
 		const hpPath = path.resolve(process.cwd(), "src/hoverPreview.ts");
 		const hpContent = fs.readFileSync(hpPath, "utf-8");
 
-		// 1. Verify src/hoverPreview.ts uses themeable pin icon instead of pushpin emoji
+		// 1. Verify src/hoverPreview.ts uses capital 'P' for the pin button
 		assert.ok(
 			!hpContent.includes('pinBtn.setText("📌")'),
 			"hoverPreview.ts must not use hardcoded pushpin emoji"
 		);
 		assert.ok(
-			hpContent.includes("renderPinIcon(pinBtn)"),
-			"hoverPreview.ts must render themeable pin icon on pinBtn"
-		);
-		assert.ok(
-			hpContent.includes("setIcon"),
-			"hoverPreview.ts must import and use setIcon"
+			hpContent.includes('buttonEl.setText("P")') || hpContent.includes('pinBtn.setText("P")'),
+			"hoverPreview.ts must render capital 'P' in pin button"
 		);
 
-		// 2. Verify styles.css contains themeable svg rules for popover buttons
+		// 2. Verify styles.css contains themeable capital 'P' rules for mod-pin
 		assert.ok(
-			stylesContent.includes(".doom-popover-btn svg") &&
-				stylesContent.includes("stroke: currentColor;"),
-			"styles.css must style .doom-popover-btn svg with stroke: currentColor"
+			stylesContent.includes(".doom-popover-btn.mod-pin") &&
+				stylesContent.includes("font-family: var(--font-monospace-doom"),
+			"styles.css must style .doom-popover-btn.mod-pin with monospace font"
 		);
 		assert.ok(
 			stylesContent.includes(".doom-popover-btn.mod-pin:hover"),
 			"styles.css must define hover state for .doom-popover-btn.mod-pin"
 		);
 		assert.ok(
-			stylesContent.includes(".doom-popover-btn.mod-pin.is-active svg path") &&
-				stylesContent.includes("fill: currentColor;"),
-			"styles.css must fill active pin icon with currentColor"
+			stylesContent.includes(".doom-popover-btn.is-active") &&
+				stylesContent.includes(".doom-popover-btn.mod-pin.is-active"),
+			"styles.css must define active state for .doom-popover-btn.mod-pin"
 		);
 		assert.ok(
 			stylesContent.includes("rgba(var(--doom-green-rgb"),
@@ -1427,14 +1423,9 @@ void (async () => {
 		if (fs.existsSync(themePath)) {
 			const themeContent = fs.readFileSync(themePath, "utf-8");
 			assert.ok(
-				themeContent.includes(".doom-popover-btn svg") &&
-					themeContent.includes("stroke: currentColor;"),
-				"theme.css must style .doom-popover-btn svg with stroke: currentColor"
-			);
-			assert.ok(
-				themeContent.includes(".doom-popover-btn.mod-pin.is-active svg path") &&
-					themeContent.includes("fill: currentColor;"),
-				"theme.css must fill active pin icon with currentColor"
+				themeContent.includes(".doom-popover-btn.mod-pin") &&
+					themeContent.includes("font-family: var(--font-monospace-doom"),
+				"theme.css must style .doom-popover-btn.mod-pin with monospace font"
 			);
 			assert.ok(
 				themeContent.includes("body.doom-palette-retro-terminal .doom-popover-btn"),
@@ -1446,7 +1437,7 @@ void (async () => {
 			);
 		}
 
-		console.log("✓ Themeable popover pin symbol & color scheme conformance verified");
+		console.log("✓ Popover pin button capital 'P' symbol & color scheme conformance verified");
 	}
 
 	console.log("\nAll unit tests passed successfully!");

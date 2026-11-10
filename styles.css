@@ -1711,6 +1711,14 @@ body .popover.hover-popover.doom-sticky-popover {
 	pointer-events: none;
 }
 
+.doom-popover-btn.mod-pin {
+	font-family: var(--font-monospace-doom, var(--font-monospace)) !important;
+	font-weight: 700 !important;
+	font-size: 11px !important;
+	line-height: 1 !important;
+	letter-spacing: 0.02em;
+}
+
 .doom-popover-btn:hover {
 	background-color: var(--doom-base3, #23272e);
 	color: var(--doom-fg, #bbc2cf);

@@ -400,7 +400,15 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
+	getSettingDefinitions(): [] {
+		return [];
+	}
+
 	display(): void {
+		this.renderSettings();
+	}
+
+	private renderSettings(): void {
 		const { containerEl } = this;
 		containerEl.empty();
 
@@ -937,11 +945,11 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 			.addButton((button) => {
 				button
 					.setButtonText("Reset to Defaults")
-					.setDestructive()
+					.setClass("mod-warning")
 					.onClick(async () => {
 						this.plugin.settings = { ...DEFAULT_DOOM_SETTINGS };
 						await this.plugin.saveSettings();
-						this.display();
+						this.renderSettings();
 						new Notice("DoomEsque settings have been reset to defaults.");
 					});
 			});

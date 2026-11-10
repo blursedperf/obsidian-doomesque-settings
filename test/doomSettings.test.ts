@@ -808,11 +808,11 @@ class MockDOMTokenList {
 		"styles.css must target .bases-toolbar .bases-toolbar-views-menu .text-button-label"
 	);
 	assert.ok(
-		cssContent.includes("min-width: max-content !important;"),
+		cssContent.includes("min-width: max-content;"),
 		"styles.css must enforce max-content width on views menu button to show full word"
 	);
 	assert.ok(
-		cssContent.includes("text-overflow: clip !important;"),
+		cssContent.includes("text-overflow: clip;"),
 		"styles.css must disable ellipsis truncation on views menu label"
 	);
 
@@ -826,7 +826,7 @@ class MockDOMTokenList {
 		"styles.css must target result count text-button-label"
 	);
 	assert.ok(
-		cssContent.includes(".bases-toolbar {") && cssContent.includes("overflow-x: auto !important;"),
+		cssContent.includes(".bases-toolbar {") && cssContent.includes("overflow-x: auto;"),
 		"styles.css must allow horizontal scroll on .bases-toolbar to prevent squashing"
 	);
 
@@ -1192,7 +1192,7 @@ void (async () => {
 			"styles.css must style caret-color on mobile markdown source view"
 		);
 		assert.ok(
-			stylesContent.includes("caret-color: var(--text-accent, var(--doom-blue, #51afef)) !important;"),
+			stylesContent.includes("caret-color: var(--text-accent, var(--doom-blue, #51afef));"),
 			"styles.css must set mobile caret-color to theme accent"
 		);
 		assert.ok(
@@ -1200,7 +1200,7 @@ void (async () => {
 			"styles.css must set retro-terminal mobile caret-color"
 		);
 		assert.ok(
-			stylesContent.includes("caret-color: var(--doom-fg, #33ff33) !important;"),
+			stylesContent.includes("caret-color: var(--doom-fg, #33ff33);"),
 			"styles.css must set retro-terminal caret-color to phosphor green"
 		);
 
@@ -1303,7 +1303,7 @@ void (async () => {
 
 		// 1. Verify Markdown Table Editor cell scrollbar suppression & min-width in styles.css
 		assert.ok(
-			stylesContent.includes("::-webkit-scrollbar") && stylesContent.includes("display: none !important;"),
+			stylesContent.includes("::-webkit-scrollbar") && stylesContent.includes("display: none;"),
 			"styles.css must suppress scrollbars on cell editors via ::-webkit-scrollbar"
 		);
 		assert.ok(
@@ -1311,7 +1311,7 @@ void (async () => {
 			"styles.css must target table-cell-wrapper, cm-editor, cm-scroller for overflow suppression"
 		);
 		assert.ok(
-			stylesContent.includes("white-space: pre-wrap !important;"),
+			stylesContent.includes("white-space: pre-wrap;"),
 			"styles.css must wrap text in table cell editor content"
 		);
 		assert.ok(

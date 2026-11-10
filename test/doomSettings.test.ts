@@ -1257,7 +1257,8 @@ void (async () => {
 	}
 
 	// -----------------------------------------------------------------------------
-	// 19. Table Cell Typing & Horizontal Scrollbar Suppression Tests
+	// -----------------------------------------------------------------------------
+	// 19. Table Cell Typing, Layout Preservation & Horizontal Scrollbar Suppression Tests
 	// -----------------------------------------------------------------------------
 	{
 		const fs = require("node:fs");
@@ -1268,10 +1269,10 @@ void (async () => {
 		assert.ok(fs.existsSync(cssPath), "styles.css must exist");
 		const stylesContent = fs.readFileSync(cssPath, "utf-8");
 
-		// 1. Verify Markdown Table Editor cell scrollbar suppression in styles.css
+		// 1. Verify Markdown Table Editor cell scrollbar suppression & min-width in styles.css
 		assert.ok(
-			stylesContent.includes("overflow-x: hidden !important;"),
-			"styles.css must include overflow-x: hidden for cell text inputs"
+			stylesContent.includes("scrollbar-width: none !important;"),
+			"styles.css must include scrollbar-width: none for cell text inputs"
 		);
 		assert.ok(
 			stylesContent.includes(":is(.table-cell-wrapper, .cm-editor, .cm-scroller)"),
@@ -1282,11 +1283,11 @@ void (async () => {
 			"styles.css must wrap text in table cell editor content"
 		);
 		assert.ok(
-			stylesContent.includes("word-break: break-word !important;"),
-			"styles.css must break words to prevent horizontal cell expansion"
+			stylesContent.includes("min-width: var(--table-column-min-width, 70px);"),
+			"styles.css must enforce min-width on table cells to prevent squashing"
 		);
 
-		// 2. Verify Bases cell scrollbar suppression in styles.css
+		// 2. Verify Bases cell scrollbar suppression & min-width in styles.css
 		assert.ok(
 			stylesContent.includes(".bases-td"),
 			"styles.css must target .bases-td"
@@ -1295,17 +1296,21 @@ void (async () => {
 			stylesContent.includes(".bases-table-cell"),
 			"styles.css must target .bases-table-cell"
 		);
+		assert.ok(
+			stylesContent.includes("min-width: max(var(--bases-column-width, 80px), 80px);"),
+			"styles.css must enforce healthy min-width on Bases cells to prevent flex squashing"
+		);
 
 		// 3. Verify theme.css rules if present in workspace
 		if (fs.existsSync(themeCssPath)) {
 			const themeContent = fs.readFileSync(themeCssPath, "utf-8");
 			assert.ok(
-				themeContent.includes("--table-white-space: normal;"),
-				"theme.css must declare --table-white-space: normal"
+				!themeContent.includes("--table-white-space: normal;"),
+				"theme.css must not force --table-white-space: normal"
 			);
 			assert.ok(
-				themeContent.includes("--bases-table-white-space: normal;"),
-				"theme.css must declare --bases-table-white-space: normal"
+				!themeContent.includes("--bases-table-white-space: normal;"),
+				"theme.css must not force --bases-table-white-space: normal"
 			);
 			assert.ok(
 				themeContent.includes(":is(.table-cell-wrapper, .cm-editor, .cm-scroller)"),
@@ -1315,9 +1320,17 @@ void (async () => {
 				themeContent.includes("white-space: pre-wrap !important;"),
 				"theme.css must wrap text in table cell editors"
 			);
+			assert.ok(
+				themeContent.includes("min-width: var(--table-column-min-width, 70px);"),
+				"theme.css must enforce min-width on table cells to prevent squashing"
+			);
+			assert.ok(
+				themeContent.includes("min-width: max(var(--bases-column-width, 80px), 80px);"),
+				"theme.css must enforce min-width on Bases cells to prevent flex squashing"
+			);
 		}
 
-		console.log("✓ Table cell typing & horizontal scrollbar suppression verified");
+		console.log("✓ Table cell typing, layout preservation & horizontal scrollbar suppression verified");
 	}
 
 	console.log("\nAll unit tests passed successfully!");

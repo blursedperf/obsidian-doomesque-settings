@@ -1165,6 +1165,33 @@ body.doom-palette-retro-terminal .callout-icon svg {
 	color: var(--doom-fg, #33ff33) !important;
 }
 
+/* Retro Terminal Hover Popovers & Themeable Pin */
+body.doom-palette-retro-terminal .doom-popover-btn {
+	color: var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .doom-popover-btn svg,
+body.doom-palette-retro-terminal .doom-popover-btn .svg-icon {
+	stroke: var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .doom-popover-btn:hover {
+	background-color: rgba(51, 255, 51, 0.18) !important;
+	border-color: var(--doom-fg, #33ff33) !important;
+	color: var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .doom-popover-btn.is-active,
+body.doom-palette-retro-terminal .doom-popover-btn.mod-pin.is-active {
+	color: var(--doom-fg, #33ff33) !important;
+	background-color: rgba(51, 255, 51, 0.28) !important;
+	border-color: var(--doom-fg, #33ff33) !important;
+}
+
+body.doom-palette-retro-terminal .doom-popover-btn.mod-pin.is-active svg path {
+	fill: var(--doom-fg, #33ff33) !important;
+}
+
 /* --------------------------------------------------------------------------
    Suit and Tie (doom-palette-suit-and-tie) Sartorial Polish & Details
    Crisp pinstripe borders, bespoke tailoring accents, and refined contrast
@@ -1243,6 +1270,40 @@ body.doom-palette-suit-and-tie .popover.hover-popover,
 body.doom-palette-suit-and-tie-light .popover.hover-popover {
 	border: 1px solid var(--doom-base3, #232732);
 	box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+}
+
+/* Suit and Tie tailored popover buttons & themeable pin */
+body.doom-palette-suit-and-tie .doom-popover-btn,
+body.doom-palette-suit-and-tie-light .doom-popover-btn {
+	color: var(--doom-base6, #7b8599) !important;
+}
+
+body.doom-palette-suit-and-tie .doom-popover-btn:hover,
+body.doom-palette-suit-and-tie-light .doom-popover-btn:hover {
+	background-color: rgba(var(--doom-blue-rgb, 81, 162, 237), 0.10) !important;
+	border-color: rgba(var(--doom-blue-rgb, 81, 162, 237), 0.30) !important;
+	color: var(--doom-blue, #51afef) !important;
+}
+
+body.doom-palette-suit-and-tie .doom-popover-btn.mod-pin:hover,
+body.doom-palette-suit-and-tie-light .doom-popover-btn.mod-pin:hover {
+	color: var(--doom-green, #4ec07d) !important;
+	background-color: rgba(var(--doom-green-rgb, 78, 192, 125), 0.14) !important;
+	border-color: rgba(var(--doom-green-rgb, 78, 192, 125), 0.35) !important;
+}
+
+body.doom-palette-suit-and-tie .doom-popover-btn.is-active,
+body.doom-palette-suit-and-tie .doom-popover-btn.mod-pin.is-active,
+body.doom-palette-suit-and-tie-light .doom-popover-btn.is-active,
+body.doom-palette-suit-and-tie-light .doom-popover-btn.mod-pin.is-active {
+	color: var(--doom-green, #4ec07d) !important;
+	background-color: rgba(var(--doom-green-rgb, 78, 192, 125), 0.16) !important;
+	border-color: rgba(var(--doom-green-rgb, 78, 192, 125), 0.35) !important;
+}
+
+body.doom-palette-suit-and-tie .doom-popover-btn.mod-pin.is-active svg path,
+body.doom-palette-suit-and-tie-light .doom-popover-btn.mod-pin.is-active svg path {
+	fill: var(--doom-green, #4ec07d) !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -1641,41 +1702,65 @@ body .popover.hover-popover.doom-sticky-popover {
 	transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 
+.doom-popover-btn svg,
+.doom-popover-btn .svg-icon {
+	width: 13px !important;
+	height: 13px !important;
+	stroke: currentColor;
+	display: block;
+	pointer-events: none;
+}
+
 .doom-popover-btn:hover {
 	background-color: var(--doom-base3, #23272e);
 	color: var(--doom-fg, #bbc2cf);
 	border-color: var(--doom-base4, #3f444a);
 }
 
+.doom-popover-btn.mod-pin:hover {
+	color: var(--doom-green, #98be65);
+	background-color: rgba(var(--doom-green-rgb, 152, 190, 101), 0.16);
+	border-color: rgba(var(--doom-green-rgb, 152, 190, 101), 0.35);
+}
+
 .doom-popover-btn.is-active,
 .doom-popover-btn.mod-pin.is-active {
 	color: var(--doom-green, #98be65);
-	background-color: rgba(152, 190, 101, 0.16);
-	border-color: rgba(152, 190, 101, 0.35);
+	background-color: rgba(var(--doom-green-rgb, 152, 190, 101), 0.16);
+	border-color: rgba(var(--doom-green-rgb, 152, 190, 101), 0.35);
+}
+
+.doom-popover-btn.mod-pin.is-active svg path {
+	fill: currentColor;
+}
+
+.doom-popover-btn.mod-pin.is-active:hover {
+	background-color: rgba(var(--doom-green-rgb, 152, 190, 101), 0.26);
+	border-color: rgba(var(--doom-green-rgb, 152, 190, 101), 0.50);
 }
 
 .doom-popover-btn.mod-open-tab:hover {
 	color: var(--doom-teal, #4db5bd);
-	background-color: rgba(77, 181, 189, 0.16);
-	border-color: rgba(77, 181, 189, 0.35);
+	background-color: rgba(var(--doom-teal-rgb, 77, 181, 189), 0.16);
+	border-color: rgba(var(--doom-teal-rgb, 77, 181, 189), 0.35);
 }
 
 .doom-popover-btn.mod-maximize:hover {
 	color: var(--doom-cyan, #46d9ff);
-	background-color: rgba(70, 217, 255, 0.16);
-	border-color: rgba(70, 217, 255, 0.35);
+	background-color: rgba(var(--doom-cyan-rgb, 70, 217, 255), 0.16);
+	border-color: rgba(var(--doom-cyan-rgb, 70, 217, 255), 0.35);
 }
 
 .doom-popover-btn.mod-sidebar:hover {
 	color: var(--doom-yellow, #ecbe7b);
-	background-color: rgba(236, 190, 123, 0.16);
-	border-color: rgba(236, 190, 123, 0.35);
+	background-color: rgba(var(--doom-yellow-rgb, 236, 190, 123), 0.16);
+	border-color: rgba(var(--doom-yellow-rgb, 236, 190, 123), 0.35);
 }
 
 .doom-popover-btn.mod-close:hover {
 	color: var(--doom-red, #ff6c6b);
-	background-color: rgba(255, 108, 107, 0.16);
-	border-color: rgba(255, 108, 107, 0.35);
+	background-color: rgba(var(--doom-red-rgb, 255, 108, 107), 0.16);
+	border-color: rgba(var(--doom-red-rgb, 255, 108, 107), 0.35);
 }
 
 /* Open link button in hover popovers */

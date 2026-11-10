@@ -1365,5 +1365,89 @@ void (async () => {
 		console.log("✓ Table cell typing, layout preservation & horizontal scrollbar suppression verified");
 	}
 
+	// -----------------------------------------------------------------------------
+	// 20. Themeable Popover Pin Symbol & Color Scheme Conformance Tests
+	// -----------------------------------------------------------------------------
+	{
+		const fs = require("node:fs");
+		const path = require("node:path");
+
+		const stylesPath = path.resolve(process.cwd(), "styles.css");
+		const stylesContent = fs.readFileSync(stylesPath, "utf-8");
+
+		const hpPath = path.resolve(process.cwd(), "src/hoverPreview.ts");
+		const hpContent = fs.readFileSync(hpPath, "utf-8");
+
+		// 1. Verify src/hoverPreview.ts uses themeable pin icon instead of pushpin emoji
+		assert.ok(
+			!hpContent.includes('pinBtn.setText("📌")'),
+			"hoverPreview.ts must not use hardcoded pushpin emoji"
+		);
+		assert.ok(
+			hpContent.includes("renderPinIcon(pinBtn)"),
+			"hoverPreview.ts must render themeable pin icon on pinBtn"
+		);
+		assert.ok(
+			hpContent.includes("setIcon"),
+			"hoverPreview.ts must import and use setIcon"
+		);
+
+		// 2. Verify styles.css contains themeable svg rules for popover buttons
+		assert.ok(
+			stylesContent.includes(".doom-popover-btn svg") &&
+				stylesContent.includes("stroke: currentColor;"),
+			"styles.css must style .doom-popover-btn svg with stroke: currentColor"
+		);
+		assert.ok(
+			stylesContent.includes(".doom-popover-btn.mod-pin:hover"),
+			"styles.css must define hover state for .doom-popover-btn.mod-pin"
+		);
+		assert.ok(
+			stylesContent.includes(".doom-popover-btn.mod-pin.is-active svg path") &&
+				stylesContent.includes("fill: currentColor;"),
+			"styles.css must fill active pin icon with currentColor"
+		);
+		assert.ok(
+			stylesContent.includes("rgba(var(--doom-green-rgb"),
+			"styles.css must use dynamic --doom-green-rgb for pin active background"
+		);
+
+		// 3. Verify Retro Terminal and Suit and Tie popover button styles
+		assert.ok(
+			stylesContent.includes("body.doom-palette-retro-terminal .doom-popover-btn"),
+			"styles.css must style popover buttons for Retro Terminal"
+		);
+		assert.ok(
+			stylesContent.includes("body.doom-palette-suit-and-tie .doom-popover-btn"),
+			"styles.css must style popover buttons for Suit and Tie"
+		);
+
+		// 4. Verify theme.css in companion repo if present
+		const themePath = path.resolve(process.cwd(), "../obsidian-theme-doomesque/theme.css");
+		if (fs.existsSync(themePath)) {
+			const themeContent = fs.readFileSync(themePath, "utf-8");
+			assert.ok(
+				themeContent.includes(".doom-popover-btn svg") &&
+					themeContent.includes("stroke: currentColor;"),
+				"theme.css must style .doom-popover-btn svg with stroke: currentColor"
+			);
+			assert.ok(
+				themeContent.includes(".doom-popover-btn.mod-pin.is-active svg path") &&
+					themeContent.includes("fill: currentColor;"),
+				"theme.css must fill active pin icon with currentColor"
+			);
+			assert.ok(
+				themeContent.includes("body.doom-palette-retro-terminal .doom-popover-btn"),
+				"theme.css must style popover buttons for Retro Terminal"
+			);
+			assert.ok(
+				themeContent.includes("body.doom-palette-suit-and-tie .doom-popover-btn"),
+				"theme.css must style popover buttons for Suit and Tie"
+			);
+		}
+
+		console.log("✓ Themeable popover pin symbol & color scheme conformance verified");
+	}
+
 	console.log("\nAll unit tests passed successfully!");
 })();

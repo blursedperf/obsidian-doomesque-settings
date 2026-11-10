@@ -54,7 +54,7 @@ Supercharge Obsidian page preview popovers (`.popover.hover-popover`) into flexi
 - **Full Viewport Expansion**: Unconstrains child preview elements (`.markdown-preview-sizer`, `.markdown-embed`, `.cm-scroller`, `.bases-embed`) to fill 100% of the resized window without clipping or artificial column caps.
 - **Note Properties in Popovers**: Option to display frontmatter YAML properties (`:PROPERTIES:` drawer) at the top of note preview popover windows. Automatically unfolds properties on mount, suppresses empty states (`data-property-count="0"`), and hides the `+ Add property` button in non-editing preview mode.
 - **Sticky Hover Previews**: Keep hover preview popovers open until explicitly closed (via `✕` button or `Escape`), allowing you to scroll, edit, and navigate the rest of your vault freely.
-- **Floating Modeline Header**: Draggable top bar with note title, Open in New Tab (`↗`), Pop to Right Sidebar (`⇥`), Maximize/Restore toggle (`⤢`), Pin/Unpin toggle (`📌`), and Close button (`✕`).
+- **Floating Modeline Header**: Draggable top bar with note title, Open in New Tab (`↗`), Pop to Right Sidebar (`⇥`), Maximize/Restore toggle (`⤢`), Themeable Pin/Unpin toggle (conforming to any active colorscheme), and Close button (`✕`).
 - **Super Key Right Sidebar Pop-Open**: Press the **Super** (`Meta` / `Win` / `Cmd`) key while hovering over any link or active preview popover to immediately pop the note open in the right sidebar.
 - **Contained Scrolling**: Traps mouse wheel scroll events inside preview windows, preventing disruptive scroll chaining to the underlying editor.
 

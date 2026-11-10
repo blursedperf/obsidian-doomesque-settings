@@ -1,4 +1,4 @@
-import { App, HoverPopover, Notice, Platform, TFile } from "obsidian";
+import { App, HoverPopover, Notice, Platform, TFile, setIcon } from "obsidian";
 import type DoomEmacsSettingsPlugin from "./main";
 
 export interface HoveredLinkInfo {
@@ -9,6 +9,14 @@ export interface HoveredLinkInfo {
 }
 
 let topPopoverZIndex = 100;
+
+function renderPinIcon(buttonEl: HTMLElement): void {
+	try {
+		setIcon(buttonEl, "pin");
+	} catch {
+		buttonEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon doom-pin-icon"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>`;
+	}
+}
 
 export class HoverPreviewManager {
 	private plugin: DoomEmacsSettingsPlugin;
@@ -717,7 +725,7 @@ export class HoverPreviewManager {
 		};
 		actionsEl.appendChild(maxBtn);
 
-		// 3. Sticky Pin Toggle button (📌)
+		// 3. Sticky Pin Toggle button (themeable symbol conforming to active colorscheme)
 		const pinBtn = document.createElement("button");
 		const isCurrentlySticky =
 			popoverEl.classList.contains("doom-sticky-popover") ||
@@ -725,7 +733,7 @@ export class HoverPreviewManager {
 
 		pinBtn.className = `doom-popover-btn mod-pin ${isCurrentlySticky ? "is-active" : ""}`;
 		pinBtn.title = isCurrentlySticky ? "Pinned (sticky until closed)" : "Pin preview (make sticky)";
-		pinBtn.setText("📌");
+		renderPinIcon(pinBtn);
 
 		pinBtn.onclick = (e) => {
 			e.stopPropagation();
@@ -1218,17 +1226,23 @@ export class HoverPreviewManager {
 
 				if (isSticky) {
 					el.classList.add("doom-sticky-popover");
-					const pinBtn = el.querySelector(".doom-popover-btn.mod-pin");
+					const pinBtn = el.querySelector(".doom-popover-btn.mod-pin") as HTMLElement | null;
 					if (pinBtn) {
 						pinBtn.classList.add("is-active");
 						pinBtn.setAttribute("title", "Pinned (sticky until closed)");
+						if (!pinBtn.querySelector("svg")) {
+							renderPinIcon(pinBtn);
+						}
 					}
 				} else {
 					el.classList.remove("doom-sticky-popover");
-					const pinBtn = el.querySelector(".doom-popover-btn.mod-pin");
+					const pinBtn = el.querySelector(".doom-popover-btn.mod-pin") as HTMLElement | null;
 					if (pinBtn) {
 						pinBtn.classList.remove("is-active");
 						pinBtn.setAttribute("title", "Pin preview (make sticky)");
+						if (!pinBtn.querySelector("svg")) {
+							renderPinIcon(pinBtn);
+						}
 					}
 				}
 

@@ -507,11 +507,11 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 .bases-header {
 	background-color: var(--doom-bg-alt, var(--background-primary-alt)) !important;
 	border-bottom: 1px solid var(--table-border-color, var(--doom-base4, #3f444a)) !important;
-	padding-top: 4px !important;
-	padding-bottom: 4px !important;
-	padding-inline-start: 12px !important;
+	padding-top: 3px !important;
+	padding-bottom: 3px !important;
+	padding-inline-start: 8px !important;
 	padding-inline-end: var(--bases-header-padding-end, 56px) !important;
-	min-height: 38px;
+	min-height: 36px;
 	box-sizing: border-box;
 }
 
@@ -564,12 +564,18 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	overflow-x: auto !important;
 	scrollbar-width: none !important;
 	-ms-overflow-style: none !important;
+	column-gap: 3px !important;
+	gap: 3px !important;
 }
 
 .bases-toolbar::-webkit-scrollbar {
 	display: none !important;
 	width: 0 !important;
 	height: 0 !important;
+}
+
+.bases-toolbar .bases-toolbar-item {
+	margin: 0 !important;
 }
 
 .bases-toolbar .text-icon-button,
@@ -579,8 +585,9 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	border-radius: 3px !important;
 	color: var(--doom-fg, var(--text-normal)) !important;
 	font-family: var(--font-interface) !important;
-	font-size: 0.82em !important;
-	padding: 3px 8px !important;
+	font-size: 0.76em !important;
+	padding: 2px 6px !important;
+	gap: 4px !important;
 	transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 
@@ -609,8 +616,8 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	max-width: none !important;
 	overflow: visible !important;
 	white-space: nowrap !important;
-	gap: 6px !important;
-	padding: 3px 10px !important;
+	gap: 5px !important;
+	padding: 2px 8px !important;
 }
 
 .bases-toolbar .bases-toolbar-views-menu .text-button-label,
@@ -637,7 +644,7 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	overflow: visible !important;
 	font-family: var(--font-interface) !important;
 	color: var(--doom-base5, #5b6268) !important;
-	font-size: 0.82em !important;
+	font-size: 0.76em !important;
 }
 
 .bases-toolbar :is(.bases-toolbar-result-count, .bases-toolbar-results-menu) .text-icon-button,
@@ -647,7 +654,8 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	max-width: none !important;
 	overflow: visible !important;
 	white-space: nowrap !important;
-	padding: 3px 8px !important;
+	padding: 2px 6px !important;
+	gap: 4px !important;
 }
 
 .bases-toolbar :is(.bases-toolbar-result-count, .bases-toolbar-results-menu) .text-button-label {
@@ -660,7 +668,7 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 }
 
 .bases-toolbar .bases-toolbar-new-item-menu {
-	margin-inline-end: 4px !important;
+	margin-inline-end: 0 !important;
 }
 
 /* Column Header Row (.bases-thead matching Org-table 2px blue accent underline) */

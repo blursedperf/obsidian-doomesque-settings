@@ -1315,6 +1315,14 @@ void (async () => {
 			"styles.css must wrap text in table cell editor content"
 		);
 		assert.ok(
+			stylesContent.includes("word-break: break-word;"),
+			"styles.css must break words to prevent horizontal cell extension"
+		);
+		assert.ok(
+			stylesContent.includes("overflow-x: hidden;"),
+			"styles.css must suppress horizontal overflow on table cell editors"
+		);
+		assert.ok(
 			stylesContent.includes("min-width: var(--table-column-min-width, 70px);"),
 			"styles.css must enforce min-width on table cells to prevent squashing"
 		);
@@ -1351,6 +1359,14 @@ void (async () => {
 			assert.ok(
 				themeContent.includes("white-space: pre-wrap"),
 				"theme.css must wrap text in table cell editors"
+			);
+			assert.ok(
+				themeContent.includes("word-break: break-word;"),
+				"theme.css must break words to prevent horizontal cell extension"
+			);
+			assert.ok(
+				themeContent.includes("overflow-x: hidden;"),
+				"theme.css must suppress horizontal overflow on table cell editors"
 			);
 			assert.ok(
 				themeContent.includes("min-width: var(--table-column-min-width, 70px);"),

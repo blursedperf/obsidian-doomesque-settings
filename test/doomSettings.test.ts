@@ -1723,12 +1723,13 @@ void (async () => {
 		}
 
 		// 8. drawSelection's ".cm-content :focus ::selection { Highlight !important }" must not paint the
-		//    system highlight over table-cell editors (they draw their own selection).
+		//    system highlight: nested selections use the theme colour, nested editors' lines hide theirs.
 		assert.ok(
-			/registerEditorExtension\(\[drawSelection\(\), TABLE_CELL_NATIVE_SELECTION_FIX\]\)/.test(mainSrc) &&
-				mainSrc.includes('".cm-table-widget .cm-content .cm-line::selection, .cm-table-widget .cm-content .cm-line ::selection"') &&
+			/registerEditorExtension\(\[drawSelection\(\), NESTED_NATIVE_SELECTION_FIX\]\)/.test(mainSrc) &&
+				mainSrc.includes('backgroundColor: "var(--text-selection) !important"') &&
+				mainSrc.includes(".cm-content .cm-editor .cm-content .cm-line::selection") &&
 				mainSrc.includes('backgroundColor: "transparent !important"'),
-			"main.ts must register the table-cell native selection fix alongside drawSelection"
+			"main.ts must register the nested native selection fix alongside drawSelection"
 		);
 
 		// 9. Zebra rows must run full width and the header row must be one uniform band:

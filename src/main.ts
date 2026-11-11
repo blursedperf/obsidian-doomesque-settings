@@ -29,15 +29,23 @@ import {
 /**
  * drawSelection makes the outer note editor paint the *native* selection of any focused element
  * nested in its content with the system `Highlight` colour (`.cm-content :focus ::selection`,
- * marked !important). Table cells are nested CodeMirror editors that draw their own selection,
- * so inside them that rule stacked an opaque system highlight over the text (bright and washed
- * out on retro-terminal). Hide the native selection inside table-cell lines only; inputs in other
- * widgets keep their native selection. Specificity (scope + 3 classes) beats CodeMirror's rule
- * (scope + 2 classes + :focus); !important is required to override an !important declaration.
+ * marked !important), ignoring the theme. That showed up in two places:
+ *  - while click-dragging in a table cell that is not yet being edited, the rendered cell's
+ *    native selection was the system highlight (light and washed out) until mouse-up;
+ *  - inside a cell being edited (a nested CodeMirror with its own drawn selection) the system
+ *    highlight was stacked over the drawn one.
+ * So nested native selections use the theme's --text-selection, and lines of nested editors
+ * hide theirs because those editors draw their own. !important is required to override an
+ * !important declaration. Specificity (each includes CodeMirror's scope class): CodeMirror's rule
+ * is 0,3,0, the theme-colour rule 0,4,0 and the nested-editor-line rule 0,5,0. No child combinators:
+ * Obsidian wraps .cm-content in .cm-contentContainer.
  */
-const TABLE_CELL_NATIVE_SELECTION_FIX = Prec.highest(
+const NESTED_NATIVE_SELECTION_FIX = Prec.highest(
 	EditorView.theme({
-		".cm-table-widget .cm-content .cm-line::selection, .cm-table-widget .cm-content .cm-line ::selection": {
+		".cm-scroller .cm-content :focus::selection, .cm-scroller .cm-content :focus ::selection": {
+			backgroundColor: "var(--text-selection) !important",
+		},
+		".cm-content .cm-editor .cm-content .cm-line::selection, .cm-content .cm-editor .cm-content .cm-line ::selection": {
 			backgroundColor: "transparent !important",
 		},
 	})
@@ -56,7 +64,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 		if (Platform.isDesktop) {
 			try {
 				if (typeof drawSelection === "function") {
-					this.registerEditorExtension([drawSelection(), TABLE_CELL_NATIVE_SELECTION_FIX]);
+					this.registerEditorExtension([drawSelection(), NESTED_NATIVE_SELECTION_FIX]);
 				}
 			} catch (err) {
 				console.warn("DoomEsque Settings: drawSelection registration skipped", err);

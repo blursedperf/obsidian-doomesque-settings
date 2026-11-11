@@ -1312,6 +1312,11 @@ void (async () => {
 				stylesContent.includes("background-color: transparent;"),
 			"styles.css must prevent active-line background bleed into table cells"
 		);
+		assert.ok(
+			stylesContent.includes("body .markdown-source-view.mod-cm6 .cm-table-widget .cm-cursorLayer .cm-cursor {") &&
+				stylesContent.includes("margin-left: -0.6px;"),
+			"styles.css must restore the native-width caret in table cells to prevent edge overflow/horizontal scroll"
+		);
 
 		// 2. Verify Bases cell scrollbar suppression & min-width in styles.css
 		assert.ok(
@@ -1364,6 +1369,16 @@ void (async () => {
 			assert.ok(
 				!themeTable.includes("box-shadow: 0 1px 4px"),
 				"theme.css must not apply box-shadow to tables"
+			);
+
+			// Must neutralise global editor tweaks inside nested table cell editors
+			assert.ok(
+				themeContent.includes(".markdown-source-view.mod-cm6 .cm-table-widget .cm-content > .cm-line {"),
+				"theme.css must reset .cm-line vertical padding inside table cells to stop focus height jumps"
+			);
+			assert.ok(
+				themeContent.includes("body .markdown-source-view.mod-cm6 .cm-table-widget .cm-cursorLayer .cm-cursor {"),
+				"theme.css must restore the native-width caret in table cells to prevent horizontal scrollbars"
 			);
 
 			// Must preserve Doom palette color styling differences

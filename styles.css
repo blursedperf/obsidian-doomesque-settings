@@ -431,6 +431,19 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	background-color: transparent;
 }
 
+/* Table cell editors: keep the native-width caret so custom/retro cursors never
+   overflow the cell edge (which caused horizontal scrollbars and text shifting) */
+body .markdown-source-view.mod-cm6 .cm-table-widget .cm-cursorLayer .cm-cursor {
+	width: 0;
+	margin-left: -0.6px;
+	border-left: 1.2px solid var(--text-accent, var(--doom-blue, #51afef));
+	border-bottom: none;
+	border-radius: 0;
+	background-color: transparent;
+	box-shadow: none;
+	mix-blend-mode: normal;
+}
+
 /* --------------------------------------------------------------------------
    Obsidian Bases / Database Views (Matching Org-table polish and clarity)
    -------------------------------------------------------------------------- */

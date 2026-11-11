@@ -1399,12 +1399,8 @@ void (async () => {
 				"theme.css must define table background"
 			);
 			assert.ok(
-				themeContent.includes("--table-text-size: var(--font-text-size);"),
-				"theme.css must use native font-text-size for cell text"
-			);
-			assert.ok(
-				themeContent.includes("--table-line-height: var(--line-height-normal);"),
-				"theme.css must use native line-height-normal for cell text"
+				!/--table-(text-size|header-size|line-height)\s*:/.test(themeContent),
+				"theme.css must not override native table text size / line height variables"
 			);
 		}
 

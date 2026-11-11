@@ -1691,6 +1691,7 @@ void (async () => {
 		assert.ok(!isSharedSetting("headingScale"), "plugin-only settings stay enabled");
 		assert.ok(/getSettingDefinitions\(\): SettingDefinitionItem\[\]/.test(mainSrc), "the tab must provide declarative definitions (settings search on 1.13+)");
 		assert.ok(/setControlValue\(key: string, value: unknown\)/.test(mainSrc) && mainSrc.includes("await this.plugin.saveSettings();"), "declarative changes must go through saveSettings()");
+		assert.ok(!/this\.display\(\)/.test(mainSrc) && mainSrc.includes("this.update();"), "reset must re-render declaratively on 1.13+ (display() is deprecated)");
 		const slider = findSettingSpec("editorMarginVerticalPx")!;
 		assert.strictEqual(normalizeSettingValue(slider, 27.6), 28, "integer sliders round");
 		assert.strictEqual(normalizeSettingValue(findSettingSpec("customMonospaceFont")!, ' "Iosevka"; '), sanitizeFontFamily(' "Iosevka"; '), "font names are sanitised");
@@ -1785,7 +1786,8 @@ void (async () => {
 		//     buttons' only accessible names) rather than with display: none; a Style Settings toggle restores them.
 		assertTheme(
 			(css) => css.includes("body:not(.doom-bases-toolbar-labels) .bases-toolbar .bases-toolbar-item:not(.bases-toolbar-views-menu, .bases-toolbar-result-count) .text-button-label {") &&
-				css.includes("clip-path: inset(50%);") &&
+				css.includes("clip: rect(0 0 0 0);") &&
+				!/(^|[^-])mask-image\s*:|clip-path\s*:/m.test(css.replace(/\/\*[\s\S]*?\*\//g, "")) &&
 				!/--bases-toolbar-label-display:\s*none/.test(css) &&
 				css.includes("id: doom-bases-toolbar-labels"),
 			"theme.css must make Bases toolbar buttons icon-only while keeping their accessible labels"

@@ -379,11 +379,11 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 		this.settings = Object.assign({}, DEFAULT_DOOM_SETTINGS, saved);
 		// Pre-1.0 data stored the inverse flag `disableActiveLineHighlight`; read it once from the raw
 		// saved object (it is not part of the settings type) and drop it.
-		const legacy = saved as Record<string, unknown> | null;
-		if (legacy && saved?.activeBlockHighlight === undefined && typeof legacy.disableActiveLineHighlight === "boolean") {
-			this.settings.activeBlockHighlight = !legacy.disableActiveLineHighlight;
+		const legacyFlag: unknown = saved ? Reflect.get(saved, "disableActiveLineHighlight") : undefined;
+		if (saved?.activeBlockHighlight === undefined && typeof legacyFlag === "boolean") {
+			this.settings.activeBlockHighlight = !legacyFlag;
 		}
-		delete (this.settings as unknown as Record<string, unknown>).disableActiveLineHighlight;
+		Reflect.deleteProperty(this.settings, "disableActiveLineHighlight");
 		if (migrateSettings(saved, this.settings)) {
 			await this.saveData(this.settings);
 		}
@@ -561,8 +561,17 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 	private async resetToDefaults(): Promise<void> {
 		this.plugin.settings = { ...DEFAULT_DOOM_SETTINGS };
 		await this.plugin.saveSettings();
-		this.display();
+		this.refreshTab();
 		new Notice("DoomEsque settings have been reset to defaults.");
+	}
+
+	/** Re-render after the stored values change: declaratively on 1.13+, imperatively before. */
+	private refreshTab(): void {
+		if (typeof this.update === "function" && this.getSettingDefinitions().length > 0) {
+			this.update();
+		} else {
+			this.renderLegacy();
+		}
 	}
 
 	// ---------------------------------------------------------------------
@@ -626,6 +635,10 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 	// (not called on 1.13+, where the definitions above are rendered instead)
 	// ---------------------------------------------------------------------
 	display(): void {
+		this.renderLegacy();
+	}
+
+	private renderLegacy(): void {
 		const { containerEl } = this;
 		containerEl.empty();
 

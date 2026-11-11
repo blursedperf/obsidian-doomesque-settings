@@ -1307,8 +1307,12 @@ void (async () => {
 			"styles.css must suppress scrollbars on cell editors via ::-webkit-scrollbar"
 		);
 		assert.ok(
-			stylesContent.includes(":is(.table-cell-wrapper, .cm-editor, .cm-scroller)"),
-			"styles.css must target table-cell-wrapper, cm-editor, cm-scroller for overflow suppression"
+			stylesContent.includes(".table-cell-wrapper"),
+			"styles.css must target .table-cell-wrapper"
+		);
+		assert.ok(
+			stylesContent.includes(":is(.cm-editor, .cm-scroller)"),
+			"styles.css must target cm-editor and cm-scroller for overflow suppression"
 		);
 		assert.ok(
 			stylesContent.includes("white-space: pre-wrap;"),
@@ -1353,8 +1357,12 @@ void (async () => {
 				"theme.css must not force --bases-table-white-space: normal"
 			);
 			assert.ok(
-				themeContent.includes(":is(.table-cell-wrapper, .cm-editor, .cm-scroller)"),
-				"theme.css must target table-cell-wrapper, cm-editor, cm-scroller"
+				themeContent.includes(".table-cell-wrapper"),
+				"theme.css must target .table-cell-wrapper"
+			);
+			assert.ok(
+				themeContent.includes(":is(.cm-editor, .cm-scroller)"),
+				"theme.css must target cm-editor and cm-scroller"
 			);
 			assert.ok(
 				themeContent.includes("white-space: pre-wrap"),

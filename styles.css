@@ -447,12 +447,11 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 .cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) .table-cell-wrapper {
 	box-sizing: border-box;
 	max-width: 100%;
-	overflow-x: hidden;
 }
 
 /* Prevent text field from extending beyond the cell boundaries when typing and focused */
 .markdown-source-view.mod-cm6 .cm-table-widget :is(.cm-editor, .cm-scroller),
-.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) :is(.table-cell-wrapper, .cm-editor, .cm-scroller) {
+.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) :is(.cm-editor, .cm-scroller) {
 	width: 100%;
 	max-width: 100%;
 	min-width: 0;
@@ -461,8 +460,8 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 }
 
 /* Prevent horizontal scrollbars inside table cell editors when typing reaches right edge */
-.markdown-source-view.mod-cm6 .cm-table-widget :is(.table-cell-wrapper, .cm-editor, .cm-scroller)::-webkit-scrollbar,
-.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) :is(.table-cell-wrapper, .cm-editor, .cm-scroller)::-webkit-scrollbar {
+.markdown-source-view.mod-cm6 .cm-table-widget :is(.cm-editor, .cm-scroller)::-webkit-scrollbar,
+.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) :is(.cm-editor, .cm-scroller)::-webkit-scrollbar {
 	display: none;
 	width: 0;
 	height: 0;
@@ -769,7 +768,6 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	min-height: var(--bases-table-row-height, 30px);
 	height: 100%;
 	width: 100%;
-	overflow-x: hidden;
 	box-sizing: border-box;
 }
 

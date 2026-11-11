@@ -1772,6 +1772,16 @@ void (async () => {
 			"theme.css must align list fold toggles and place TODO/DONE badges after the checkbox"
 		);
 
+		// 13. Bases toolbar action buttons are icon-only by default, with labels hidden visually (they are the
+		//     buttons' only accessible names) rather than with display: none; a Style Settings toggle restores them.
+		assertTheme(
+			(css) => css.includes("body:not(.doom-bases-toolbar-labels) .bases-toolbar .bases-toolbar-item:not(.bases-toolbar-views-menu, .bases-toolbar-result-count) .text-button-label {") &&
+				css.includes("clip-path: inset(50%);") &&
+				!/--bases-toolbar-label-display:\s*none/.test(css) &&
+				css.includes("id: doom-bases-toolbar-labels"),
+			"theme.css must make Bases toolbar buttons icon-only while keeping their accessible labels"
+		);
+
 		console.log("✓ Style Settings ownership, theme gating and plugin CSS scope verified");
 	}
 

@@ -1344,6 +1344,10 @@ void (async () => {
 			stylesContent.includes("min-width: max(var(--bases-column-width, 80px), 80px);"),
 			"styles.css must enforce healthy min-width on Bases cells to prevent flex squashing"
 		);
+		assert.ok(
+			stylesContent.includes("padding-left: 2px;"),
+			"styles.css must provide internal safe gutter on table cell content for unclipped carets"
+		);
 
 		// 3. Verify theme.css rules if present in workspace
 		if (fs.existsSync(themeCssPath)) {
@@ -1383,6 +1387,10 @@ void (async () => {
 			assert.ok(
 				themeContent.includes("min-width: max(var(--bases-column-width, 80px), 80px);"),
 				"theme.css must enforce min-width on Bases cells to prevent flex squashing"
+			);
+			assert.ok(
+				themeContent.includes("padding-left: 2px;"),
+				"theme.css must provide internal safe gutter on table cell content for unclipped carets"
 			);
 		}
 

@@ -480,6 +480,13 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 	box-sizing: border-box;
 }
 
+/* Provide a safe internal gutter for table cell text so retro caret blooms and borders are fully visible at position 0 without clipping against the scroller boundary */
+.markdown-source-view.mod-cm6 .cm-table-widget .cm-content,
+.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) .cm-content {
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
 /* --------------------------------------------------------------------------
    Obsidian Bases / Database Views (Matching Org-table polish and clarity)
    -------------------------------------------------------------------------- */

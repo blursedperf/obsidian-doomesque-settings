@@ -1273,7 +1273,7 @@ void (async () => {
 				css.includes(".cm-table-widget .cm-activeLine") &&
 				css.includes("background-color: transparent;"), "theme.css must prevent active-line background bleed into table cells");
 		assertTheme((css) => css.includes("body .markdown-source-view.mod-cm6 .cm-table-widget .cm-cursorLayer .cm-cursor {") &&
-				css.includes("margin-left: -0.6px;"), "theme.css must restore the native-width caret in table cells to prevent edge overflow/horizontal scroll");
+				css.includes("margin-left: -1.2px;"), "theme.css must draw the table-cell caret inside the caret position so it never overflows the cell editor (horizontal scrollbar)");
 
 		// 2. Verify Bases cell scrollbar suppression & min-width in styles.css
 		assertTheme((css) => css.includes(".bases-td"), "theme.css must target .bases-td");

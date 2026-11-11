@@ -1758,6 +1758,20 @@ void (async () => {
 		assert.strictEqual(kept.rainbowIndentGuides, false, "an explicit choice saved after v2 must be respected");
 		assertTheme((css) => css.includes("body:not(.doom-mono-indent-guides) .markdown-source-view.mod-cm6 .cm-indent"), "theme.css must show rainbow guides unless opted out");
 
+		// 11. Bases toolbar popovers have one frame (Obsidian's .menu); inner containers draw none.
+		assertTheme(
+			(css) => /\.bases-results-page \{\s*\/\*[^*]*\*\/\s*background-color: transparent;\s*border: none;/.test(css),
+			"theme.css must not draw a second frame inside Bases toolbar menus"
+		);
+		// 12. Task rows read checkbox → TODO/DONE → text: Live Preview badge follows the checkbox label,
+		//     Reading view checkbox and fold toggle hang in the gutter out of the text flow.
+		assertTheme(
+			(css) => css.includes('.HyperMD-task-line[data-task=" "] .task-list-label::after') &&
+				css.includes(".markdown-rendered li.task-list-item > .list-collapse-indicator {") &&
+				css.includes(".markdown-rendered .list-collapse-indicator {\n  margin-inline-start: -2.3em;"),
+			"theme.css must align list fold toggles and place TODO/DONE badges after the checkbox"
+		);
+
 		console.log("✓ Style Settings ownership, theme gating and plugin CSS scope verified");
 	}
 

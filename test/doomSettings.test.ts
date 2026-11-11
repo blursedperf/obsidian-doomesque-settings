@@ -1301,7 +1301,7 @@ void (async () => {
 		assert.ok(fs.existsSync(cssPath), "styles.css must exist");
 		const stylesContent = fs.readFileSync(cssPath, "utf-8");
 
-		// 1. Verify Markdown Table Editor cell scrollbar suppression & min-width in styles.css
+		// 1. Verify Markdown Table Editor cell scrollbar suppression, height & min-width in styles.css
 		assert.ok(
 			stylesContent.includes("::-webkit-scrollbar") && stylesContent.includes("display: none;"),
 			"styles.css must suppress scrollbars on cell editors via ::-webkit-scrollbar"
@@ -1311,20 +1311,27 @@ void (async () => {
 			"styles.css must target .table-cell-wrapper"
 		);
 		assert.ok(
-			stylesContent.includes(":is(.cm-editor, .cm-scroller)"),
-			"styles.css must target cm-editor and cm-scroller for overflow suppression"
+			stylesContent.includes("height: 100%;"),
+			"styles.css must enforce height: 100% on .table-cell-wrapper for stable cell interaction"
 		);
 		assert.ok(
-			stylesContent.includes("white-space: pre-wrap;"),
-			"styles.css must wrap text in table cell editor content"
+			stylesContent.includes(":is(.cm-scroller, .cm-editor)"),
+			"styles.css must target cm-scroller and cm-editor for scrollbar suppression"
 		);
 		assert.ok(
-			stylesContent.includes("word-break: break-word;"),
-			"styles.css must break words to prevent horizontal cell extension"
+			stylesContent.includes("word-break: normal;"),
+			"styles.css must preserve normal word breaking for typing stability"
+		);
+		const sStart = stylesContent.indexOf("Table & Cell Text Input");
+		const sEnd = stylesContent.indexOf("Obsidian Bases / Database Views");
+		const tableStyles = stylesContent.substring(sStart, sEnd);
+		assert.ok(
+			!tableStyles.includes("overflow-x: hidden;"),
+			"styles.css must not use overflow-x: hidden on cell editors to prevent caret clipping"
 		);
 		assert.ok(
-			stylesContent.includes("overflow-x: hidden;"),
-			"styles.css must suppress horizontal overflow on table cell editors"
+			!tableStyles.includes("padding-left: 2px;"),
+			"styles.css must not use padding-left: 2px on cm-content to prevent text shift on focus"
 		);
 		assert.ok(
 			stylesContent.includes("min-width: var(--table-column-min-width, 70px);"),
@@ -1344,10 +1351,6 @@ void (async () => {
 			stylesContent.includes("min-width: max(var(--bases-column-width, 80px), 80px);"),
 			"styles.css must enforce healthy min-width on Bases cells to prevent flex squashing"
 		);
-		assert.ok(
-			stylesContent.includes("padding-left: 2px;"),
-			"styles.css must provide internal safe gutter on table cell content for unclipped carets"
-		);
 
 		// 3. Verify theme.css rules if present in workspace
 		if (fs.existsSync(themeCssPath)) {
@@ -1365,20 +1368,27 @@ void (async () => {
 				"theme.css must target .table-cell-wrapper"
 			);
 			assert.ok(
-				themeContent.includes(":is(.cm-editor, .cm-scroller)"),
-				"theme.css must target cm-editor and cm-scroller"
+				themeContent.includes("height: 100%;"),
+				"theme.css must enforce height: 100% on .table-cell-wrapper"
 			);
 			assert.ok(
-				themeContent.includes("white-space: pre-wrap"),
-				"theme.css must wrap text in table cell editors"
+				themeContent.includes(":is(.cm-scroller, .cm-editor)"),
+				"theme.css must target cm-scroller and cm-editor"
 			);
 			assert.ok(
-				themeContent.includes("word-break: break-word;"),
-				"theme.css must break words to prevent horizontal cell extension"
+				themeContent.includes("word-break: normal;"),
+				"theme.css must preserve normal word breaking for typing stability"
+			);
+			const tStart = themeContent.indexOf("/* Tables (Stable, zero-shift");
+			const tEnd = themeContent.indexOf("8b. Obsidian Bases");
+			const themeTable = themeContent.substring(tStart, tEnd);
+			assert.ok(
+				!themeTable.includes("overflow-x: hidden;"),
+				"theme.css must not use overflow-x: hidden on cell editors to prevent caret clipping"
 			);
 			assert.ok(
-				themeContent.includes("overflow-x: hidden;"),
-				"theme.css must suppress horizontal overflow on table cell editors"
+				!themeTable.includes("padding-left: 2px;"),
+				"theme.css must not use padding-left: 2px on cm-content to prevent text shift on focus"
 			);
 			assert.ok(
 				themeContent.includes("min-width: var(--table-column-min-width, 70px);"),
@@ -1389,8 +1399,8 @@ void (async () => {
 				"theme.css must enforce min-width on Bases cells to prevent flex squashing"
 			);
 			assert.ok(
-				themeContent.includes("padding-left: 2px;"),
-				"theme.css must provide internal safe gutter on table cell content for unclipped carets"
+				themeContent.includes("--table-selection-border-color: var(--doom-blue);"),
+				"theme.css must define visible table selection border color"
 			);
 		}
 

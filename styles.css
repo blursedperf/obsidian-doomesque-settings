@@ -432,11 +432,12 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 }
 
 /* --------------------------------------------------------------------------
-   Table & Cell Text Input Scrollbar Prevention (Clean, zero-shift typing)
+   Table & Cell Text Input Polish & Stability (Zero-shift, default-aligned)
    -------------------------------------------------------------------------- */
 .cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) table.table-editor th,
 .cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) table.table-editor td {
 	min-width: var(--table-column-min-width, 70px);
+	height: inherit;
 }
 
 .markdown-rendered :is(th, td) {
@@ -445,46 +446,41 @@ body.doom-active-line-highlight .cm-s-obsidian .cm-embed-block table .cm-active.
 
 .markdown-source-view.mod-cm6 .cm-table-widget .table-cell-wrapper,
 .cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) .table-cell-wrapper {
-	box-sizing: border-box;
-	max-width: 100%;
-}
-
-/* Prevent text field from extending beyond the cell boundaries when typing and focused */
-.markdown-source-view.mod-cm6 .cm-table-widget :is(.cm-editor, .cm-scroller),
-.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) :is(.cm-editor, .cm-scroller) {
-	width: 100%;
-	max-width: 100%;
-	min-width: 0;
-	overflow-x: hidden;
+	height: 100%;
 	box-sizing: border-box;
 }
 
-/* Prevent horizontal scrollbars inside table cell editors when typing reaches right edge */
-.markdown-source-view.mod-cm6 .cm-table-widget :is(.cm-editor, .cm-scroller)::-webkit-scrollbar,
-.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) :is(.cm-editor, .cm-scroller)::-webkit-scrollbar {
+/* Suppress horizontal scrollbars cleanly on table cell editors without clipping carets or breaking vertical height */
+.markdown-source-view.mod-cm6 .cm-table-widget :is(.cm-scroller, .cm-editor),
+.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) :is(.cm-scroller, .cm-editor) {
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+.markdown-source-view.mod-cm6 .cm-table-widget :is(.cm-scroller, .cm-editor)::-webkit-scrollbar,
+.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) :is(.cm-scroller, .cm-editor)::-webkit-scrollbar {
 	display: none;
 	width: 0;
 	height: 0;
 }
 
-/* Ensure text in table cells wraps naturally at the right edge without horizontal overflow */
-.markdown-source-view.mod-cm6 .cm-table-widget .cm-content.cm-lineWrapping,
-.markdown-source-view.mod-cm6 .cm-table-widget :is(.cm-content, .cm-line),
+/* Ensure natural text wrapping and CodeMirror coordinate stability matching default Obsidian */
+.markdown-source-view.mod-cm6 .cm-table-widget .cm-content,
+.markdown-source-view.mod-cm6 .cm-table-widget .cm-line,
 .cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) :is(.cm-content, .cm-line) {
-	width: 100%;
-	max-width: 100%;
-	min-width: 0;
-	white-space: pre-wrap;
-	word-break: break-word;
-	overflow-wrap: break-word;
-	box-sizing: border-box;
+	max-width: none;
 }
 
-/* Provide a safe internal gutter for table cell text so retro caret blooms and borders are fully visible at position 0 without clipping against the scroller boundary */
 .markdown-source-view.mod-cm6 .cm-table-widget .cm-content,
 .cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) .cm-content {
-	padding-left: 2px;
-	padding-right: 2px;
+	width: auto;
+}
+
+.markdown-source-view.mod-cm6 .cm-table-widget .cm-content.cm-lineWrapping,
+.cm-s-obsidian :is(.table-wrapper, .cm-table-widget, .cm-embed-block) .cm-content.cm-lineWrapping {
+	overflow-wrap: normal;
+	white-space: var(--table-white-space, break-spaces);
+	word-break: normal;
 }
 
 /* --------------------------------------------------------------------------

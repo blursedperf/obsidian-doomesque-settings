@@ -1770,7 +1770,8 @@ void (async () => {
 		assertTheme(
 			(css) => css.includes('.HyperMD-task-line[data-task=" "] .task-list-label::after') &&
 				css.includes(".markdown-rendered li.task-list-item > .list-collapse-indicator {") &&
-				css.includes(".markdown-rendered .list-collapse-indicator {\n  margin-inline-start: -2.3em;"),
+				css.includes(".markdown-rendered .list-collapse-indicator {\n  margin-inline-start: -1.9em;") &&
+				css.includes(".HyperMD-list-line:not(.cm-active):not(.HyperMD-task-line) .cm-fold-indicator .collapse-indicator {\n  inset-inline-end: calc(var(--list-bullet-end-padding) * -1 - 0.4em);"),
 			"theme.css must align list fold toggles and place TODO/DONE badges after the checkbox"
 		);
 

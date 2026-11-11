@@ -1,7 +1,8 @@
-import { App, Notice, Platform, Plugin, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, Platform, Plugin, PluginSettingTab, Setting, setTooltip } from "obsidian";
 import { Prec } from "@codemirror/state";
 import { EditorView, drawSelection } from "@codemirror/view";
 import { HoverPreviewManager } from "./hoverPreview";
+import { BASES_TOOLTIP_DATA_KEY, basesToolbarTooltipFor } from "./basesToolbar";
 import {
 	DOOM_PALETTES,
 	DOOM_LIGHT_PALETTES,
@@ -87,6 +88,9 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 				console.error("DoomEsque Settings: hover preview manager failed to init", err);
 			}
 
+			// Hover tooltips for the theme's icon-only Bases toolbar buttons
+			this.attachBasesToolbarTooltips(document);
+
 			// Update popout windows when opened (Obsidian 1.0+ desktop Electron popouts)
 			try {
 				this.registerEvent(
@@ -94,6 +98,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 						if (win?.document) {
 							this.trackedDocuments.add(win.document);
 							this.applySettingsToDocument(win.document);
+							this.attachBasesToolbarTooltips(win.document);
 						}
 						if (win) {
 							this.hoverManager.registerWindow(win);
@@ -444,6 +449,24 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 		}
 
 		return docs;
+	}
+
+	/**
+	 * The theme shows Bases toolbar action buttons as icons only. Attach Obsidian's tooltip, using
+	 * the button's (visually hidden) label, the first time a button is hovered or focused. Capture
+	 * phase so the tooltip is in place before Obsidian's own hover handling for this same event;
+	 * attaching lazily covers toolbars rendered later (views, embeds) without a MutationObserver.
+	 */
+	attachBasesToolbarTooltips(doc: Document): void {
+		const handler = (evt: Event) => {
+			const hit = basesToolbarTooltipFor(evt.target);
+			if (!hit) return;
+			const button = hit.button as unknown as HTMLElement;
+			setTooltip(button, hit.label, { placement: "bottom" });
+			button.dataset[BASES_TOOLTIP_DATA_KEY] = hit.label;
+		};
+		this.registerDomEvent(doc, "mouseover", handler, { capture: true });
+		this.registerDomEvent(doc, "focusin", handler, { capture: true });
 	}
 
 	/** True when the Style Settings plugin is enabled; it then owns the options both plugins expose. */

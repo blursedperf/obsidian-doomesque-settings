@@ -21,6 +21,7 @@ import {
 	STYLE_SETTINGS_SHARED_KEYS,
 	getManagedClasses,
 } from "../src/settings";
+import { BASES_TOOLBAR_ICON_BUTTON_SELECTOR, basesToolbarTooltipFor } from "../src/basesToolbar";
 
 console.log("Running obsidian-doomesque-settings unit tests...\n");
 
@@ -1781,6 +1782,35 @@ void (async () => {
 				css.includes("id: doom-bases-toolbar-labels"),
 			"theme.css must make Bases toolbar buttons icon-only while keeping their accessible labels"
 		);
+
+		// 14. Hover tooltips for the icon-only Bases toolbar buttons use each button's hidden label.
+		{
+			const bodyClasses = new Set<string>();
+			const makeButton = (label: string, matches: boolean) => {
+				const button: any = {
+					dataset: {} as Record<string, string>,
+					ownerDocument: { body: { classList: { contains: (c: string) => bodyClasses.has(c) } } },
+					querySelector: (sel: string) => (sel === ".text-button-label" ? { textContent: ` ${label} ` } : null),
+				};
+				button.closest = (sel: string) => (matches && sel === BASES_TOOLBAR_ICON_BUTTON_SELECTOR ? button : null);
+				return button;
+			};
+			const sort = makeButton("Sort", true);
+			const icon = { closest: (sel: string) => sort.closest(sel) }; // hovering the svg inside the button
+			assert.deepStrictEqual(basesToolbarTooltipFor(icon)?.label, "Sort", "tooltip must use the button label");
+			sort.dataset.doomTooltip = "Sort";
+			assert.strictEqual(basesToolbarTooltipFor(icon), null, "an attached tooltip must not be re-applied");
+			assert.strictEqual(basesToolbarTooltipFor(makeButton("Table", false)), null, "view switcher / result count get no tooltip");
+			bodyClasses.add("doom-bases-toolbar-labels");
+			assert.strictEqual(basesToolbarTooltipFor(makeButton("Filter", true)), null, "no tooltips while labels are visible");
+			assert.strictEqual(basesToolbarTooltipFor(null), null);
+			assert.ok(
+				mainSrc.includes('setTooltip(button, hit.label, { placement: "bottom" })') &&
+					mainSrc.includes('this.registerDomEvent(doc, "mouseover", handler, { capture: true })') &&
+					mainSrc.includes("this.attachBasesToolbarTooltips(win.document)"),
+				"main.ts must attach toolbar tooltips in the main and popout windows"
+			);
+		}
 
 		console.log("✓ Style Settings ownership, theme gating and plugin CSS scope verified");
 	}

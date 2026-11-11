@@ -1170,7 +1170,7 @@ void (async () => {
 		// 2. Ensure mobile explicit caret-color rules are present
 		assertTheme((css) => css.includes(".is-mobile .markdown-source-view.mod-cm6 .cm-content"), "theme.css must style caret-color on mobile markdown source view");
 		assertTheme((css) => css.includes("caret-color: var(--text-accent, var(--doom-blue, #51afef));"), "theme.css must set mobile caret-color to theme accent");
-		assertTheme((css) => css.includes("body.is-mobile.doom-palette-retro-terminal"), "theme.css must set retro-terminal mobile caret-color");
+		assertTheme((css) => css.includes("body.is-mobile.theme-dark.doom-palette-retro-terminal"), "theme.css must set retro-terminal mobile caret-color");
 		assertTheme((css) => css.includes("caret-color: var(--doom-fg, #33ff33);"), "theme.css must set retro-terminal caret-color to phosphor green");
 
 		// 3. Verify matching rules in theme.css if present in workspace
@@ -1224,8 +1224,8 @@ void (async () => {
 
 		// 3. Verify CSS rules in styles.css
 		const stylesContent = fs.readFileSync(cssPath, "utf-8");
-		assertTheme((css) => css.includes("body.doom-palette-suit-and-tie"), "theme.css must contain body.doom-palette-suit-and-tie polish selectors");
-		assertTheme((css) => css.includes("body.doom-palette-suit-and-tie .markdown-rendered h1"), "theme.css must contain tailored H1 styling for suit-and-tie");
+		assertTheme((css) => css.includes("body.theme-dark.doom-palette-suit-and-tie"), "theme.css must contain body.theme-dark.doom-palette-suit-and-tie polish selectors");
+		assertTheme((css) => css.includes("body.theme-dark.doom-palette-suit-and-tie .markdown-rendered h1"), "theme.css must contain tailored H1 styling for suit-and-tie");
 
 		// 4. Verify CSS rules in theme.css
 		if (fs.existsSync(themeCssPath)) {
@@ -1405,8 +1405,8 @@ void (async () => {
 		);
 
 		// 3. Verify Retro Terminal and Suit and Tie popover button styles
-		assertTheme((css) => css.includes("body.doom-palette-retro-terminal .doom-popover-btn"), "theme.css must style popover buttons for Retro Terminal");
-		assertTheme((css) => css.includes("body.doom-palette-suit-and-tie .doom-popover-btn"), "theme.css must style popover buttons for Suit and Tie");
+		assertTheme((css) => css.includes("body.theme-dark.doom-palette-retro-terminal .doom-popover-btn"), "theme.css must style popover buttons for Retro Terminal");
+		assertTheme((css) => css.includes("body.theme-dark.doom-palette-suit-and-tie .doom-popover-btn"), "theme.css must style popover buttons for Suit and Tie");
 
 		// 4. Verify theme.css in companion repo if present
 		const themePath = path.resolve(process.cwd(), "../obsidian-theme-doomesque/theme.css");
@@ -1418,11 +1418,11 @@ void (async () => {
 				"theme.css must style .doom-popover-btn.mod-pin with monospace font"
 			);
 			assert.ok(
-				themeContent.includes("body.doom-palette-retro-terminal .doom-popover-btn"),
+				themeContent.includes("body.theme-dark.doom-palette-retro-terminal .doom-popover-btn"),
 				"theme.css must style popover buttons for Retro Terminal"
 			);
 			assert.ok(
-				themeContent.includes("body.doom-palette-suit-and-tie .doom-popover-btn"),
+				themeContent.includes("body.theme-dark.doom-palette-suit-and-tie .doom-popover-btn"),
 				"theme.css must style popover buttons for Suit and Tie"
 			);
 		}
@@ -1701,6 +1701,25 @@ void (async () => {
 		}
 		for (const required of [".doom-popover-header", ".doom-sticky-popover", ".doom-settings-slider-value", ".doom-settings-banner"]) {
 			assert.ok(pluginCss.includes(required), `styles.css must style plugin DOM: ${required}`);
+		}
+
+		// 7. Both palette classes are always on <body>, so every palette-specific theme rule must also
+		//    name its mode; otherwise the light palette leaks into dark mode (and vice versa).
+		if (THEME_CSS !== null) {
+			const noComments = THEME_CSS.replace(/\/\*[\s\S]*?\*\//g, "");
+			const ungated: string[] = [];
+			for (const m of noComments.matchAll(/([^{}]+)\{/g)) {
+				for (const sel of m[1].split(",")) {
+					for (const compound of sel.trim().split(/\s+/)) {
+						if (compound.includes("doom-palette-") && !/\.theme-(dark|light)\b/.test(compound)) ungated.push(sel.trim());
+					}
+				}
+			}
+			assert.deepStrictEqual(ungated, [], "theme.css palette rules must be gated with .theme-dark / .theme-light");
+			assert.ok(
+				!/(^|[\s,])body\.[\w.-]*doom-palette-[\w-]+\s+hr\b/m.test(noComments),
+				"palette hr rules must be scoped to note content (Obsidian resize handles are <hr> elements)"
+			);
 		}
 
 		console.log("✓ Style Settings ownership, theme gating and plugin CSS scope verified");

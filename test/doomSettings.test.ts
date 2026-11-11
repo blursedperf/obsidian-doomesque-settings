@@ -1822,6 +1822,13 @@ void (async () => {
 			);
 		}
 
+		// 15. Phones with Obsidian's floating navigation keep a solid top bar covering the status-bar area
+		//     (Obsidian makes .view-header transparent and offsets it with margin-top).
+		assertTheme(
+			(css) => /body\.is-mobile\.is-floating-nav\.is-phone \.view-header \{\s*margin-top: 0;[^}]*background-color: var\(--doom-bg\);/.test(css),
+			"theme.css must keep the floating-nav phone header opaque"
+		);
+
 		console.log("✓ Style Settings ownership, theme gating and plugin CSS scope verified");
 	}
 

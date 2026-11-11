@@ -1691,7 +1691,7 @@ void (async () => {
 		assert.ok(!isSharedSetting("headingScale"), "plugin-only settings stay enabled");
 		assert.ok(/getSettingDefinitions\(\): SettingDefinitionItem\[\]/.test(mainSrc), "the tab must provide declarative definitions (settings search on 1.13+)");
 		assert.ok(/setControlValue\(key: string, value: unknown\)/.test(mainSrc) && mainSrc.includes("await this.plugin.saveSettings();"), "declarative changes must go through saveSettings()");
-		assert.ok(!/this\.display\(\)/.test(mainSrc) && mainSrc.includes("this.update();"), "reset must re-render declaratively on 1.13+ (display() is deprecated)");
+		assert.ok(!/this\.display\(\)/.test(mainSrc) && mainSrc.includes('Reflect.get(this, "update")') && !/this\.update\(\)|this\.getSettingDefinitions\(\)/.test(mainSrc), "reset must re-render declaratively on 1.13+ (display() is deprecated)");
 		const slider = findSettingSpec("editorMarginVerticalPx")!;
 		assert.strictEqual(normalizeSettingValue(slider, 27.6), 28, "integer sliders round");
 		assert.strictEqual(normalizeSettingValue(findSettingSpec("customMonospaceFont")!, ' "Iosevka"; '), sanitizeFontFamily(' "Iosevka"; '), "font names are sanitised");

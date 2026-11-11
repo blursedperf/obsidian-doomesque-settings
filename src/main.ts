@@ -567,8 +567,11 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 
 	/** Re-render after the stored values change: declaratively on 1.13+, imperatively before. */
 	private refreshTab(): void {
-		if (typeof this.update === "function" && this.getSettingDefinitions().length > 0) {
-			this.update();
+		// update() exists from Obsidian 1.13 (declarative tabs); detect it at runtime rather than
+		// referencing the typed API, since minAppVersion still supports older versions.
+		const update: unknown = Reflect.get(this, "update");
+		if (typeof update === "function") {
+			update.call(this);
 		} else {
 			this.renderLegacy();
 		}

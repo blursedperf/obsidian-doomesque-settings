@@ -1731,6 +1731,14 @@ void (async () => {
 			"main.ts must register the table-cell native selection fix alongside drawSelection"
 		);
 
+		// 9. Zebra rows must run full width and the header row must be one uniform band:
+		//    Obsidian's alternate-column shade would otherwise paint opaque cells over both.
+		assertTheme((css) => css.includes("--table-column-alt-background: transparent;"), "theme.css must disable Obsidian's alternate-column shading");
+		assertTheme(
+			(css) => /\.markdown-rendered thead tr > th:nth-child\(n\)[^{]*\{\s*background-color: var\(--table-header-background\);/.test(css),
+			"theme.css must give every header cell the uniform header background"
+		);
+
 		console.log("✓ Style Settings ownership, theme gating and plugin CSS scope verified");
 	}
 

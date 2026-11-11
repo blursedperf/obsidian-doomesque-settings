@@ -21,6 +21,7 @@ import {
 	getNextIndentStyle,
 	getNextCursorStyle,
 	sanitizeFontFamily,
+	migrateSettings,
 	DOOMESQUE_THEME_NAME,
 	STYLE_SETTINGS_PLUGIN_ID,
 	DoomDomOptions,
@@ -380,6 +381,9 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 		// Migrate legacy disableActiveLineHighlight if activeBlockHighlight not explicitly set
 		if (saved?.activeBlockHighlight === undefined && saved?.disableActiveLineHighlight !== undefined) {
 			this.settings.activeBlockHighlight = !saved.disableActiveLineHighlight;
+		}
+		if (migrateSettings(saved, this.settings)) {
+			await this.saveData(this.settings);
 		}
 	}
 

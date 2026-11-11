@@ -1,6 +1,8 @@
 import assert from "node:assert";
 import {
 	ALL_MANAGED_BODY_CLASSES,
+	CURRENT_SETTINGS_VERSION,
+	migrateSettings,
 	ALL_MANAGED_CSS_VARS,
 	DEFAULT_DOOM_SETTINGS,
 	DOOM_PALETTES,
@@ -237,7 +239,7 @@ class MockDOMTokenList {
 	assert.ok(state.activeClasses.includes("doom-no-h1-border"));
 	assert.ok(state.activeClasses.includes("doom-active-block-highlight"));
 	assert.ok(state.activeClasses.includes("doom-no-active-line-highlight"));
-	assert.ok(state.activeClasses.includes("doom-rainbow-indent-guides"));
+	assert.ok(!state.activeClasses.includes("doom-mono-indent-guides"), "rainbow guides must not add the mono opt-out class");
 	assert.ok(state.activeClasses.includes("doom-legal-outline"));
 	assert.ok(state.activeClasses.includes("doom-editorial-emphasis"));
 	assert.ok(state.activeClasses.includes("doom-sticky-hover-enabled"));
@@ -494,7 +496,7 @@ class MockDOMTokenList {
 	assert.ok(!mockDoc.body.classList.contains("doom-palette-tokyo-night"));
 	assert.ok(!mockDoc.body.classList.contains("doom-no-org-todo"));
 	assert.ok(mockDoc.body.classList.contains("doom-indent-style-dashed"));
-	assert.ok(mockDoc.body.classList.contains("doom-rainbow-indent-guides"));
+	assert.ok(!mockDoc.body.classList.contains("doom-mono-indent-guides"), "rainbow guides must not add the mono opt-out class");
 	assert.strictEqual(mockDoc.body.style.getPropertyValue("--list-indent"), "2em");
 	assert.strictEqual(mockDoc.body.style.getPropertyValue("--list-indent-editing"), "");
 
@@ -1096,7 +1098,7 @@ void (async () => {
 		const mobileState = computeDoomDomState(mobileSettings);
 		assert.ok(mobileState.activeClasses.includes("doom-palette-retro-terminal"));
 		assert.ok(mobileState.activeClasses.includes("doom-monospace-editor"));
-		assert.ok(mobileState.activeClasses.includes("doom-rainbow-indent-guides"));
+		assert.ok(!mobileState.activeClasses.includes("doom-mono-indent-guides"), "rainbow guides must not add the mono opt-out class");
 		assert.ok(mobileState.activeClasses.includes("doom-legal-outline"));
 
 		const mockMobileDoc = {
@@ -1739,6 +1741,22 @@ void (async () => {
 			(css) => /\.markdown-rendered thead tr > th:nth-child\(n\)[^{]*\{\s*background-color: var\(--table-header-background\);/.test(css),
 			"theme.css must give every header cell the uniform header background"
 		);
+
+		// 10. Rainbow indent guides are the default; turning them off adds the mono opt-out class,
+		//     and settings saved before v2 (old default false) are migrated to rainbow once.
+		assert.strictEqual(DEFAULT_DOOM_SETTINGS.rainbowIndentGuides, true, "rainbow indent guides must be the default");
+		assert.ok(!computeDoomDomState(makeSettings()).activeClasses.includes("doom-mono-indent-guides"));
+		assert.ok(computeDoomDomState(makeSettings({ rainbowIndentGuides: false })).activeClasses.includes("doom-mono-indent-guides"));
+		const legacy = { rainbowIndentGuides: false } as Partial<DoomEmacsStyleSettings>;
+		const migrated = { ...DEFAULT_DOOM_SETTINGS, ...legacy };
+		assert.strictEqual(migrateSettings(legacy, migrated), true, "version-1 settings must be migrated");
+		assert.strictEqual(migrated.rainbowIndentGuides, true);
+		assert.strictEqual(migrated.settingsVersion, CURRENT_SETTINGS_VERSION);
+		const current = { rainbowIndentGuides: false, settingsVersion: CURRENT_SETTINGS_VERSION } as Partial<DoomEmacsStyleSettings>;
+		const kept = { ...DEFAULT_DOOM_SETTINGS, ...current };
+		assert.strictEqual(migrateSettings(current, kept), false, "current settings must not be migrated");
+		assert.strictEqual(kept.rainbowIndentGuides, false, "an explicit choice saved after v2 must be respected");
+		assertTheme((css) => css.includes("body:not(.doom-mono-indent-guides) .markdown-source-view.mod-cm6 .cm-indent"), "theme.css must show rainbow guides unless opted out");
 
 		console.log("✓ Style Settings ownership, theme gating and plugin CSS scope verified");
 	}

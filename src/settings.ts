@@ -203,7 +203,7 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-active-block-highlight",
 	"doom-active-line-highlight",
 	"doom-no-active-line-highlight",
-	"doom-rainbow-indent-guides",
+	"doom-mono-indent-guides",
 	"doom-indent-style-solid",
 	"doom-indent-style-dashed",
 	"doom-indent-style-dotted",
@@ -294,7 +294,7 @@ export const STYLE_SETTINGS_SHARED_CLASSES: readonly string[] = [
 	"doom-indent-style-dotted",
 	"doom-indent-style-double",
 	"doom-indent-style-none",
-	"doom-rainbow-indent-guides",
+	"doom-mono-indent-guides",
 	"doom-legal-outline",
 	"doom-editorial-emphasis",
 	"doom-monospace-editor",
@@ -363,6 +363,12 @@ export interface DoomDomOptions {
 	deferToStyleSettings?: boolean;
 }
 
+/**
+ * 2: rainbow indent guides became the default. Settings saved before that stored the old default
+ * (false) for every user, so version-1 data is migrated to rainbow once.
+ */
+export const CURRENT_SETTINGS_VERSION = 2;
+
 export interface DoomEsqueStyleSettings {
 	// --- Palette & Style ---
 	/** Active Dark Mode Doom palette class (`doom-palette-*`). */
@@ -421,7 +427,7 @@ export interface DoomEsqueStyleSettings {
 	indentGuideStyle: DoomIndentGuideStyle;
 	/** Indentation guide width in `px` (`--indentation-guide-width`). Default: 1. */
 	indentGuideWidthPx: number;
-	/** Color nested indentation guides with Doom rainbow level colors (`doom-rainbow-indent-guides`). */
+	/** Color nested indentation guides with Doom rainbow level colors. Default: true; false adds `doom-mono-indent-guides`. */
 	rainbowIndentGuides: boolean;
 	/** Use formal legal / hornbook outline numbering (`I.` -> `A.` -> `1.` -> `a.` -> `i.`) for nested ordered lists (`doom-legal-outline`). */
 	legalOutlineNumbering: boolean;
@@ -443,6 +449,8 @@ export interface DoomEsqueStyleSettings {
 	superKeyOpensRightSidebar: boolean;
 	/** Use clean border-delimited flat rows instead of rounded card boxes for settings items. Default: false. */
 	flatSettingsItems: boolean;
+	/** Stored-settings schema version, used for one-time migrations. */
+	settingsVersion?: number;
 }
 
 /** Backward-compatibility type alias */
@@ -477,7 +485,7 @@ export const DEFAULT_DOOMESQUE_SETTINGS: DoomEsqueStyleSettings = {
 	listIndentEm: 1.75,
 	indentGuideStyle: "solid",
 	indentGuideWidthPx: 1,
-	rainbowIndentGuides: false,
+	rainbowIndentGuides: true,
 	legalOutlineNumbering: false,
 	fileTreeIndentPx: 14,
 
@@ -488,6 +496,7 @@ export const DEFAULT_DOOMESQUE_SETTINGS: DoomEsqueStyleSettings = {
 	showPopoverProperties: false,
 	superKeyOpensRightSidebar: true,
 	flatSettingsItems: false,
+	settingsVersion: CURRENT_SETTINGS_VERSION,
 };
 
 /** Backward-compatibility constant alias */
@@ -524,6 +533,23 @@ function roundTo(value: number, decimals: number): number {
  * Pure function that computes the exact `document.body` classes and inline CSS variables
  * for a given `DoomEmacsStyleSettings` object.
  */
+/** One-time migrations for settings saved by older plugin versions. Returns true if anything changed. */
+export function migrateSettings(saved: Partial<DoomEsqueStyleSettings> | null, settings: DoomEsqueStyleSettings): boolean {
+	if (!saved) {
+		settings.settingsVersion = CURRENT_SETTINGS_VERSION;
+		return false;
+	}
+	const from = saved.settingsVersion ?? 1;
+	if (from >= CURRENT_SETTINGS_VERSION) {
+		return false;
+	}
+	if (from < 2) {
+		settings.rainbowIndentGuides = true;
+	}
+	settings.settingsVersion = CURRENT_SETTINGS_VERSION;
+	return true;
+}
+
 export function computeDoomDomState(
 	settings: DoomEmacsStyleSettings,
 	options: DoomDomOptions = {}
@@ -561,8 +587,8 @@ export function computeDoomDomState(
 	if (settings.disableActiveLineHighlight) {
 		activeClasses.push("doom-no-active-line-highlight");
 	}
-	if (settings.rainbowIndentGuides) {
-		activeClasses.push("doom-rainbow-indent-guides");
+	if (!settings.rainbowIndentGuides) {
+		activeClasses.push("doom-mono-indent-guides");
 	}
 	if (settings.legalOutlineNumbering) {
 		activeClasses.push("doom-legal-outline");

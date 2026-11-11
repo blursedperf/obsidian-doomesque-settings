@@ -20,6 +20,9 @@ import {
 	getNextIndentStyle,
 	getNextCursorStyle,
 	sanitizeFontFamily,
+	DOOMESQUE_THEME_NAME,
+	STYLE_SETTINGS_PLUGIN_ID,
+	DoomDomOptions,
 } from "./settings";
 
 export default class DoomEsqueSettingsPlugin extends Plugin {
@@ -75,15 +78,16 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			}
 		}
 
-		// Re-apply settings on workspace layout changes (closing modals, pane splits)
+		// Re-apply when the active theme or CSS changes (theme switch, snippets, Style Settings).
+		// Applying is diff-based, so this is cheap; layout changes no longer re-apply.
 		try {
 			this.registerEvent(
-				this.app.workspace.on("layout-change", () => {
+				this.app.workspace.on("css-change", () => {
 					this.applyAllSettings();
 				})
 			);
 		} catch (err) {
-			console.warn("DoomEsque Settings: layout-change listener registration skipped", err);
+			console.warn("DoomEsque Settings: css-change listener registration skipped", err);
 		}
 
 		// Palette switcher / cycler (dark)
@@ -91,6 +95,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			id: "cycle-dark-palette",
 			name: "Cycle dark theme palette",
 			callback: async () => {
+				if (this.blockedByStyleSettings()) return;
 				const nextPalette = getNextDarkPalette(this.settings.darkPalette);
 				this.settings.darkPalette = nextPalette;
 				await this.saveSettings();
@@ -104,6 +109,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			id: "cycle-light-palette",
 			name: "Cycle light theme palette",
 			callback: async () => {
+				if (this.blockedByStyleSettings()) return;
 				const nextPalette = getNextLightPalette(this.settings.lightPalette);
 				this.settings.lightPalette = nextPalette;
 				await this.saveSettings();
@@ -117,6 +123,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			id: "toggle-monospace-editor",
 			name: "Toggle monospace note editor",
 			callback: async () => {
+				if (this.blockedByStyleSettings()) return;
 				this.settings.monospaceEditor = !this.settings.monospaceEditor;
 				await this.saveSettings();
 				new Notice(
@@ -130,6 +137,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			id: "toggle-org-todo-badges",
 			name: "Toggle Org-mode TODO/DONE task badges",
 			callback: async () => {
+				if (this.blockedByStyleSettings()) return;
 				this.settings.disableOrgTodoBadges = !this.settings.disableOrgTodoBadges;
 				await this.saveSettings();
 				new Notice(
@@ -143,6 +151,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			id: "toggle-rainbow-indent-guides",
 			name: "Toggle rainbow indentation guides",
 			callback: async () => {
+				if (this.blockedByStyleSettings()) return;
 				this.settings.rainbowIndentGuides = !this.settings.rainbowIndentGuides;
 				await this.saveSettings();
 				new Notice(
@@ -156,6 +165,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			id: "cycle-indent-guide-style",
 			name: "Cycle indentation guide style (solid, dashed, dotted, double, none)",
 			callback: async () => {
+				if (this.blockedByStyleSettings()) return;
 				const nextStyle = getNextIndentStyle(this.settings.indentGuideStyle);
 				this.settings.indentGuideStyle = nextStyle;
 				await this.saveSettings();
@@ -168,6 +178,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			id: "cycle-cursor-style",
 			name: "Cycle text cursor style (Bar → Block → Phosphor → Hollow → Underline)",
 			callback: async () => {
+				if (this.blockedByStyleSettings()) return;
 				const nextStyle = getNextCursorStyle(this.settings.cursorStyle);
 				this.settings.cursorStyle = nextStyle;
 				await this.saveSettings();
@@ -181,6 +192,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			id: "toggle-monochrome-headings",
 			name: "Toggle monochrome headings (vs Org rainbow)",
 			callback: async () => {
+				if (this.blockedByStyleSettings()) return;
 				this.settings.monochromeHeadings = !this.settings.monochromeHeadings;
 				await this.saveSettings();
 				new Notice(
@@ -194,6 +206,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			id: "toggle-active-block-highlight",
 			name: "Toggle active block highlight (hl-line-mode)",
 			callback: async () => {
+				if (this.blockedByStyleSettings()) return;
 				this.settings.activeBlockHighlight = !this.settings.activeBlockHighlight;
 				this.settings.disableActiveLineHighlight = !this.settings.activeBlockHighlight;
 				await this.saveSettings();
@@ -208,6 +221,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			id: "toggle-flat-settings-items",
 			name: "Toggle flat settings items style",
 			callback: async () => {
+				if (this.blockedByStyleSettings()) return;
 				this.settings.flatSettingsItems = !this.settings.flatSettingsItems;
 				await this.saveSettings();
 				new Notice(
@@ -221,6 +235,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			id: "toggle-legal-outline-numbering",
 			name: "Toggle legal / hornbook outline numbering (I, A, 1, a, i)",
 			callback: async () => {
+				if (this.blockedByStyleSettings()) return;
 				this.settings.legalOutlineNumbering = !this.settings.legalOutlineNumbering;
 				await this.saveSettings();
 				new Notice(
@@ -234,6 +249,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			id: "toggle-editorial-emphasis",
 			name: "Toggle editorial bold & italic colors",
 			callback: async () => {
+				if (this.blockedByStyleSettings()) return;
 				this.settings.editorialEmphasis = !this.settings.editorialEmphasis;
 				await this.saveSettings();
 				new Notice(
@@ -265,6 +281,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 				id: "toggle-sticky-hover-previews",
 				name: "Toggle sticky hover preview windows",
 				callback: async () => {
+					if (this.blockedByStyleSettings()) return;
 					this.settings.stickyHoverPreviews = !this.settings.stickyHoverPreviews;
 					await this.saveSettings();
 					new Notice(
@@ -278,6 +295,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 				id: "toggle-popover-properties",
 				name: "Toggle note properties in hover previews",
 				callback: async () => {
+					if (this.blockedByStyleSettings()) return;
 					this.settings.showPopoverProperties = !this.settings.showPopoverProperties;
 					await this.saveSettings();
 					new Notice(
@@ -398,21 +416,77 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 		return docs;
 	}
 
+	/** True when the Style Settings plugin is enabled; it then owns the options both plugins expose. */
+	isStyleSettingsEnabled(): boolean {
+		const plugins = (this.app as unknown as { plugins?: { enabledPlugins?: Set<string> } }).plugins;
+		return plugins?.enabledPlugins?.has(STYLE_SETTINGS_PLUGIN_ID) ?? false;
+	}
+
+	/** True when DoomEsque is the active community theme (assumed true if Obsidian hides the config). */
+	isDoomEsqueThemeActive(): boolean {
+		const vault = this.app.vault as unknown as { getConfig?: (key: string) => unknown };
+		if (typeof vault.getConfig !== "function") {
+			return true;
+		}
+		return vault.getConfig("cssTheme") === DOOMESQUE_THEME_NAME;
+	}
+
+	getDomOptions(): DoomDomOptions {
+		return { deferToStyleSettings: this.isStyleSettingsEnabled() };
+	}
+
+	/**
+	 * Settings as they are actually in effect. While Style Settings owns the shared options,
+	 * hover preview behaviour follows the classes and variables it has applied.
+	 */
+	getEffectiveSettings(): DoomEmacsStyleSettings {
+		if (!this.isStyleSettingsEnabled()) {
+			return this.settings;
+		}
+		const body = this.app.workspace.containerEl?.ownerDocument?.body ?? activeDocument.body;
+		const styles = getComputedStyle(body);
+		const px = (name: string, fallback: number): number => {
+			const value = parseFloat(styles.getPropertyValue(name));
+			return Number.isFinite(value) && value > 0 ? value : fallback;
+		};
+		return {
+			...this.settings,
+			stickyHoverPreviews: body.classList.contains("doom-sticky-hover-enabled"),
+			showPopoverProperties: body.classList.contains("doom-popover-properties"),
+			hoverPopoverWidthPx: px("--popover-width", DEFAULT_DOOM_SETTINGS.hoverPopoverWidthPx),
+			hoverPopoverHeightPx: px("--popover-height", DEFAULT_DOOM_SETTINGS.hoverPopoverHeightPx),
+		};
+	}
+
+	/** Shows a notice and returns true when a command would change an option Style Settings owns. */
+	blockedByStyleSettings(): boolean {
+		if (!this.isStyleSettingsEnabled()) {
+			return false;
+		}
+		new Notice("DoomEsque: this option is managed by Style Settings while it is enabled.");
+		return true;
+	}
+
 	applyAllSettings(): void {
-		const computed = computeDoomDomState(this.settings);
 		for (const doc of this.getAllDocuments()) {
-			applyDoomDomState(doc, computed);
+			this.applySettingsToDocument(doc);
 		}
 	}
 
 	applySettingsToDocument(doc: Document): void {
-		const computed = computeDoomDomState(this.settings);
-		applyDoomDomState(doc, computed);
+		const options = this.getDomOptions();
+		if (!this.isDoomEsqueThemeActive()) {
+			// Another theme is active: leave the page exactly as that theme expects.
+			clearDoomDomState(doc, options);
+			return;
+		}
+		applyDoomDomState(doc, computeDoomDomState(this.settings, options));
 	}
 
 	clearAllDocuments(): void {
+		const options = this.getDomOptions();
 		for (const doc of this.getAllDocuments()) {
-			clearDoomDomState(doc);
+			clearDoomDomState(doc, options);
 		}
 	}
 }
@@ -433,9 +507,71 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		this.renderSettings();
 	}
 
+	/** Setting rows (by display name) that Style Settings also exposes; see STYLE_SETTINGS_SHARED_KEYS. */
+	private static readonly SHARED_SETTING_NAMES: ReadonlySet<string> = new Set([
+		"Dark theme palette",
+		"Light theme palette",
+		"Disable Org-mode TODO / DONE task badges",
+		"Monochrome headings",
+		"Disable H1 underline border",
+		"Active block highlight (hl-line-mode)",
+		"Flat settings items style",
+		"Readable line width",
+		"Editor line height",
+		"Paragraph spacing",
+		"Heading spacing scale",
+		"List item vertical spacing",
+		"Sidebar item density",
+		"List & outline indentation",
+		"Indentation guide line style",
+		"Indentation guide line width",
+		"Rainbow indent guides",
+		"Legal / hornbook outline numbering (I, A, 1, a, i)",
+		"File tree folder indentation",
+		"Editorial bold & italic colors",
+		"Force monospace note editor",
+		"System sans-serif UI chrome",
+		"Text cursor style",
+		"Hover preview width",
+		"Hover preview height",
+		"Sticky hover preview windows",
+		"Show note properties in hover previews",
+	]);
+
+	private renderStatusBanners(containerEl: HTMLElement): void {
+		if (!this.plugin.isDoomEsqueThemeActive()) {
+			containerEl.createDiv({
+				cls: "doom-settings-banner",
+				text: "The DoomEsque theme is not the active theme, so these settings are not applied. They take effect when you switch to DoomEsque in Settings → Appearance.",
+			});
+		}
+		if (this.plugin.isStyleSettingsEnabled()) {
+			containerEl.createDiv({
+				cls: "doom-settings-banner",
+				text: "Style Settings is enabled, so it controls the palette, spacing, indentation, typography, cursor and hover preview options that both plugins offer (Style Settings → DoomEsque). Those rows are disabled here; the remaining options still apply.",
+			});
+		}
+	}
+
+	/** Disable rows for options owned by Style Settings while it is enabled. */
+	private markSharedSettings(containerEl: HTMLElement): void {
+		if (!this.plugin.isStyleSettingsEnabled()) {
+			return;
+		}
+		containerEl.querySelectorAll<HTMLElement>(".setting-item").forEach((item) => {
+			const name = item.querySelector(".setting-item-name")?.textContent?.trim() ?? "";
+			if (DoomEsqueSettingTab.SHARED_SETTING_NAMES.has(name)) {
+				item.addClass("doom-setting-deferred");
+				item.setAttribute("inert", "");
+				item.setAttribute("aria-disabled", "true");
+			}
+		});
+	}
+
 	private renderSettings(): void {
 		const { containerEl } = this;
 		containerEl.empty();
+		this.renderStatusBanners(containerEl);
 
 		// ---------------------------------------------------------------------
 		// 1. Color Palette & Faces
@@ -978,6 +1114,8 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 						new Notice("DoomEsque settings have been reset to defaults.");
 					});
 			});
+
+		this.markSharedSettings(containerEl);
 	}
 
 	private createSliderSetting(options: {

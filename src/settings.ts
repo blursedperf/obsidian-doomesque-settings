@@ -257,6 +257,112 @@ export const ALL_MANAGED_CSS_VARS: readonly string[] = [
 export const DEFAULT_DOOM_MONOSPACE_STACK =
 	'"JetBrains Mono", "Iosevka", "Fira Code", "Source Code Pro", "Cascadia Code", ui-monospace, "SF Mono", "Menlo", "Monaco", monospace';
 
+/** Plugin id of the Style Settings community plugin, which also exposes the theme's `@settings` block. */
+export const STYLE_SETTINGS_PLUGIN_ID = "obsidian-style-settings";
+
+/** Name of the companion theme as it appears in Obsidian's appearance settings. */
+export const DOOMESQUE_THEME_NAME = "DoomEsque";
+
+/**
+ * Body classes that the theme's Style Settings block also controls. When Style Settings is
+ * enabled it owns these, and this plugin neither adds nor removes them.
+ */
+export const STYLE_SETTINGS_SHARED_CLASSES: readonly string[] = [
+	"doom-palette-one",
+	"doom-palette-vibrant",
+	"doom-palette-dracula",
+	"doom-palette-tokyo-night",
+	"doom-palette-gruvbox",
+	"doom-palette-cyberpunk",
+	"doom-palette-retro-terminal",
+	"doom-palette-suit-and-tie",
+	"doom-palette-one-light",
+	"doom-palette-nord-light",
+	"doom-palette-gruvbox-light",
+	"doom-palette-solarized-light",
+	"doom-palette-tomorrow-day",
+	"doom-palette-suit-and-tie-light",
+	"doom-no-org-todo",
+	"doom-monochrome-headings",
+	"doom-no-h1-border",
+	"doom-active-block-highlight",
+	"doom-sidebar-compact",
+	"doom-sidebar-normal",
+	"doom-sidebar-comfortable",
+	"doom-indent-style-solid",
+	"doom-indent-style-dashed",
+	"doom-indent-style-dotted",
+	"doom-indent-style-double",
+	"doom-indent-style-none",
+	"doom-rainbow-indent-guides",
+	"doom-legal-outline",
+	"doom-editorial-emphasis",
+	"doom-monospace-editor",
+	"doom-disable-monospace-ui",
+	"doom-cursor-bar",
+	"doom-cursor-block",
+	"doom-cursor-glow",
+	"doom-cursor-hollow",
+	"doom-cursor-underline",
+	"doom-sticky-hover-enabled",
+	"doom-popover-properties",
+	"doom-settings-flat",
+];
+
+/** CSS variables that Style Settings also controls (plus values this plugin derives from them). */
+export const STYLE_SETTINGS_SHARED_CSS_VARS: readonly string[] = [
+	"--file-line-width",
+	"--line-height-normal",
+	"--p-spacing",
+	"--heading-spacing",
+	"--doom-heading-spacing-scale",
+	"--list-spacing",
+	"--list-indent",
+	"--indentation-guide-width",
+	"--indentation-guide-reading-indent",
+	"--doom-tree-indent",
+	"--popover-width",
+	"--popover-height",
+	"--doom-popover-width",
+	"--doom-popover-height",
+];
+
+/** Plugin settings whose controls are disabled in the settings tab while Style Settings owns them. */
+export const STYLE_SETTINGS_SHARED_KEYS: readonly (keyof DoomEsqueStyleSettings)[] = [
+	"darkPalette",
+	"lightPalette",
+	"disableOrgTodoBadges",
+	"monochromeHeadings",
+	"disableH1Border",
+	"activeBlockHighlight",
+	"flatSettingsItems",
+	"fileLineWidthRem",
+	"lineHeightNormal",
+	"paragraphSpacingRem",
+	"headingSpacingScale",
+	"listSpacingEm",
+	"sidebarDensity",
+	"listIndentEm",
+	"indentGuideStyle",
+	"indentGuideWidthPx",
+	"rainbowIndentGuides",
+	"legalOutlineNumbering",
+	"fileTreeIndentPx",
+	"editorialEmphasis",
+	"monospaceEditor",
+	"disableMonospaceUi",
+	"cursorStyle",
+	"hoverPopoverWidthPx",
+	"hoverPopoverHeightPx",
+	"stickyHoverPreviews",
+	"showPopoverProperties",
+];
+
+export interface DoomDomOptions {
+	/** Leave options shared with Style Settings untouched (Style Settings is enabled). */
+	deferToStyleSettings?: boolean;
+}
+
 export interface DoomEsqueStyleSettings {
 	// --- Palette & Style ---
 	/** Active Dark Mode Doom palette class (`doom-palette-*`). */
@@ -396,6 +502,8 @@ export function sanitizeFontFamily(raw: string): string {
 
 export interface ComputedDoomDomState {
 	activeClasses: string[];
+	/** Classes this state is allowed to add or remove. Defaults to every managed class. */
+	managedClasses?: readonly string[];
 	cssVariables: Record<string, string | null>;
 }
 
@@ -416,7 +524,10 @@ function roundTo(value: number, decimals: number): number {
  * Pure function that computes the exact `document.body` classes and inline CSS variables
  * for a given `DoomEmacsStyleSettings` object.
  */
-export function computeDoomDomState(settings: DoomEmacsStyleSettings): ComputedDoomDomState {
+export function computeDoomDomState(
+	settings: DoomEmacsStyleSettings,
+	options: DoomDomOptions = {}
+): ComputedDoomDomState {
 	const validPalette: DoomDarkPalette = DOOM_PALETTES.some((p) => p.id === settings.darkPalette)
 		? settings.darkPalette
 		: DEFAULT_DOOM_SETTINGS.darkPalette;
@@ -666,7 +777,37 @@ export function computeDoomDomState(settings: DoomEmacsStyleSettings): ComputedD
 			isDefaultFontScale ? null : `${roundTo(16 * clampedFontScale, 1)}px`,
 	};
 
-	return { activeClasses, cssVariables };
+	if (options.deferToStyleSettings) {
+		const sharedClasses = new Set(STYLE_SETTINGS_SHARED_CLASSES);
+		for (const varName of STYLE_SETTINGS_SHARED_CSS_VARS) {
+			delete cssVariables[varName];
+		}
+		return {
+			activeClasses: activeClasses.filter((cls) => !sharedClasses.has(cls)),
+			managedClasses: getManagedClasses(options),
+			cssVariables,
+		};
+	}
+
+	return { activeClasses, managedClasses: ALL_MANAGED_BODY_CLASSES, cssVariables };
+}
+
+/** Body classes this plugin owns under the given options. */
+export function getManagedClasses(options: DoomDomOptions = {}): readonly string[] {
+	if (!options.deferToStyleSettings) {
+		return ALL_MANAGED_BODY_CLASSES;
+	}
+	const shared = new Set(STYLE_SETTINGS_SHARED_CLASSES);
+	return ALL_MANAGED_BODY_CLASSES.filter((cls) => !shared.has(cls));
+}
+
+/** CSS variables this plugin owns under the given options. */
+export function getManagedCssVars(options: DoomDomOptions = {}): readonly string[] {
+	if (!options.deferToStyleSettings) {
+		return ALL_MANAGED_CSS_VARS;
+	}
+	const shared = new Set(STYLE_SETTINGS_SHARED_CSS_VARS);
+	return ALL_MANAGED_CSS_VARS.filter((v) => !shared.has(v));
 }
 
 export const INDENT_GUIDE_STYLES: readonly DoomIndentGuideStyle[] = [
@@ -703,18 +844,32 @@ export function applyDoomDomState(doc: Document, state: ComputedDoomDomState): v
 		return;
 	}
 	const body = doc.body;
+	const active = new Set(state.activeClasses);
 
-	for (const cls of ALL_MANAGED_BODY_CLASSES) {
-		body.classList.remove(cls);
+	// Toggle only what differs so unchanged classes never trigger a style recalculation.
+	for (const cls of state.managedClasses ?? ALL_MANAGED_BODY_CLASSES) {
+		const want = active.has(cls);
+		if (body.classList.contains(cls) !== want) {
+			if (want) {
+				body.classList.add(cls);
+			} else {
+				body.classList.remove(cls);
+			}
+		}
 	}
-	for (const cls of state.activeClasses) {
-		body.classList.add(cls);
+	for (const cls of active) {
+		if (!body.classList.contains(cls)) {
+			body.classList.add(cls);
+		}
 	}
 
 	for (const [varName, value] of Object.entries(state.cssVariables)) {
+		const current = body.style.getPropertyValue(varName);
 		if (value === null || value === undefined || value === "") {
-			body.style.removeProperty(varName);
-		} else {
+			if (current !== "") {
+				body.style.removeProperty(varName);
+			}
+		} else if (current !== value) {
 			body.style.setProperty(varName, value);
 		}
 	}
@@ -723,16 +878,16 @@ export function applyDoomDomState(doc: Document, state: ComputedDoomDomState): v
 /**
  * Reverts all managed classes and CSS custom properties on a Document back to clean theme defaults.
  */
-export function clearDoomDomState(doc: Document): void {
+export function clearDoomDomState(doc: Document, options: DoomDomOptions = {}): void {
 	if (!doc || !doc.body) {
 		return;
 	}
 	const body = doc.body;
 
-	for (const cls of ALL_MANAGED_BODY_CLASSES) {
+	for (const cls of getManagedClasses(options)) {
 		body.classList.remove(cls);
 	}
-	for (const varName of ALL_MANAGED_CSS_VARS) {
+	for (const varName of getManagedCssVars(options)) {
 		body.style.removeProperty(varName);
 	}
 }

@@ -31,6 +31,14 @@ A dedicated companion plugin to customize palettes, layout spacing, retro text c
 
 ---
 
+## 🤝 Working with Style Settings & Other Themes
+
+- **Style Settings enabled:** the DoomEsque theme also exposes its options through the [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) plugin. When it is enabled, Style Settings controls the options both plugins offer (palettes, spacing, indentation, typography, cursor, hover preview size/stickiness/properties). Those rows are disabled in this plugin's tab and the matching commands show a notice; heading scale, custom monospace font, page margins, header height, hover text scale and the Super-key shortcut still apply from here.
+- **Another theme active:** the plugin removes its classes and variables so the active theme renders untouched. The enhanced hover preview window keeps working under any theme.
+- All theme styling lives in the DoomEsque theme; this plugin's `styles.css` only styles the hover preview chrome and its own settings widgets.
+
+---
+
 ## ⚡ Key Commands
 
 Access these actions via `Ctrl/Cmd + P` or bind them to hotkeys:
@@ -70,7 +78,7 @@ cp manifest.json main.js styles.css "/path/to/vault/.obsidian/plugins/doomesque-
 ```bash
 npm install        # Install dependencies
 npm run build      # Build production bundle
-npm test           # Run 22 unit test assertions
+npm test           # Run the unit test suite
 npm run dev        # Development watch mode
 ```
 

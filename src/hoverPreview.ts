@@ -328,7 +328,7 @@ export class HoverPreviewManager {
 		}
 
 		// Configure sticky behavior according to settings
-		const isStickyDefault = Boolean(this.plugin.settings.stickyHoverPreviews);
+		const isStickyDefault = Boolean(this.plugin.getEffectiveSettings().stickyHoverPreviews);
 		if (isStickyDefault) {
 			instance._doomIsSticky = true;
 			instance.isFocused = true;
@@ -418,7 +418,7 @@ export class HoverPreviewManager {
 			if (!isSuperKey(evt)) return;
 			this.isSuperKeyDown = true;
 
-			if (!this.plugin.settings.superKeyOpensRightSidebar) {
+			if (!this.plugin.getEffectiveSettings().superKeyOpensRightSidebar) {
 				return;
 			}
 
@@ -482,7 +482,7 @@ export class HoverPreviewManager {
 
 			// If Super key was held when hover-link fired, open directly in right sidebar
 			const heldSuper = this.isSuperKeyDown || Boolean(data.event && data.event.metaKey);
-			if (this.plugin.settings.superKeyOpensRightSidebar && heldSuper) {
+			if (this.plugin.getEffectiveSettings().superKeyOpensRightSidebar && heldSuper) {
 				void this.openInRightSidebar(data.linktext, data.sourcePath || "");
 			}
 		};
@@ -577,16 +577,16 @@ export class HoverPreviewManager {
 
 		// Set initial dimensions from settings if not manually resized
 		if (!customEl.style.width) {
-			customEl.setCssStyles({ width: `${this.plugin.settings.hoverPopoverWidthPx}px` });
+			customEl.setCssStyles({ width: `${this.plugin.getEffectiveSettings().hoverPopoverWidthPx}px` });
 		}
 		if (!customEl.style.height) {
-			customEl.setCssStyles({ height: `${this.plugin.settings.hoverPopoverHeightPx}px` });
+			customEl.setCssStyles({ height: `${this.plugin.getEffectiveSettings().hoverPopoverHeightPx}px` });
 		}
 
 		// Ensure child content container expands to fill full popover width and height
 		this.expandPopoverInnerContent(customEl);
 
-		const isStickyDefault = Boolean(this.plugin.settings.stickyHoverPreviews);
+		const isStickyDefault = Boolean(this.plugin.getEffectiveSettings().stickyHoverPreviews);
 		if (isStickyDefault || instance?._doomIsSticky) {
 			customEl.classList.add("doom-sticky-popover");
 			if (instance) {
@@ -795,8 +795,8 @@ export class HoverPreviewManager {
 					position: prevStyle.position || "",
 					left: prevStyle.left,
 					top: prevStyle.top,
-					width: prevStyle.width || `${this.plugin.settings.hoverPopoverWidthPx}px`,
-					height: prevStyle.height || `${this.plugin.settings.hoverPopoverHeightPx}px`,
+					width: prevStyle.width || `${this.plugin.getEffectiveSettings().hoverPopoverWidthPx}px`,
+					height: prevStyle.height || `${this.plugin.getEffectiveSettings().hoverPopoverHeightPx}px`,
 				});
 				maxBtn.classList.remove("is-active");
 				maxBtn.setText("⤢");
@@ -1219,7 +1219,7 @@ export class HoverPreviewManager {
 		}
 
 		// 4. Ensure frontmatter properties are unfolded when showPopoverProperties is enabled
-		if (this.plugin.settings.showPopoverProperties) {
+		if (this.plugin.getEffectiveSettings().showPopoverProperties) {
 			this.unfoldPopoverProperties(popoverEl);
 		}
 	}
@@ -1276,7 +1276,7 @@ export class HoverPreviewManager {
 	updateOpenPopovers(): void {
 		if (Platform.isMobile) return;
 		try {
-			const isSticky = Boolean(this.plugin.settings.stickyHoverPreviews);
+			const isSticky = Boolean(this.plugin.getEffectiveSettings().stickyHoverPreviews);
 			const popovers = activeDocument.querySelectorAll<HTMLElement>(".popover.hover-popover");
 
 			for (let i = 0; i < popovers.length; i++) {
@@ -1313,8 +1313,8 @@ export class HoverPreviewManager {
 
 				if (!el.classList.contains("mod-maximized")) {
 					el.setCssStyles({
-						width: `${this.plugin.settings.hoverPopoverWidthPx}px`,
-						height: `${this.plugin.settings.hoverPopoverHeightPx}px`,
+						width: `${this.plugin.getEffectiveSettings().hoverPopoverWidthPx}px`,
+						height: `${this.plugin.getEffectiveSettings().hoverPopoverHeightPx}px`,
 					});
 				}
 				this.expandPopoverInnerContent(el);

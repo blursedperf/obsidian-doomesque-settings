@@ -14,9 +14,28 @@ import {
 	getNextIndentStyle,
 	getNextCursorStyle,
 	sanitizeFontFamily,
+	STYLE_SETTINGS_SHARED_CLASSES,
+	STYLE_SETTINGS_SHARED_CSS_VARS,
+	STYLE_SETTINGS_SHARED_KEYS,
+	getManagedClasses,
 } from "../src/settings";
 
 console.log("Running obsidian-doomesque-settings unit tests...\n");
+
+// Theme styling lives only in the companion theme. Assertions about it run when the
+// theme repository is checked out next to this one (../obsidian-theme-doomesque).
+const THEME_CSS: string | null = (() => {
+	const fs = require("node:fs");
+	const path = require("node:path");
+	const themePath = path.resolve(process.cwd(), "../obsidian-theme-doomesque/theme.css");
+	return fs.existsSync(themePath) ? fs.readFileSync(themePath, "utf-8") : null;
+})();
+
+function assertTheme(check: (css: string) => boolean, message: string): void {
+	if (THEME_CSS !== null) {
+		assert.ok(check(THEME_CSS), message);
+	}
+}
 
 function makeSettings(overrides: Partial<DoomEmacsStyleSettings> = {}): DoomEmacsStyleSettings {
 	return { ...DEFAULT_DOOM_SETTINGS, ...overrides };
@@ -762,16 +781,24 @@ class MockDOMTokenList {
 	];
 
 	for (const selector of requiredBasesSelectors) {
-		assert.ok(
-			cssContent.includes(selector),
-			`styles.css must include Bases selector: ${selector}`
-		);
+		assertTheme((css) => css.includes(selector), `theme.css must include Bases selector: ${selector}`);
 	}
+	// The plugin must not duplicate theme Bases styling (it applied under every theme and drifted).
+	assert.ok(!cssContent.includes(".bases-thead"), "styles.css must not duplicate theme Bases table styling");
 
-	// Verify header bottom border uses Org-table style
+	// Verify header uses a single Org-table 2px accent underline (inset shadow, no extra border)
+	assertTheme((css) => css.includes("box-shadow: inset 0 -2px 0 var(--doom-blue"), "theme.css must style Bases table header with Org-table 2px accent underline");
 	assert.ok(
-		cssContent.includes("border-bottom: 2px solid var(--doom-blue"),
-		"styles.css must style Bases table header with Org-table 2px accent underline"
+		!cssContent.includes("border-bottom: 2px solid var(--doom-blue"),
+		"styles.css must not stack a 2px border on top of the inset underline (draws 4px)"
+	);
+	assert.ok(
+		!/\.bases-tr:nth-child\([^)]*\)\s*\{[^}]*--table-row-alt-background/.test(cssContent),
+		"styles.css must not zebra-stripe virtualized Bases rows with nth-child"
+	);
+	assert.ok(
+		!cssContent.includes('.workspace-leaf-content[data-type="bases"] .view-content,'),
+		"styles.css must not frame standalone .base views like embeds"
 	);
 
 	// Verify fallback tokens are provided for all colors
@@ -779,56 +806,22 @@ class MockDOMTokenList {
 		cssContent.includes("var(--doom-blue, #51afef)"),
 		"styles.css must provide hex fallback for doom-blue"
 	);
-	assert.ok(
-		cssContent.includes("var(--table-header-background, var(--doom-base1, #1c1f24))"),
-		"styles.css must provide fallback for table-header-background"
-	);
 
 	// Verify header right padding offset and embed-actions button separation
-	assert.ok(
-		cssContent.includes("--bases-header-padding-end: 56px"),
-		"styles.css must reserve 56px right padding for CM6 embed actions button"
-	);
-	assert.ok(
-		cssContent.includes(".bases-embed .embed-actions"),
-		"styles.css must style Bases embed-actions container"
-	);
-	assert.ok(
-		cssContent.includes(".bases-embed .embed-action"),
-		"styles.css must style Bases embed-action expose syntax button"
-	);
+	assertTheme((css) => css.includes("--bases-header-padding-end: 56px"), "theme.css must reserve 56px right padding for CM6 embed actions button");
+	assertTheme((css) => css.includes(".bases-embed .embed-actions"), "theme.css must style Bases embed-actions container");
+	assertTheme((css) => css.includes(".bases-embed .embed-action"), "theme.css must style Bases embed-action expose syntax button");
 
 	// Verify Bases view selector button full-word layout (preventing truncation)
-	assert.ok(
-		cssContent.includes(".bases-toolbar .bases-toolbar-views-menu"),
-		"styles.css must target .bases-toolbar .bases-toolbar-views-menu"
-	);
-	assert.ok(
-		cssContent.includes(".bases-toolbar .bases-toolbar-views-menu .text-button-label"),
-		"styles.css must target .bases-toolbar .bases-toolbar-views-menu .text-button-label"
-	);
-	assert.ok(
-		cssContent.includes("min-width: max-content;"),
-		"styles.css must enforce max-content width on views menu button to show full word"
-	);
-	assert.ok(
-		cssContent.includes("text-overflow: clip;"),
-		"styles.css must disable ellipsis truncation on views menu label"
-	);
+	assertTheme((css) => css.includes(".bases-toolbar .bases-toolbar-views-menu"), "theme.css must target .bases-toolbar .bases-toolbar-views-menu");
+	assertTheme((css) => css.includes(".bases-toolbar .bases-toolbar-views-menu .text-button-label"), "theme.css must target .bases-toolbar .bases-toolbar-views-menu .text-button-label");
+	assertTheme((css) => css.includes("min-width: max-content;"), "theme.css must enforce max-content width on views menu button to show full word");
+	assertTheme((css) => css.includes("text-overflow: clip;"), "theme.css must disable ellipsis truncation on views menu label");
 
 	// Verify Bases results count button full-word layout (preventing truncation)
-	assert.ok(
-		cssContent.includes(".bases-toolbar .bases-toolbar-result-count"),
-		"styles.css must target .bases-toolbar .bases-toolbar-result-count"
-	);
-	assert.ok(
-		cssContent.includes(".bases-toolbar :is(.bases-toolbar-result-count, .bases-toolbar-results-menu) .text-button-label"),
-		"styles.css must target result count text-button-label"
-	);
-	assert.ok(
-		cssContent.includes(".bases-toolbar {") && cssContent.includes("overflow-x: auto;"),
-		"styles.css must allow horizontal scroll on .bases-toolbar to prevent squashing"
-	);
+	assertTheme((css) => css.includes(".bases-toolbar .bases-toolbar-result-count"), "theme.css must target .bases-toolbar .bases-toolbar-result-count");
+	assertTheme((css) => css.includes(".bases-toolbar :is(.bases-toolbar-result-count, .bases-toolbar-results-menu) .text-button-label"), "theme.css must target result count text-button-label");
+	assertTheme((css) => css.includes(".bases-toolbar {") && css.includes("overflow-x: auto;"), "theme.css must allow horizontal scroll on .bases-toolbar to prevent squashing");
 
 	console.log("✓ Obsidian Bases stylesheet compatibility & fallback tokens verified");
 }
@@ -1169,40 +1162,16 @@ void (async () => {
 		const stylesContent = fs.readFileSync(cssPath, "utf-8");
 
 		// 1. Ensure desktop-only gating of transparent caret
-		assert.ok(
-			stylesContent.includes("body:not(.is-mobile).doom-cursor-block"),
-			"styles.css must gate transparent caret behind body:not(.is-mobile) for block cursor"
-		);
-		assert.ok(
-			stylesContent.includes("body:not(.is-mobile).doom-cursor-glow"),
-			"styles.css must gate transparent caret behind body:not(.is-mobile) for glow cursor"
-		);
-		assert.ok(
-			stylesContent.includes("body:not(.is-mobile).doom-cursor-hollow"),
-			"styles.css must gate transparent caret behind body:not(.is-mobile) for hollow cursor"
-		);
-		assert.ok(
-			stylesContent.includes("body:not(.is-mobile).doom-cursor-underline"),
-			"styles.css must gate transparent caret behind body:not(.is-mobile) for underline cursor"
-		);
+		assertTheme((css) => css.includes("body:not(.is-mobile).doom-cursor-block"), "theme.css must gate transparent caret behind body:not(.is-mobile) for block cursor");
+		assertTheme((css) => css.includes("body:not(.is-mobile).doom-cursor-glow"), "theme.css must gate transparent caret behind body:not(.is-mobile) for glow cursor");
+		assertTheme((css) => css.includes("body:not(.is-mobile).doom-cursor-hollow"), "theme.css must gate transparent caret behind body:not(.is-mobile) for hollow cursor");
+		assertTheme((css) => css.includes("body:not(.is-mobile).doom-cursor-underline"), "theme.css must gate transparent caret behind body:not(.is-mobile) for underline cursor");
 
 		// 2. Ensure mobile explicit caret-color rules are present
-		assert.ok(
-			stylesContent.includes(".is-mobile .markdown-source-view.mod-cm6 .cm-content"),
-			"styles.css must style caret-color on mobile markdown source view"
-		);
-		assert.ok(
-			stylesContent.includes("caret-color: var(--text-accent, var(--doom-blue, #51afef));"),
-			"styles.css must set mobile caret-color to theme accent"
-		);
-		assert.ok(
-			stylesContent.includes("body.is-mobile.doom-palette-retro-terminal"),
-			"styles.css must set retro-terminal mobile caret-color"
-		);
-		assert.ok(
-			stylesContent.includes("caret-color: var(--doom-fg, #33ff33);"),
-			"styles.css must set retro-terminal caret-color to phosphor green"
-		);
+		assertTheme((css) => css.includes(".is-mobile .markdown-source-view.mod-cm6 .cm-content"), "theme.css must style caret-color on mobile markdown source view");
+		assertTheme((css) => css.includes("caret-color: var(--text-accent, var(--doom-blue, #51afef));"), "theme.css must set mobile caret-color to theme accent");
+		assertTheme((css) => css.includes("body.is-mobile.doom-palette-retro-terminal"), "theme.css must set retro-terminal mobile caret-color");
+		assertTheme((css) => css.includes("caret-color: var(--doom-fg, #33ff33);"), "theme.css must set retro-terminal caret-color to phosphor green");
 
 		// 3. Verify matching rules in theme.css if present in workspace
 		if (fs.existsSync(themeCssPath)) {
@@ -1255,14 +1224,8 @@ void (async () => {
 
 		// 3. Verify CSS rules in styles.css
 		const stylesContent = fs.readFileSync(cssPath, "utf-8");
-		assert.ok(
-			stylesContent.includes("body.doom-palette-suit-and-tie"),
-			"styles.css must contain body.doom-palette-suit-and-tie polish selectors"
-		);
-		assert.ok(
-			stylesContent.includes("body.doom-palette-suit-and-tie .markdown-rendered h1"),
-			"styles.css must contain tailored H1 styling for suit-and-tie"
-		);
+		assertTheme((css) => css.includes("body.doom-palette-suit-and-tie"), "theme.css must contain body.doom-palette-suit-and-tie polish selectors");
+		assertTheme((css) => css.includes("body.doom-palette-suit-and-tie .markdown-rendered h1"), "theme.css must contain tailored H1 styling for suit-and-tie");
 
 		// 4. Verify CSS rules in theme.css
 		if (fs.existsSync(themeCssPath)) {
@@ -1306,30 +1269,20 @@ void (async () => {
 			!stylesContent.includes("table.table-editor th"),
 			"styles.css must not override native Obsidian table cell geometry"
 		);
-		assert.ok(
-			stylesContent.includes(".doom-active-line-highlight") &&
-				stylesContent.includes(".cm-table-widget .cm-activeLine") &&
-				stylesContent.includes("background-color: transparent;"),
-			"styles.css must prevent active-line background bleed into table cells"
-		);
-		assert.ok(
-			stylesContent.includes("body .markdown-source-view.mod-cm6 .cm-table-widget .cm-cursorLayer .cm-cursor {") &&
-				stylesContent.includes("margin-left: -0.6px;"),
-			"styles.css must restore the native-width caret in table cells to prevent edge overflow/horizontal scroll"
-		);
+		assertTheme((css) => css.includes(".doom-active-line-highlight") &&
+				css.includes(".cm-table-widget .cm-activeLine") &&
+				css.includes("background-color: transparent;"), "theme.css must prevent active-line background bleed into table cells");
+		assertTheme((css) => css.includes("body .markdown-source-view.mod-cm6 .cm-table-widget .cm-cursorLayer .cm-cursor {") &&
+				css.includes("margin-left: -0.6px;"), "theme.css must restore the native-width caret in table cells to prevent edge overflow/horizontal scroll");
 
 		// 2. Verify Bases cell scrollbar suppression & min-width in styles.css
+		assertTheme((css) => css.includes(".bases-td"), "theme.css must target .bases-td");
+		assertTheme((css) => css.includes(".bases-table-cell"), "theme.css must target .bases-table-cell");
+		// Bases positions absolutely-placed cells from JS-computed column widths (clamped by
+		// --bases-table-column-min-width). A CSS min-width floor makes narrow cells overlap their neighbours.
 		assert.ok(
-			stylesContent.includes(".bases-td"),
-			"styles.css must target .bases-td"
-		);
-		assert.ok(
-			stylesContent.includes(".bases-table-cell"),
-			"styles.css must target .bases-table-cell"
-		);
-		assert.ok(
-			stylesContent.includes("min-width: max(var(--bases-column-width, 80px), 80px);"),
-			"styles.css must enforce healthy min-width on Bases cells to prevent flex squashing"
+			!stylesContent.includes("min-width: max(var(--bases-column-width"),
+			"styles.css must not impose a CSS min-width floor on Bases cells (breaks JS column layout)"
 		);
 
 		// 3. Verify theme.css preserves 100% native table functionality and applies Doom color differences
@@ -1391,7 +1344,7 @@ void (async () => {
 				"theme.css must define visible table selection border color"
 			);
 			assert.ok(
-				themeContent.includes("--table-row-alt-background: var(--doom-bg-alt);"),
+				themeContent.includes("--table-row-alt-background: var(--doom-stripe);"),
 				"theme.css must define zebra striping alt background"
 			);
 			assert.ok(
@@ -1451,14 +1404,8 @@ void (async () => {
 		);
 
 		// 3. Verify Retro Terminal and Suit and Tie popover button styles
-		assert.ok(
-			stylesContent.includes("body.doom-palette-retro-terminal .doom-popover-btn"),
-			"styles.css must style popover buttons for Retro Terminal"
-		);
-		assert.ok(
-			stylesContent.includes("body.doom-palette-suit-and-tie .doom-popover-btn"),
-			"styles.css must style popover buttons for Suit and Tie"
-		);
+		assertTheme((css) => css.includes("body.doom-palette-retro-terminal .doom-popover-btn"), "theme.css must style popover buttons for Retro Terminal");
+		assertTheme((css) => css.includes("body.doom-palette-suit-and-tie .doom-popover-btn"), "theme.css must style popover buttons for Suit and Tie");
 
 		// 4. Verify theme.css in companion repo if present
 		const themePath = path.resolve(process.cwd(), "../obsidian-theme-doomesque/theme.css");
@@ -1644,6 +1591,118 @@ void (async () => {
 		assert.ok(docsWhenSettingsFocused.includes(mockPopoutDoc), "Popout document must be included");
 
 		console.log("✓ Multi-window document synchronization & core base color token mapping verified");
+	}
+
+	// -----------------------------------------------------------------------------
+	// 23. Style Settings Ownership & Plugin CSS Scope
+	// -----------------------------------------------------------------------------
+	{
+		const fs = require("node:fs");
+		const path = require("node:path");
+
+		// 1. Shared lists are subsets of what the plugin manages
+		const managed = new Set(ALL_MANAGED_BODY_CLASSES);
+		for (const cls of STYLE_SETTINGS_SHARED_CLASSES) {
+			assert.ok(managed.has(cls), `shared class ${cls} must be a managed class`);
+		}
+		const managedVars = new Set(ALL_MANAGED_CSS_VARS);
+		for (const v of STYLE_SETTINGS_SHARED_CSS_VARS) {
+			assert.ok(managedVars.has(v), `shared variable ${v} must be a managed variable`);
+		}
+
+		// 2. Deferring drops shared classes/variables and never manages them
+		const settings = makeSettings({
+			darkPalette: "doom-palette-dracula",
+			monospaceEditor: true,
+			fileLineWidthRem: 60,
+			headingScale: 1.2,
+		});
+		const owned = computeDoomDomState(settings);
+		const deferred = computeDoomDomState(settings, { deferToStyleSettings: true });
+		assert.ok(owned.activeClasses.includes("doom-palette-dracula"));
+		assert.ok(!deferred.activeClasses.includes("doom-palette-dracula"), "deferred state must not set palette");
+		assert.ok(!deferred.activeClasses.includes("doom-monospace-editor"), "deferred state must not set shared toggles");
+		assert.ok(!("--file-line-width" in deferred.cssVariables), "deferred state must not touch shared variables");
+		assert.strictEqual(deferred.cssVariables["--h1-size"], "1.78em", "plugin-only options still apply when deferring");
+		assert.ok(
+			!(deferred.managedClasses ?? []).some((c) => STYLE_SETTINGS_SHARED_CLASSES.includes(c)),
+			"deferred state must not manage shared classes"
+		);
+		assert.deepStrictEqual(
+			[...getManagedClasses({ deferToStyleSettings: true })].sort(),
+			ALL_MANAGED_BODY_CLASSES.filter((c) => !STYLE_SETTINGS_SHARED_CLASSES.includes(c)).sort()
+		);
+
+		// 3. Applying / clearing while deferring preserves classes and variables Style Settings set
+		const props: Record<string, string> = {};
+		const doc = {
+			body: {
+				classList: new MockDOMTokenList(),
+				style: {
+					setProperty: (k: string, v: string) => {
+						props[k] = v;
+					},
+					removeProperty: (k: string) => {
+						delete props[k];
+					},
+					getPropertyValue: (k: string) => props[k] ?? "",
+				},
+			},
+		};
+		doc.body.classList.add("doom-palette-vibrant"); // chosen in Style Settings
+		doc.body.style.setProperty("--file-line-width", "52rem");
+		applyDoomDomState(doc as unknown as Document, deferred);
+		assert.ok(doc.body.classList.contains("doom-palette-vibrant"), "apply must keep Style Settings palette class");
+		assert.strictEqual(props["--file-line-width"], "52rem", "apply must keep Style Settings variable");
+		assert.ok(!doc.body.classList.contains("doom-palette-dracula"), "apply must not add plugin palette when deferring");
+		clearDoomDomState(doc as unknown as Document, { deferToStyleSettings: true });
+		assert.ok(doc.body.classList.contains("doom-palette-vibrant"), "clear must keep Style Settings palette class");
+		clearDoomDomState(doc as unknown as Document);
+		assert.ok(!doc.body.classList.contains("doom-palette-vibrant"), "clear without deferral removes managed classes");
+
+		// 4. Every shared class is a real option in the theme's Style Settings block (when present)
+		if (THEME_CSS !== null) {
+			const settingsBlock = THEME_CSS.slice(THEME_CSS.indexOf("/* @settings"));
+			for (const cls of STYLE_SETTINGS_SHARED_CLASSES) {
+				assert.ok(
+					settingsBlock.includes(`value: ${cls}`) || settingsBlock.includes(`id: ${cls}`),
+					`theme @settings must expose shared class ${cls}`
+				);
+			}
+		}
+
+		// 5. Settings tab disables exactly the shared rows; no re-apply on every layout change
+		const mainSrc = fs.readFileSync(path.resolve(process.cwd(), "src/main.ts"), "utf-8");
+		const namesBlock = mainSrc.match(/SHARED_SETTING_NAMES: ReadonlySet<string> = new Set\(\[([\s\S]*?)\]\)/);
+		assert.ok(namesBlock, "main.ts must declare SHARED_SETTING_NAMES");
+		const names = Array.from((namesBlock as RegExpMatchArray)[1].matchAll(/"([^"]+)"/g), (m) => m[1]);
+		assert.strictEqual(names.length, STYLE_SETTINGS_SHARED_KEYS.length, "one disabled row per shared setting");
+		for (const name of names) {
+			assert.ok(
+				mainSrc.includes(`.setName("${name}")`) || mainSrc.includes(`name: "${name}"`),
+				`shared row "${name}" must exist in the settings tab`
+			);
+		}
+		assert.ok(!mainSrc.includes('on("layout-change"'), "settings must not be re-applied on every layout change");
+
+		// 6. Plugin CSS only styles plugin-created DOM
+		const pluginCss = fs.readFileSync(path.resolve(process.cwd(), "styles.css"), "utf-8");
+		for (const forbidden of [
+			".modal.mod-settings .setting-item",
+			".checkbox-container",
+			"doom-palette-",
+			"doom-cursor-",
+			".cm-table-widget",
+			".bases-tr",
+			"doom-rainbow-indent-guides",
+		]) {
+			assert.ok(!pluginCss.includes(forbidden), `styles.css must not contain theme styling: ${forbidden}`);
+		}
+		for (const required of [".doom-popover-header", ".doom-sticky-popover", ".doom-settings-slider-value", ".doom-settings-banner"]) {
+			assert.ok(pluginCss.includes(required), `styles.css must style plugin DOM: ${required}`);
+		}
+
+		console.log("✓ Style Settings ownership, theme gating and plugin CSS scope verified");
 	}
 
 	console.log("\nAll unit tests passed successfully!");

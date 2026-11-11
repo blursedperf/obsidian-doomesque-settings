@@ -1722,6 +1722,15 @@ void (async () => {
 			);
 		}
 
+		// 8. drawSelection's ".cm-content :focus ::selection { Highlight !important }" must not paint the
+		//    system highlight over table-cell editors (they draw their own selection).
+		assert.ok(
+			/registerEditorExtension\(\[drawSelection\(\), TABLE_CELL_NATIVE_SELECTION_FIX\]\)/.test(mainSrc) &&
+				mainSrc.includes('".cm-table-widget .cm-content .cm-line::selection, .cm-table-widget .cm-content .cm-line ::selection"') &&
+				mainSrc.includes('backgroundColor: "transparent !important"'),
+			"main.ts must register the table-cell native selection fix alongside drawSelection"
+		);
+
 		console.log("✓ Style Settings ownership, theme gating and plugin CSS scope verified");
 	}
 

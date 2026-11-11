@@ -1,5 +1,6 @@
 import { App, Notice, Platform, Plugin, PluginSettingTab, Setting } from "obsidian";
-import { drawSelection } from "@codemirror/view";
+import { Prec } from "@codemirror/state";
+import { EditorView, drawSelection } from "@codemirror/view";
 import { HoverPreviewManager } from "./hoverPreview";
 import {
 	DOOM_PALETTES,
@@ -25,6 +26,23 @@ import {
 	DoomDomOptions,
 } from "./settings";
 
+/**
+ * drawSelection makes the outer note editor paint the *native* selection of any focused element
+ * nested in its content with the system `Highlight` colour (`.cm-content :focus ::selection`,
+ * marked !important). Table cells are nested CodeMirror editors that draw their own selection,
+ * so inside them that rule stacked an opaque system highlight over the text (bright and washed
+ * out on retro-terminal). Hide the native selection inside table-cell lines only; inputs in other
+ * widgets keep their native selection. Specificity (scope + 3 classes) beats CodeMirror's rule
+ * (scope + 2 classes + :focus); !important is required to override an !important declaration.
+ */
+const TABLE_CELL_NATIVE_SELECTION_FIX = Prec.highest(
+	EditorView.theme({
+		".cm-table-widget .cm-content .cm-line::selection, .cm-table-widget .cm-content .cm-line ::selection": {
+			backgroundColor: "transparent !important",
+		},
+	})
+);
+
 export default class DoomEsqueSettingsPlugin extends Plugin {
 	settings: DoomEmacsStyleSettings = { ...DEFAULT_DOOM_SETTINGS };
 	hoverManager: HoverPreviewManager = new HoverPreviewManager(this);
@@ -38,7 +56,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 		if (Platform.isDesktop) {
 			try {
 				if (typeof drawSelection === "function") {
-					this.registerEditorExtension(drawSelection());
+					this.registerEditorExtension([drawSelection(), TABLE_CELL_NATIVE_SELECTION_FIX]);
 				}
 			} catch (err) {
 				console.warn("DoomEsque Settings: drawSelection registration skipped", err);

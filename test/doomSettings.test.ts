@@ -22,6 +22,7 @@ import {
 	getManagedClasses,
 } from "../src/settings";
 import { BASES_TOOLBAR_ICON_BUTTON_SELECTOR, basesToolbarTooltipFor } from "../src/basesToolbar";
+import { SETTINGS_SECTIONS, findSettingSpec, isSharedSetting, normalizeSettingValue } from "../src/settingsSchema";
 
 console.log("Running obsidian-doomesque-settings unit tests...\n");
 
@@ -1676,18 +1677,23 @@ void (async () => {
 			}
 		}
 
-		// 5. Settings tab disables exactly the shared rows; no re-apply on every layout change
+		// 5. One settings schema drives both the declarative (1.13+, searchable) and legacy tabs;
+		//    every setting has exactly one row and shared rows are derived from the shared keys.
 		const mainSrc = fs.readFileSync(path.resolve(process.cwd(), "src/main.ts"), "utf-8");
-		const namesBlock = mainSrc.match(/SHARED_SETTING_NAMES: ReadonlySet<string> = new Set\(\[([\s\S]*?)\]\)/);
-		assert.ok(namesBlock, "main.ts must declare SHARED_SETTING_NAMES");
-		const names = Array.from((namesBlock as RegExpMatchArray)[1].matchAll(/"([^"]+)"/g), (m) => m[1]);
-		assert.strictEqual(names.length, STYLE_SETTINGS_SHARED_KEYS.length, "one disabled row per shared setting");
-		for (const name of names) {
-			assert.ok(
-				mainSrc.includes(`.setName("${name}")`) || mainSrc.includes(`name: "${name}"`),
-				`shared row "${name}" must exist in the settings tab`
-			);
+		const schemaKeys = SETTINGS_SECTIONS.flatMap((s) => s.items.map((i) => i.key as string));
+		assert.strictEqual(new Set(schemaKeys).size, schemaKeys.length, "each setting appears once in the schema");
+		const userFacing = Object.keys(DEFAULT_DOOM_SETTINGS).filter((k) => k !== "settingsVersion");
+		assert.deepStrictEqual([...schemaKeys].sort(), [...userFacing].sort(), "every user-facing setting has a row");
+		for (const key of STYLE_SETTINGS_SHARED_KEYS) {
+			assert.ok(schemaKeys.includes(key), `shared setting ${key} must have a row`);
+			assert.ok(isSharedSetting(key), `${key} must be disabled while Style Settings owns it`);
 		}
+		assert.ok(!isSharedSetting("headingScale"), "plugin-only settings stay enabled");
+		assert.ok(/getSettingDefinitions\(\): SettingDefinitionItem\[\]/.test(mainSrc), "the tab must provide declarative definitions (settings search on 1.13+)");
+		assert.ok(/setControlValue\(key: string, value: unknown\)/.test(mainSrc) && mainSrc.includes("await this.plugin.saveSettings();"), "declarative changes must go through saveSettings()");
+		const slider = findSettingSpec("editorMarginVerticalPx")!;
+		assert.strictEqual(normalizeSettingValue(slider, 27.6), 28, "integer sliders round");
+		assert.strictEqual(normalizeSettingValue(findSettingSpec("customMonospaceFont")!, ' "Iosevka"; '), sanitizeFontFamily(' "Iosevka"; '), "font names are sanitised");
 		assert.ok(!mainSrc.includes('on("layout-change"'), "settings must not be re-applied on every layout change");
 
 		// 6. Plugin CSS only styles plugin-created DOM

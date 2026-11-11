@@ -1,4 +1,6 @@
 import { App, Notice, Platform, Plugin, PluginSettingTab, Setting, setTooltip } from "obsidian";
+import type { SettingDefinition, SettingDefinitionItem } from "obsidian";
+import { SETTINGS_SECTIONS, SettingKey, SettingSpec, findSettingSpec, isSharedSetting, normalizeSettingValue } from "./settingsSchema";
 import { Prec } from "@codemirror/state";
 import { EditorView, drawSelection } from "@codemirror/view";
 import { HoverPreviewManager } from "./hoverPreview";
@@ -8,12 +10,7 @@ import {
 	DOOM_LIGHT_PALETTES,
 	DOOM_CURSOR_STYLES,
 	DEFAULT_DOOM_SETTINGS,
-	DoomDarkPalette,
-	DoomLightPalette,
-	DoomCursorStyle,
 	DoomEsqueStyleSettings,
-	DoomIndentGuideStyle,
-	DoomSidebarDensity,
 	applyDoomDomState,
 	clearDoomDomState,
 	computeDoomDomState,
@@ -21,7 +18,6 @@ import {
 	getNextLightPalette,
 	getNextIndentStyle,
 	getNextCursorStyle,
-	sanitizeFontFamily,
 	migrateSettings,
 	DOOMESQUE_THEME_NAME,
 	STYLE_SETTINGS_PLUGIN_ID,
@@ -381,11 +377,13 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 	async loadSettings(): Promise<void> {
 		const saved = (await this.loadData()) as Partial<DoomEsqueStyleSettings> | null;
 		this.settings = Object.assign({}, DEFAULT_DOOM_SETTINGS, saved);
-		// Migrate legacy disableActiveLineHighlight if activeBlockHighlight not explicitly set
-		if (saved?.activeBlockHighlight === undefined && saved?.disableActiveLineHighlight !== undefined) {
-			this.settings.activeBlockHighlight = !saved.disableActiveLineHighlight;
+		// Pre-1.0 data stored the inverse flag `disableActiveLineHighlight`; read it once from the raw
+		// saved object (it is not part of the settings type) and drop it.
+		const legacy = saved as Record<string, unknown> | null;
+		if (legacy && saved?.activeBlockHighlight === undefined && typeof legacy.disableActiveLineHighlight === "boolean") {
+			this.settings.activeBlockHighlight = !legacy.disableActiveLineHighlight;
 		}
-		delete this.settings.disableActiveLineHighlight; // legacy key: read once, never written back
+		delete (this.settings as unknown as Record<string, unknown>).disableActiveLineHighlight;
 		if (migrateSettings(saved, this.settings)) {
 			await this.saveData(this.settings);
 		}
@@ -550,649 +548,145 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
+	/** Disabled while Style Settings owns the option (see STYLE_SETTINGS_SHARED_KEYS). */
+	private isDeferred(key: SettingKey): boolean {
+		return isSharedSetting(key) && this.plugin.isStyleSettingsEnabled();
+	}
+
+	private static readonly THEME_INACTIVE_NOTICE =
+		"The DoomEsque theme is not the active theme, so these settings are not applied. They take effect when you switch to DoomEsque in Settings → Appearance.";
+	private static readonly STYLE_SETTINGS_NOTICE =
+		"Style Settings is enabled, so it controls the palette, spacing, indentation, typography, cursor and hover preview size options that both plugins offer (Style Settings → DoomEsque). Those settings are disabled here; the remaining options still apply.";
+
+	private async resetToDefaults(): Promise<void> {
+		this.plugin.settings = { ...DEFAULT_DOOM_SETTINGS };
+		await this.plugin.saveSettings();
+		this.display();
+		new Notice("DoomEsque settings have been reset to defaults.");
+	}
+
+	// ---------------------------------------------------------------------
+	// Obsidian 1.13+: declarative rendering (also indexes the settings for search)
+	// ---------------------------------------------------------------------
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		const status: SettingDefinitionItem[] = [
+			{ name: "DoomEsque theme is not active", desc: DoomEsqueSettingTab.THEME_INACTIVE_NOTICE, searchable: false, visible: () => !this.plugin.isDoomEsqueThemeActive() },
+			{ name: "Style Settings is enabled", desc: DoomEsqueSettingTab.STYLE_SETTINGS_NOTICE, searchable: false, visible: () => this.plugin.isStyleSettingsEnabled() },
+		];
+		const sections: SettingDefinitionItem[] = SETTINGS_SECTIONS.map((section) => ({
+			type: "group" as const,
+			heading: section.heading,
+			items: section.items.map((spec) => this.toDefinition(spec)),
+		}));
+		const reset: SettingDefinitionItem = {
+			type: "group",
+			heading: "Reset defaults",
+			items: [
+				{
+					name: "Reset all settings to DoomEsque defaults",
+					desc: "Restores all palette faces, spacing, indentation guide, and typography options to default DoomEsque theme values.",
+					action: () => void this.resetToDefaults(),
+				},
+			],
+		};
+		return [...status, ...sections, reset];
+	}
+
+	private toDefinition(spec: SettingSpec): SettingDefinition {
+		const disabled = () => this.isDeferred(spec.key);
+		const key = spec.key as string;
+		const c = spec.control;
+		const base = { name: spec.name, desc: spec.desc };
+		switch (c.type) {
+			case "toggle":
+				return { ...base, control: { type: "toggle", key, disabled } };
+			case "dropdown":
+				return { ...base, control: { type: "dropdown", key, options: c.options, disabled } };
+			case "slider":
+				return { ...base, control: { type: "slider", key, min: c.min, max: c.max, step: c.step, displayFormat: c.format, disabled } };
+			case "text":
+				return { ...base, control: { type: "text", key, placeholder: c.placeholder, disabled } };
+		}
+	}
+
+	getControlValue(key: string): unknown {
+		return (this.plugin.settings as unknown as Record<string, unknown>)[key];
+	}
+
+	/** Route every change through saveSettings() so it is applied to the page immediately. */
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		const spec = findSettingSpec(key);
+		if (!spec) return;
+		(this.plugin.settings as unknown as Record<string, unknown>)[key] = normalizeSettingValue(spec, value);
+		await this.plugin.saveSettings();
+	}
+
+	// ---------------------------------------------------------------------
+	// Obsidian < 1.13: imperative rendering from the same schema
+	// (not called on 1.13+, where the definitions above are rendered instead)
+	// ---------------------------------------------------------------------
 	display(): void {
-		this.renderSettings();
-	}
-
-	/** Setting rows (by display name) that Style Settings also exposes; see STYLE_SETTINGS_SHARED_KEYS. */
-	private static readonly SHARED_SETTING_NAMES: ReadonlySet<string> = new Set([
-		"Dark theme palette",
-		"Light theme palette",
-		"Disable Org-mode TODO / DONE task badges",
-		"Monochrome headings",
-		"Disable H1 underline border",
-		"Active block highlight (hl-line-mode)",
-		"Flat settings items style",
-		"Readable line width",
-		"Editor line height",
-		"Paragraph spacing",
-		"Heading spacing scale",
-		"List item vertical spacing",
-		"Sidebar item density",
-		"List & outline indentation",
-		"Indentation guide line style",
-		"Indentation guide line width",
-		"Rainbow indent guides",
-		"Legal / hornbook outline numbering (I, A, 1, a, i)",
-		"File tree folder indentation",
-		"Editorial bold & italic colors",
-		"Force monospace note editor",
-		"System sans-serif UI chrome",
-		"Text cursor style",
-		"Hover preview width",
-		"Hover preview height",
-		"Show note properties in hover previews",
-	]);
-
-	private renderStatusBanners(containerEl: HTMLElement): void {
-		if (!this.plugin.isDoomEsqueThemeActive()) {
-			containerEl.createDiv({
-				cls: "doom-settings-banner",
-				text: "The DoomEsque theme is not the active theme, so these settings are not applied. They take effect when you switch to DoomEsque in Settings → Appearance.",
-			});
-		}
-		if (this.plugin.isStyleSettingsEnabled()) {
-			containerEl.createDiv({
-				cls: "doom-settings-banner",
-				text: "Style Settings is enabled, so it controls the palette, spacing, indentation, typography, cursor and hover preview options that both plugins offer (Style Settings → DoomEsque). Those rows are disabled here; the remaining options still apply.",
-			});
-		}
-	}
-
-	/** Disable rows for options owned by Style Settings while it is enabled. */
-	private markSharedSettings(containerEl: HTMLElement): void {
-		if (!this.plugin.isStyleSettingsEnabled()) {
-			return;
-		}
-		containerEl.querySelectorAll<HTMLElement>(".setting-item").forEach((item) => {
-			const name = item.querySelector(".setting-item-name")?.textContent?.trim() ?? "";
-			if (DoomEsqueSettingTab.SHARED_SETTING_NAMES.has(name)) {
-				item.addClass("doom-setting-deferred");
-				item.setAttribute("inert", "");
-				item.setAttribute("aria-disabled", "true");
-			}
-		});
-	}
-
-	private renderSettings(): void {
 		const { containerEl } = this;
 		containerEl.empty();
-		this.renderStatusBanners(containerEl);
 
-		// ---------------------------------------------------------------------
-		// 1. Color Palette & Faces
-		// ---------------------------------------------------------------------
-		new Setting(containerEl).setName("Color palette & theme faces").setHeading();
+		if (!this.plugin.isDoomEsqueThemeActive()) {
+			containerEl.createDiv({ cls: "doom-settings-banner", text: DoomEsqueSettingTab.THEME_INACTIVE_NOTICE });
+		}
+		if (this.plugin.isStyleSettingsEnabled()) {
+			containerEl.createDiv({ cls: "doom-settings-banner", text: DoomEsqueSettingTab.STYLE_SETTINGS_NOTICE });
+		}
 
-		new Setting(containerEl)
-			.setName("Dark theme palette")
-			.setDesc("Choose which authentic Doom color scheme to apply in Dark Mode.")
-			.addDropdown((dropdown) => {
-				for (const palette of DOOM_PALETTES) {
-					dropdown.addOption(palette.id, palette.label);
-				}
-				dropdown.setValue(this.plugin.settings.darkPalette);
-				dropdown.onChange(async (val) => {
-					this.plugin.settings.darkPalette = val as DoomDarkPalette;
-					await this.plugin.saveSettings();
-				});
-			});
+		for (const section of SETTINGS_SECTIONS) {
+			new Setting(containerEl).setName(section.heading).setHeading();
+			for (const spec of section.items) {
+				this.renderLegacySetting(containerEl, spec);
+			}
+		}
 
-		new Setting(containerEl)
-			.setName("Light theme palette")
-			.setDesc("Choose which authentic Doom color scheme to apply in Light Mode.")
-			.addDropdown((dropdown) => {
-				for (const palette of DOOM_LIGHT_PALETTES) {
-					dropdown.addOption(palette.id, palette.label);
-				}
-				dropdown.setValue(this.plugin.settings.lightPalette);
-				dropdown.onChange(async (val) => {
-					this.plugin.settings.lightPalette = val as DoomLightPalette;
-					await this.plugin.saveSettings();
-				});
-			});
-
-		new Setting(containerEl)
-			.setName("Disable Org-mode TODO / DONE task badges")
-			.setDesc("Hide the explicit TODO and DONE badges displayed alongside task checkboxes.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.disableOrgTodoBadges)
-					.onChange(async (val) => {
-						this.plugin.settings.disableOrgTodoBadges = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Monochrome headings")
-			.setDesc(
-				"Use a uniform Doom blue for all headings instead of Org-mode rainbow colors (Blue, Magenta, Violet, Orange, Green, Teal)."
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.monochromeHeadings)
-					.onChange(async (val) => {
-						this.plugin.settings.monochromeHeadings = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Disable H1 underline border")
-			.setDesc("Hide the subtle bottom accent underline under Level 1 headings.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.disableH1Border)
-					.onChange(async (val) => {
-						this.plugin.settings.disableH1Border = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Active block highlight (hl-line-mode)")
-			.setDesc(
-				"Display a subtle horizontal background highlight on the cursor's active block / line (defaults to off)."
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.activeBlockHighlight)
-					.onChange(async (val) => {
-						this.plugin.settings.activeBlockHighlight = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Flat settings items style")
-			.setDesc(
-				"Use clean border-delimited flat rows instead of rounded card boxes for settings items."
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.flatSettingsItems)
-					.onChange(async (val) => {
-						this.plugin.settings.flatSettingsItems = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		// ---------------------------------------------------------------------
-		// 2. Spacing & Layout Rhythm
-		// ---------------------------------------------------------------------
-		new Setting(containerEl).setName("Spacing & layout rhythm").setHeading();
-
-		this.createSliderSetting({
-			containerEl,
-			name: "Readable line width",
-			desc: "Max width of readable note buffers in rem units (Default: 46 rem).",
-			min: 30,
-			max: 80,
-			step: 1,
-			value: this.plugin.settings.fileLineWidthRem,
-			formatValue: (v) => `${v} rem`,
-			onChange: async (v) => {
-				this.plugin.settings.fileLineWidthRem = v;
-				await this.plugin.saveSettings();
-			},
-		});
-
-		this.createSliderSetting({
-			containerEl,
-			name: "Editor line height",
-			desc: "Line height for reading and editing note buffers (Default: 1.65).",
-			min: 1.2,
-			max: 2.2,
-			step: 0.05,
-			value: this.plugin.settings.lineHeightNormal,
-			formatValue: (v) => v.toFixed(2),
-			onChange: async (v) => {
-				this.plugin.settings.lineHeightNormal = v;
-				await this.plugin.saveSettings();
-			},
-		});
-
-		this.createSliderSetting({
-			containerEl,
-			name: "Paragraph spacing",
-			desc: "Vertical spacing between markdown paragraphs in rem units (Default: 1.15 rem).",
-			min: 0.4,
-			max: 2.5,
-			step: 0.05,
-			value: this.plugin.settings.paragraphSpacingRem,
-			formatValue: (v) => `${v.toFixed(2)} rem`,
-			onChange: async (v) => {
-				this.plugin.settings.paragraphSpacingRem = v;
-				await this.plugin.saveSettings();
-			},
-		});
-
-		this.createSliderSetting({
-			containerEl,
-			name: "Heading spacing scale",
-			desc: "Multiplier for top and bottom breathing room around headings (Default: 1.00x).",
-			min: 0.5,
-			max: 2.0,
-			step: 0.05,
-			value: this.plugin.settings.headingSpacingScale,
-			formatValue: (v) => `${v.toFixed(2)}x`,
-			onChange: async (v) => {
-				this.plugin.settings.headingSpacingScale = v;
-				await this.plugin.saveSettings();
-			},
-		});
-
-		this.createSliderSetting({
-			containerEl,
-			name: "List item vertical spacing",
-			desc: "Vertical gap between list items and task list checkboxes in em units (Default: 0.22 em).",
-			min: 0.0,
-			max: 0.8,
-			step: 0.02,
-			value: this.plugin.settings.listSpacingEm,
-			formatValue: (v) => `${v.toFixed(2)} em`,
-			onChange: async (v) => {
-				this.plugin.settings.listSpacingEm = v;
-				await this.plugin.saveSettings();
-			},
-		});
-
-		this.createSliderSetting({
-			containerEl,
-			name: "Editor vertical page margins",
-			desc: "Top and bottom padding inside note views in px (Default: 28 px).",
-			min: 8,
-			max: 80,
-			step: 2,
-			value: this.plugin.settings.editorMarginVerticalPx,
-			formatValue: (v) => `${Math.round(v)} px`,
-			onChange: async (v) => {
-				this.plugin.settings.editorMarginVerticalPx = Math.round(v);
-				await this.plugin.saveSettings();
-			},
-		});
-
-		this.createSliderSetting({
-			containerEl,
-			name: "Editor horizontal page margins",
-			desc: "Left and right padding inside note views in px (Default: 36 px).",
-			min: 12,
-			max: 120,
-			step: 2,
-			value: this.plugin.settings.editorMarginHorizontalPx,
-			formatValue: (v) => `${Math.round(v)} px`,
-			onChange: async (v) => {
-				this.plugin.settings.editorMarginHorizontalPx = Math.round(v);
-				await this.plugin.saveSettings();
-			},
-		});
-
-		new Setting(containerEl)
-			.setName("Sidebar item density")
-			.setDesc("Vertical padding and compactness for the file explorer, outline, and sidebars.")
-			.addDropdown((dropdown) => {
-				dropdown.addOption("compact", "Compact (Dense list)");
-				dropdown.addOption("normal", "Normal (Default)");
-				dropdown.addOption("comfortable", "Comfortable (Spacious touch)");
-				dropdown.setValue(this.plugin.settings.sidebarDensity);
-				dropdown.onChange(async (val) => {
-					this.plugin.settings.sidebarDensity = val as DoomSidebarDensity;
-					await this.plugin.saveSettings();
-				});
-			});
-
-		this.createSliderSetting({
-			containerEl,
-			name: "Desktop header bar height",
-			desc: "Height of the top tab and workspace header bar in px (Default: 36 px).",
-			min: 28,
-			max: 48,
-			step: 1,
-			value: this.plugin.settings.headerHeightPx,
-			formatValue: (v) => `${Math.round(v)} px`,
-			onChange: async (v) => {
-				this.plugin.settings.headerHeightPx = Math.round(v);
-				await this.plugin.saveSettings();
-			},
-		});
-
-		// ---------------------------------------------------------------------
-		// 3. Indentation & Indent Guides
-		// ---------------------------------------------------------------------
-		new Setting(containerEl).setName("Indentation & indent guides").setHeading();
-
-		this.createSliderSetting({
-			containerEl,
-			name: "List & outline indentation",
-			desc: "Width of each nesting indentation step in lists and outlines (Default: 1.75 em).",
-			min: 1.0,
-			max: 3.5,
-			step: 0.05,
-			value: this.plugin.settings.listIndentEm,
-			formatValue: (v) => `${v.toFixed(2)} em`,
-			onChange: async (v) => {
-				this.plugin.settings.listIndentEm = v;
-				await this.plugin.saveSettings();
-			},
-		});
-
-		new Setting(containerEl)
-			.setName("Indentation guide line style")
-			.setDesc(
-				"Visual stroke style of vertical indent guides (inspired by Emacs highlight-indent-guides / indent-bars)."
-			)
-			.addDropdown((dropdown) => {
-				dropdown.addOption("solid", "Solid line (Default)");
-				dropdown.addOption("dashed", "Dashed line");
-				dropdown.addOption("dotted", "Dotted line");
-				dropdown.addOption("double", "Double line");
-				dropdown.addOption("none", "None (Hide guides)");
-				dropdown.setValue(this.plugin.settings.indentGuideStyle);
-				dropdown.onChange(async (val) => {
-					this.plugin.settings.indentGuideStyle = val as DoomIndentGuideStyle;
-					await this.plugin.saveSettings();
-				});
-			});
-
-		this.createSliderSetting({
-			containerEl,
-			name: "Indentation guide line width",
-			desc: "Thickness of vertical indentation guide lines in px (Default: 1.0 px).",
-			min: 1.0,
-			max: 4.0,
-			step: 0.5,
-			value: this.plugin.settings.indentGuideWidthPx,
-			formatValue: (v) => `${v.toFixed(1)} px`,
-			onChange: async (v) => {
-				this.plugin.settings.indentGuideWidthPx = v;
-				await this.plugin.saveSettings();
-			},
-		});
-
-		new Setting(containerEl)
-			.setName("Rainbow indent guides")
-			.setDesc(
-				"Color nested indentation depth guides using alternating Doom palette colors (Blue, Magenta, Violet, Orange, Green, Teal)."
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.rainbowIndentGuides)
-					.onChange(async (val) => {
-						this.plugin.settings.rainbowIndentGuides = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Legal / hornbook outline numbering (I, A, 1, a, i)")
-			.setDesc(
-				"Use classic legal outline hierarchy (I. → A. → 1. → a. → i. → (1)) for nested ordered lists in Reading View."
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.legalOutlineNumbering)
-					.onChange(async (val) => {
-						this.plugin.settings.legalOutlineNumbering = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		this.createSliderSetting({
-			containerEl,
-			name: "File tree folder indentation",
-			desc: "Indentation offset per nested directory level in the file explorer (Default: 14 px).",
-			min: 6,
-			max: 32,
-			step: 2,
-			value: this.plugin.settings.fileTreeIndentPx,
-			formatValue: (v) => `${Math.round(v)} px`,
-			onChange: async (v) => {
-				this.plugin.settings.fileTreeIndentPx = Math.round(v);
-				await this.plugin.saveSettings();
-			},
-		});
-
-		// ---------------------------------------------------------------------
-		// 4. Typography & Heading Scale
-		// ---------------------------------------------------------------------
-		new Setting(containerEl).setName("Typography & heading scale").setHeading();
-
-		new Setting(containerEl)
-			.setName("Editorial bold & italic colors")
-			.setDesc(
-				"Use high-contrast neutral text colors for bold and italic emphasis instead of orange/magenta syntax accents during long-form legal or academic reading."
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.editorialEmphasis)
-					.onChange(async (val) => {
-						this.plugin.settings.editorialEmphasis = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Force monospace note editor")
-			.setDesc(
-				"Display note buffer body text in Doom monospace font for an authentic Emacs buffer feel."
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.monospaceEditor)
-					.onChange(async (val) => {
-						this.plugin.settings.monospaceEditor = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("System sans-serif UI chrome")
-			.setDesc(
-				"Revert sidebars, tabs, menus, and modals to system sans-serif font instead of monospace."
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.disableMonospaceUi)
-					.onChange(async (val) => {
-						this.plugin.settings.disableMonospaceUi = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Text cursor style")
-			.setDesc(
-				"Choose the text cursor style in the note editor (modern 2px bar, or retro terminal block, glow, hollow, and underline; mobile devices use the native OS caret styled with theme accent)."
-			)
-			.addDropdown((dropdown) => {
-				for (const opt of DOOM_CURSOR_STYLES) {
-					dropdown.addOption(opt.id, opt.label);
-				}
-				dropdown.setValue(this.plugin.settings.cursorStyle);
-				dropdown.onChange(async (val) => {
-					this.plugin.settings.cursorStyle = val as DoomCursorStyle;
-					await this.plugin.saveSettings();
-				});
-			});
-
-		new Setting(containerEl)
-			.setName("Custom monospace font family")
-			.setDesc(
-				"Custom font family prepended to the Doom monospace stack (e.g. 'JetBrains Mono', 'Iosevka', 'Fira Code'). Leave blank for default."
-			)
-			.addText((text) => {
-				text
-					.setPlaceholder("e.g. JetBrains Mono")
-					.setValue(this.plugin.settings.customMonospaceFont)
-					.onChange(async (val) => {
-						this.plugin.settings.customMonospaceFont = sanitizeFontFamily(val);
-						await this.plugin.saveSettings();
-					});
-			});
-
-		this.createSliderSetting({
-			containerEl,
-			name: "Heading size scale",
-			desc: "Proportional scale factor applied across all H1-H6 heading sizes (Default: 1.00x).",
-			min: 0.8,
-			max: 1.4,
-			step: 0.05,
-			value: this.plugin.settings.headingScale,
-			formatValue: (v) => `${v.toFixed(2)}x`,
-			onChange: async (v) => {
-				this.plugin.settings.headingScale = v;
-				await this.plugin.saveSettings();
-			},
-		});
-
-		// ---------------------------------------------------------------------
-		// 5. Hover Preview & Sidebar Pop-Open (Desktop)
-		// ---------------------------------------------------------------------
-		new Setting(containerEl).setName("Hover preview & sidebar pop-open (Desktop)").setHeading();
-
-		this.createSliderSetting({
-			containerEl,
-			name: "Hover preview width",
-			desc: "Width of page preview popover windows in px (Default: 550 px).",
-			min: 320,
-			max: 1200,
-			step: 20,
-			value: this.plugin.settings.hoverPopoverWidthPx,
-			formatValue: (v) => `${Math.round(v)} px`,
-			onChange: async (v) => {
-				this.plugin.settings.hoverPopoverWidthPx = Math.round(v);
-				await this.plugin.saveSettings();
-			},
-		});
-
-		this.createSliderSetting({
-			containerEl,
-			name: "Hover preview height",
-			desc: "Height of page preview popover windows in px (Default: 420 px).",
-			min: 220,
-			max: 1000,
-			step: 20,
-			value: this.plugin.settings.hoverPopoverHeightPx,
-			formatValue: (v) => `${Math.round(v)} px`,
-			onChange: async (v) => {
-				this.plugin.settings.hoverPopoverHeightPx = Math.round(v);
-				await this.plugin.saveSettings();
-			},
-		});
-
-		this.createSliderSetting({
-			containerEl,
-			name: "Hover preview text scale",
-			desc: "Scale factor for note content, headings, and code inside hover preview windows (Default: 1.00x).",
-			min: 0.8,
-			max: 1.6,
-			step: 0.05,
-			value: this.plugin.settings.hoverPopoverFontScale,
-			formatValue: (v) => `${v.toFixed(2)}x`,
-			onChange: async (v) => {
-				this.plugin.settings.hoverPopoverFontScale = v;
-				await this.plugin.saveSettings();
-			},
-		});
-
-		new Setting(containerEl)
-			.setName("Sticky hover preview windows")
-			.setDesc(
-				"Keep hover preview windows open until explicitly closed (via ✕ button or Esc), allowing you to scroll, edit, and navigate the rest of the vault freely."
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.stickyHoverPreviews)
-					.onChange(async (val) => {
-						this.plugin.settings.stickyHoverPreviews = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Pop open in right sidebar with Super key")
-			.setDesc(
-				"Pressing the Super (Meta/Win/Cmd) key while hovering over a link or an active preview pops the note open in the right sidebar."
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.superKeyOpensRightSidebar)
-					.onChange(async (val) => {
-						this.plugin.settings.superKeyOpensRightSidebar = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Show note properties in hover previews")
-			.setDesc(
-				"Display frontmatter YAML properties (:PROPERTIES: drawer) at the top of note preview popover windows."
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.showPopoverProperties)
-					.onChange(async (val) => {
-						this.plugin.settings.showPopoverProperties = val;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		// ---------------------------------------------------------------------
-		// 6. Reset Defaults
-		// ---------------------------------------------------------------------
 		new Setting(containerEl).setName("Reset defaults").setHeading();
-
 		new Setting(containerEl)
 			.setName("Reset all settings to DoomEsque defaults")
-			.setDesc(
-				"Restores all palette faces, spacing, indentation guide, and typography options to default DoomEsque theme values."
-			)
-			.addButton((button) => {
+			.setDesc("Restores all palette faces, spacing, indentation guide, and typography options to default DoomEsque theme values.")
+			.addButton((button) =>
 				button
 					.setButtonText("Reset to Defaults")
 					.setClass("mod-warning")
-					.onClick(async () => {
-						this.plugin.settings = { ...DEFAULT_DOOM_SETTINGS };
-						await this.plugin.saveSettings();
-						this.renderSettings();
-						new Notice("DoomEsque settings have been reset to defaults.");
-					});
-			});
-
-		this.markSharedSettings(containerEl);
+					.onClick(() => void this.resetToDefaults())
+			);
 	}
 
-	private createSliderSetting(options: {
-		containerEl: HTMLElement;
-		name: string;
-		desc: string;
-		min: number;
-		max: number;
-		step: number;
-		value: number;
-		formatValue: (val: number) => string;
-		onChange: (val: number) => Promise<void>;
-	}): Setting {
-		const setting = new Setting(options.containerEl)
-			.setName(options.name)
-			.setDesc(options.desc);
-
-		const valueBadge = setting.controlEl.createSpan({
-			cls: "doom-settings-slider-value",
-			text: options.formatValue(options.value),
-		});
-
-		setting.addSlider((slider) => {
-			slider
-				.setLimits(options.min, options.max, options.step)
-				.setValue(options.value)
-				.onChange(async (val) => {
-					valueBadge.setText(options.formatValue(val));
-					await options.onChange(val);
-				});
-		});
-
-		return setting;
+	private renderLegacySetting(containerEl: HTMLElement, spec: SettingSpec): void {
+		const setting = new Setting(containerEl).setName(spec.name).setDesc(spec.desc);
+		const value = this.getControlValue(spec.key);
+		const save = (v: unknown) => this.setControlValue(spec.key, v);
+		const c = spec.control;
+		switch (c.type) {
+			case "toggle":
+				setting.addToggle((t) => t.setValue(Boolean(value)).onChange(save));
+				break;
+			case "dropdown":
+				setting.addDropdown((d) => d.addOptions(c.options).setValue(String(value)).onChange(save));
+				break;
+			case "text":
+				setting.addText((t) => t.setPlaceholder(c.placeholder ?? "").setValue(String(value ?? "")).onChange(save));
+				break;
+			case "slider": {
+				const badge = setting.controlEl.createSpan({ cls: "doom-settings-slider-value", text: c.format(Number(value)) });
+				setting.addSlider((sl) =>
+					sl
+						.setLimits(c.min, c.max, c.step)
+						.setValue(Number(value))
+						.onChange((v) => {
+							badge.setText(c.format(v));
+							void save(v);
+						})
+				);
+				break;
+			}
+		}
+		if (this.isDeferred(spec.key)) {
+			setting.setDisabled(true);
+			setting.settingEl.addClass("doom-setting-deferred");
+		}
 	}
 }

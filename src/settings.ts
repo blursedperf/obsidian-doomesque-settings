@@ -378,8 +378,6 @@ export interface DoomEsqueStyleSettings {
 	disableH1Border: boolean;
 	/** Optional active editor block/line highlight (`hl-line-mode`) (`doom-active-block-highlight`). Defaults to false (off). */
 	activeBlockHighlight: boolean;
-	/** @deprecated Legacy (pre-1.0) inverse of `activeBlockHighlight`; only read to migrate old saved data. */
-	disableActiveLineHighlight?: boolean;
 
 	// --- Typography ---
 	/** Force monospace font in the note editor (`doom-monospace-editor`). */

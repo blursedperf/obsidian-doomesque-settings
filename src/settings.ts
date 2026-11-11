@@ -20,6 +20,7 @@ export type DoomIndentGuideStyle = "solid" | "dashed" | "dotted" | "double" | "n
 
 export type DoomSidebarDensity = "compact" | "normal" | "comfortable";
 export type DoomTableDensity = "compact" | "normal" | "comfortable";
+export type DoomTableGrid = "full" | "horizontal" | "none";
 
 export interface DoomPaletteOption {
 	id: DoomDarkPalette;
@@ -129,6 +130,12 @@ export const TABLE_DENSITY_CLASSES: Record<DoomTableDensity, string> = {
 	comfortable: "doom-table-density-comfortable",
 };
 
+export const TABLE_GRID_CLASSES: Record<DoomTableGrid, string> = {
+	full: "doom-table-grid-full",
+	horizontal: "doom-table-grid-horizontal",
+	none: "doom-table-grid-none",
+};
+
 export type DoomCursorStyle = "bar" | "block" | "glow" | "hollow" | "underline";
 
 export interface DoomCursorStyleOption {
@@ -220,6 +227,12 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-table-density-compact",
 	"doom-table-density-normal",
 	"doom-table-density-comfortable",
+	"doom-table-grid-full",
+	"doom-table-grid-horizontal",
+	"doom-table-grid-none",
+	"doom-table-no-zebra",
+	"doom-bases-toolbar-labels",
+	"doom-table-header-caps",
 	"doom-cursor-bar",
 	"doom-cursor-block",
 	"doom-cursor-glow",
@@ -299,6 +312,12 @@ export const STYLE_SETTINGS_SHARED_CLASSES: readonly string[] = [
 	"doom-table-density-compact",
 	"doom-table-density-normal",
 	"doom-table-density-comfortable",
+	"doom-table-grid-full",
+	"doom-table-grid-horizontal",
+	"doom-table-grid-none",
+	"doom-table-no-zebra",
+	"doom-bases-toolbar-labels",
+	"doom-table-header-caps",
 	"doom-indent-style-solid",
 	"doom-indent-style-dashed",
 	"doom-indent-style-dotted",
@@ -352,6 +371,10 @@ export const STYLE_SETTINGS_SHARED_KEYS: readonly (keyof DoomEsqueStyleSettings)
 	"listSpacingEm",
 	"sidebarDensity",
 	"tableDensity",
+	"tableGrid",
+	"disableTableZebra",
+	"basesToolbarLabels",
+	"basesHeaderCaps",
 	"listIndentEm",
 	"indentGuideStyle",
 	"indentGuideWidthPx",
@@ -426,6 +449,14 @@ export interface DoomEsqueStyleSettings {
 	sidebarDensity: DoomSidebarDensity;
 	/** Markdown table & Bases row height, cell padding and Bases text size (`compact` | `normal` | `comfortable`). */
 	tableDensity: DoomTableDensity;
+	/** Which cell borders Markdown tables and Bases draw (`full` | `horizontal` | `none`). Default: `full`. */
+	tableGrid: DoomTableGrid;
+	/** Remove alternating row shading in Markdown tables (`doom-table-no-zebra`). Default: false. */
+	disableTableZebra: boolean;
+	/** Show text labels next to the Bases toolbar icons (`doom-bases-toolbar-labels`). Default: false. */
+	basesToolbarLabels: boolean;
+	/** Uppercase monospace Bases column headers (`doom-table-header-caps`). Default: false. */
+	basesHeaderCaps: boolean;
 	/** Desktop header bar height in `px` (`--header-height`). Default: 36. */
 	headerHeightPx: number;
 
@@ -488,6 +519,10 @@ export const DEFAULT_DOOM_SETTINGS: DoomEsqueStyleSettings = {
 	editorMarginHorizontalPx: 36,
 	sidebarDensity: "normal",
 	tableDensity: "normal",
+	tableGrid: "full",
+	disableTableZebra: false,
+	basesToolbarLabels: false,
+	basesHeaderCaps: false,
 	headerHeightPx: 36,
 
 	listIndentEm: 1.75,
@@ -606,6 +641,15 @@ export function computeDoomDomState(
 	if (settings.flatSettingsItems) {
 		activeClasses.push("doom-settings-flat");
 	}
+	if (settings.disableTableZebra) {
+		activeClasses.push("doom-table-no-zebra");
+	}
+	if (settings.basesToolbarLabels) {
+		activeClasses.push("doom-bases-toolbar-labels");
+	}
+	if (settings.basesHeaderCaps) {
+		activeClasses.push("doom-table-header-caps");
+	}
 
 	const indentStyle: DoomIndentGuideStyle =
 		settings.indentGuideStyle in INDENT_GUIDE_STYLE_CLASSES
@@ -624,6 +668,10 @@ export function computeDoomDomState(
 			? settings.tableDensity
 			: DEFAULT_DOOM_SETTINGS.tableDensity;
 	activeClasses.push(TABLE_DENSITY_CLASSES[tableDensity]);
+
+	const tableGrid: DoomTableGrid =
+		settings.tableGrid in TABLE_GRID_CLASSES ? settings.tableGrid : DEFAULT_DOOM_SETTINGS.tableGrid;
+	activeClasses.push(TABLE_GRID_CLASSES[tableGrid]);
 
 	const cursorStyle: DoomCursorStyle =
 		settings.cursorStyle in CURSOR_STYLE_CLASSES

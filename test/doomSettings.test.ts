@@ -73,6 +73,7 @@ class MockDOMTokenList {
 		"doom-indent-style-solid",
 		"doom-sidebar-normal",
 		"doom-table-density-normal",
+		"doom-table-grid-full",
 		"doom-cursor-bar",
 	]);
 
@@ -232,6 +233,10 @@ class MockDOMTokenList {
 			indentGuideStyle: "dashed",
 			sidebarDensity: "compact",
 			tableDensity: "comfortable",
+			tableGrid: "horizontal",
+			disableTableZebra: true,
+			basesToolbarLabels: true,
+			basesHeaderCaps: true,
 		})
 	);
 
@@ -258,6 +263,33 @@ class MockDOMTokenList {
 	const invalidTables = computeDoomDomState(makeSettings({ tableDensity: "invalid" as any }));
 	assert.ok(invalidTables.activeClasses.includes("doom-table-density-normal"), "invalid table density falls back to normal");
 	assert.ok(isSharedSetting("tableDensity"), "table density is shared with the theme's Style Settings option");
+	assert.ok(state.activeClasses.includes("doom-table-grid-horizontal"));
+	assert.ok(!state.activeClasses.includes("doom-table-grid-full"), "only one gridline class at a time");
+	assert.ok(state.activeClasses.includes("doom-table-no-zebra"));
+	assert.ok(state.activeClasses.includes("doom-bases-toolbar-labels"));
+	assert.ok(state.activeClasses.includes("doom-table-header-caps"));
+	const defaults = computeDoomDomState(DEFAULT_DOOM_SETTINGS).activeClasses;
+	for (const cls of ["doom-table-no-zebra", "doom-bases-toolbar-labels", "doom-table-header-caps"]) {
+		assert.ok(!defaults.includes(cls), `${cls} is off by default`);
+	}
+	const noGrid = computeDoomDomState(makeSettings({ tableGrid: "none" }));
+	assert.ok(noGrid.activeClasses.includes("doom-table-grid-none"));
+	const invalidGrid = computeDoomDomState(makeSettings({ tableGrid: "invalid" as any }));
+	assert.ok(invalidGrid.activeClasses.includes("doom-table-grid-full"), "invalid gridlines fall back to full");
+	for (const key of ["tableGrid", "disableTableZebra", "basesToolbarLabels", "basesHeaderCaps"] as const) {
+		assert.ok(isSharedSetting(key), `${key} is shared with the theme's Style Settings option`);
+	}
+	// Every Tables & Bases option in the theme's Style Settings block has a plugin control.
+	if (THEME_CSS !== null) {
+		const block = THEME_CSS.slice(THEME_CSS.indexOf("/* @settings"));
+		const section = block.slice(block.indexOf("id: doom-table-heading"), block.indexOf("id: doom-preview-heading"));
+		const values = [...section.matchAll(/(?:value|id): (doom-[a-z0-9-]+)/g)].map((m) => m[1]);
+		const themeClasses = values.filter((v) => v !== "doom-table-heading" && v !== "doom-table-density" && v !== "doom-table-grid");
+		assert.strictEqual(themeClasses.length, 9, "found the theme's Tables & Bases options (3 density, 3 grid, 3 toggles)");
+		for (const cls of themeClasses) {
+			assert.ok(STYLE_SETTINGS_SHARED_CLASSES.includes(cls), `theme Tables & Bases class ${cls} must be handled by the plugin`);
+		}
+	}
 	assertTheme(
 		(css) =>
 			css.includes("id: doom-table-density") &&

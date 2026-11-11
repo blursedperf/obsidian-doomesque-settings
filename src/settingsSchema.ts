@@ -70,6 +70,10 @@ export const SETTINGS_SECTIONS: readonly SettingSectionSpec[] = [
 		heading: "Tables & Bases",
 		items: [
 			{ key: "tableDensity", name: "Table & Bases density", desc: "Row height, cell padding and Bases text size. Normal keeps native Markdown table spacing. Open Bases views pick up row height on next render.", control: { type: "dropdown", options: { compact: "Compact", normal: "Normal (Default)", comfortable: "Comfortable" } } },
+			{ key: "tableGrid", name: "Table gridlines", desc: "Which cell borders to draw in Markdown tables and Bases.", control: { type: "dropdown", options: { full: "Full grid (Default)", horizontal: "Horizontal rules only", none: "None" } } },
+			{ key: "disableTableZebra", name: "Disable zebra striping", desc: "Remove alternating row shading in Markdown tables. (Bases tables are not striped because their rows are virtualized.)", control: { type: "toggle" } },
+			{ key: "basesToolbarLabels", name: "Bases toolbar text labels", desc: "Show text labels (Sort, Group, Filter, Properties, Search, New) next to the Bases toolbar icons. Off by default for a compact icon-only toolbar.", control: { type: "toggle" } },
+			{ key: "basesHeaderCaps", name: "Org-style uppercase Bases headers", desc: "Render Bases column headers in uppercase monospace instead of the interface font.", control: { type: "toggle" } },
 		],
 	},
 	{

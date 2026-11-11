@@ -25,7 +25,10 @@ A dedicated companion plugin to customize palettes, layout spacing, retro text c
 - **📐 Layout & Spacing Rhythm**:
   - Fine-tune readable line width, line height, paragraph spacing, heading scale, and editor margins.
   - Sidebar density options: Compact, Normal, and Comfortable.
-  - Table & Bases density options (row height, cell padding, Bases text size): Compact, Normal, and Comfortable.
+- **🗃️ Tables & Bases**:
+  - Density (row height, cell padding, Bases text size): Compact, Normal, and Comfortable.
+  - Gridlines: full grid, horizontal rules only, or none; optional zebra striping removal.
+  - Bases toolbar text labels and Org-style uppercase Bases column headers.
 - **🔒 100% Offline & Secure**:
   - Zero external network requests, zero telemetry, and zero dynamic code evaluation (`eval`).
   - Safe native DOM operations adhering strictly to Obsidian developer guidelines.

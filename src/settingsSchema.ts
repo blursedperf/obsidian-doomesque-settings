@@ -67,6 +67,12 @@ export const SETTINGS_SECTIONS: readonly SettingSectionSpec[] = [
 		],
 	},
 	{
+		heading: "Tables & Bases",
+		items: [
+			{ key: "tableDensity", name: "Table & Bases density", desc: "Row height, cell padding and Bases text size. Normal keeps native Markdown table spacing. Open Bases views pick up row height on next render.", control: { type: "dropdown", options: { compact: "Compact", normal: "Normal (Default)", comfortable: "Comfortable" } } },
+		],
+	},
+	{
 		heading: "Indentation & indent guides",
 		items: [
 			{ key: "listIndentEm", name: "List & outline indentation", desc: "Width of each nesting indentation step in lists and outlines (Default: 1.75 em).", control: { type: "slider", min: 1, max: 3.5, step: 0.05, format: (v) => `${v.toFixed(2)} em` } },

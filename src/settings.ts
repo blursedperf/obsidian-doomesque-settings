@@ -19,6 +19,7 @@ export type DoomLightPalette =
 export type DoomIndentGuideStyle = "solid" | "dashed" | "dotted" | "double" | "none";
 
 export type DoomSidebarDensity = "compact" | "normal" | "comfortable";
+export type DoomTableDensity = "compact" | "normal" | "comfortable";
 
 export interface DoomPaletteOption {
 	id: DoomDarkPalette;
@@ -122,6 +123,12 @@ export const SIDEBAR_DENSITY_CLASSES: Record<DoomSidebarDensity, string> = {
 	comfortable: "doom-sidebar-comfortable",
 };
 
+export const TABLE_DENSITY_CLASSES: Record<DoomTableDensity, string> = {
+	compact: "doom-table-density-compact",
+	normal: "doom-table-density-normal",
+	comfortable: "doom-table-density-comfortable",
+};
+
 export type DoomCursorStyle = "bar" | "block" | "glow" | "hollow" | "underline";
 
 export interface DoomCursorStyleOption {
@@ -210,6 +217,9 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-sidebar-compact",
 	"doom-sidebar-normal",
 	"doom-sidebar-comfortable",
+	"doom-table-density-compact",
+	"doom-table-density-normal",
+	"doom-table-density-comfortable",
 	"doom-cursor-bar",
 	"doom-cursor-block",
 	"doom-cursor-glow",
@@ -286,6 +296,9 @@ export const STYLE_SETTINGS_SHARED_CLASSES: readonly string[] = [
 	"doom-sidebar-compact",
 	"doom-sidebar-normal",
 	"doom-sidebar-comfortable",
+	"doom-table-density-compact",
+	"doom-table-density-normal",
+	"doom-table-density-comfortable",
 	"doom-indent-style-solid",
 	"doom-indent-style-dashed",
 	"doom-indent-style-dotted",
@@ -338,6 +351,7 @@ export const STYLE_SETTINGS_SHARED_KEYS: readonly (keyof DoomEsqueStyleSettings)
 	"headingSpacingScale",
 	"listSpacingEm",
 	"sidebarDensity",
+	"tableDensity",
 	"listIndentEm",
 	"indentGuideStyle",
 	"indentGuideWidthPx",
@@ -410,6 +424,8 @@ export interface DoomEsqueStyleSettings {
 	editorMarginHorizontalPx: number;
 	/** Sidebar file explorer & outline item density (`compact` | `normal` | `comfortable`). */
 	sidebarDensity: DoomSidebarDensity;
+	/** Markdown table & Bases row height, cell padding and Bases text size (`compact` | `normal` | `comfortable`). */
+	tableDensity: DoomTableDensity;
 	/** Desktop header bar height in `px` (`--header-height`). Default: 36. */
 	headerHeightPx: number;
 
@@ -471,6 +487,7 @@ export const DEFAULT_DOOM_SETTINGS: DoomEsqueStyleSettings = {
 	editorMarginVerticalPx: 28,
 	editorMarginHorizontalPx: 36,
 	sidebarDensity: "normal",
+	tableDensity: "normal",
 	headerHeightPx: 36,
 
 	listIndentEm: 1.75,
@@ -601,6 +618,12 @@ export function computeDoomDomState(
 			? settings.sidebarDensity
 			: DEFAULT_DOOM_SETTINGS.sidebarDensity;
 	activeClasses.push(SIDEBAR_DENSITY_CLASSES[density]);
+
+	const tableDensity: DoomTableDensity =
+		settings.tableDensity in TABLE_DENSITY_CLASSES
+			? settings.tableDensity
+			: DEFAULT_DOOM_SETTINGS.tableDensity;
+	activeClasses.push(TABLE_DENSITY_CLASSES[tableDensity]);
 
 	const cursorStyle: DoomCursorStyle =
 		settings.cursorStyle in CURSOR_STYLE_CLASSES

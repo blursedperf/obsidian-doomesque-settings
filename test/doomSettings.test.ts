@@ -72,6 +72,7 @@ class MockDOMTokenList {
 		"doom-palette-one-light",
 		"doom-indent-style-solid",
 		"doom-sidebar-normal",
+		"doom-table-density-normal",
 		"doom-cursor-bar",
 	]);
 
@@ -230,6 +231,7 @@ class MockDOMTokenList {
 			flatSettingsItems: true,
 			indentGuideStyle: "dashed",
 			sidebarDensity: "compact",
+			tableDensity: "comfortable",
 		})
 	);
 
@@ -248,6 +250,21 @@ class MockDOMTokenList {
 	assert.ok(state.activeClasses.includes("doom-settings-flat"));
 	assert.ok(state.activeClasses.includes("doom-indent-style-dashed"));
 	assert.ok(state.activeClasses.includes("doom-sidebar-compact"));
+	assert.ok(state.activeClasses.includes("doom-table-density-comfortable"));
+	assert.ok(!state.activeClasses.includes("doom-table-density-normal"), "only one table density class at a time");
+
+	const compactTables = computeDoomDomState(makeSettings({ tableDensity: "compact" }));
+	assert.ok(compactTables.activeClasses.includes("doom-table-density-compact"));
+	const invalidTables = computeDoomDomState(makeSettings({ tableDensity: "invalid" as any }));
+	assert.ok(invalidTables.activeClasses.includes("doom-table-density-normal"), "invalid table density falls back to normal");
+	assert.ok(isSharedSetting("tableDensity"), "table density is shared with the theme's Style Settings option");
+	assertTheme(
+		(css) =>
+			css.includes("id: doom-table-density") &&
+			css.includes("body.doom-table-density-compact {") &&
+			css.includes("body.doom-table-density-comfortable {"),
+		"theme must style the table density classes the plugin sets"
+	);
 
 	const blockCursor = computeDoomDomState(makeSettings({ cursorStyle: "block" }));
 	assert.ok(blockCursor.activeClasses.includes("doom-cursor-block"));

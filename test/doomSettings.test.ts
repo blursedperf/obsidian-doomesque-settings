@@ -7,7 +7,7 @@ import {
 	DEFAULT_DOOM_SETTINGS,
 	DOOM_PALETTES,
 	DOOM_LIGHT_PALETTES,
-	DoomEmacsStyleSettings,
+	DoomEsqueStyleSettings,
 	applyDoomDomState,
 	clearDoomDomState,
 	computeDoomDomState,
@@ -40,7 +40,7 @@ function assertTheme(check: (css: string) => boolean, message: string): void {
 	}
 }
 
-function makeSettings(overrides: Partial<DoomEmacsStyleSettings> = {}): DoomEmacsStyleSettings {
+function makeSettings(overrides: Partial<DoomEsqueStyleSettings> = {}): DoomEsqueStyleSettings {
 	return { ...DEFAULT_DOOM_SETTINGS, ...overrides };
 }
 
@@ -221,7 +221,6 @@ class MockDOMTokenList {
 			monochromeHeadings: true,
 			disableH1Border: true,
 			activeBlockHighlight: true,
-			disableActiveLineHighlight: true,
 			rainbowIndentGuides: true,
 			legalOutlineNumbering: true,
 			editorialEmphasis: true,
@@ -239,11 +238,11 @@ class MockDOMTokenList {
 	assert.ok(state.activeClasses.includes("doom-monochrome-headings"));
 	assert.ok(state.activeClasses.includes("doom-no-h1-border"));
 	assert.ok(state.activeClasses.includes("doom-active-block-highlight"));
-	assert.ok(state.activeClasses.includes("doom-no-active-line-highlight"));
+	assert.ok(!state.activeClasses.includes("doom-no-active-line-highlight"), "legacy active-line class must no longer be emitted");
 	assert.ok(!state.activeClasses.includes("doom-mono-indent-guides"), "rainbow guides must not add the mono opt-out class");
 	assert.ok(state.activeClasses.includes("doom-legal-outline"));
 	assert.ok(state.activeClasses.includes("doom-editorial-emphasis"));
-	assert.ok(state.activeClasses.includes("doom-sticky-hover-enabled"));
+	assert.ok(!state.activeClasses.includes("doom-sticky-hover-enabled"), "sticky previews are plugin behaviour, not a body class");
 	assert.ok(state.activeClasses.includes("doom-popover-properties"));
 	assert.ok(state.activeClasses.includes("doom-settings-flat"));
 	assert.ok(state.activeClasses.includes("doom-indent-style-dashed"));
@@ -804,10 +803,12 @@ class MockDOMTokenList {
 		"styles.css must not frame standalone .base views like embeds"
 	);
 
-	// Verify fallback tokens are provided for all colors
-	assert.ok(
-		cssContent.includes("var(--doom-blue, #51afef)"),
-		"styles.css must provide hex fallback for doom-blue"
+	// Plugin CSS uses Obsidian's neutral variables; DoomEsque palette colours come from the theme.
+	const pluginDoomVars = Array.from(new Set(cssContent.match(/var\(--doom-[\w-]+/g) ?? []));
+	assert.deepStrictEqual(
+		pluginDoomVars.filter((v) => !/^var\(--doom-popover-|^var\(--font-monospace-doom/.test(v)),
+		[],
+		"styles.css must only use plugin-owned --doom-popover-* / --font-monospace-doom variables"
 	);
 
 	// Verify header right padding offset and embed-actions button separation
@@ -1272,7 +1273,7 @@ void (async () => {
 			!stylesContent.includes("table.table-editor th"),
 			"styles.css must not override native Obsidian table cell geometry"
 		);
-		assertTheme((css) => css.includes(".doom-active-line-highlight") &&
+		assertTheme((css) => css.includes("body.doom-active-block-highlight .cm-s-obsidian .cm-table-widget .cm-activeLine") && !css.includes(".doom-active-line-highlight") &&
 				css.includes(".cm-table-widget .cm-activeLine") &&
 				css.includes("background-color: transparent;"), "theme.css must prevent active-line background bleed into table cells");
 		assertTheme((css) => css.includes("body .markdown-source-view.mod-cm6 .cm-table-widget .cm-cursorLayer .cm-cursor {") &&
@@ -1403,8 +1404,8 @@ void (async () => {
 			"styles.css must define active state for .doom-popover-btn.mod-pin"
 		);
 		assert.ok(
-			stylesContent.includes("rgba(var(--doom-green-rgb"),
-			"styles.css must use dynamic --doom-green-rgb for pin active background"
+			stylesContent.includes("rgba(var(--color-green-rgb"),
+			"styles.css must use Obsidian's --color-green-rgb for pin active background (themes recolour it)"
 		);
 
 		// 3. Verify Retro Terminal and Suit and Tie popover button styles
@@ -1416,9 +1417,9 @@ void (async () => {
 		if (fs.existsSync(themePath)) {
 			const themeContent = fs.readFileSync(themePath, "utf-8");
 			assert.ok(
-				themeContent.includes(".doom-popover-btn.mod-pin") &&
-					themeContent.includes("font-family: var(--font-monospace-doom"),
-				"theme.css must style .doom-popover-btn.mod-pin with monospace font"
+				themeContent.includes(".doom-popover-btn.mod-pin:hover {") &&
+					!/\.doom-popover-(header|btn)[^{]*\{[^}]*(display|padding|width|height|cursor|font-family)\s*:/.test(themeContent),
+				"theme.css must only colour the plugin's popover header and buttons (layout lives in the plugin)"
 			);
 			assert.ok(
 				themeContent.includes("body.theme-dark.doom-palette-retro-terminal .doom-popover-btn"),
@@ -1748,12 +1749,12 @@ void (async () => {
 		assert.strictEqual(DEFAULT_DOOM_SETTINGS.rainbowIndentGuides, true, "rainbow indent guides must be the default");
 		assert.ok(!computeDoomDomState(makeSettings()).activeClasses.includes("doom-mono-indent-guides"));
 		assert.ok(computeDoomDomState(makeSettings({ rainbowIndentGuides: false })).activeClasses.includes("doom-mono-indent-guides"));
-		const legacy = { rainbowIndentGuides: false } as Partial<DoomEmacsStyleSettings>;
+		const legacy = { rainbowIndentGuides: false } as Partial<DoomEsqueStyleSettings>;
 		const migrated = { ...DEFAULT_DOOM_SETTINGS, ...legacy };
 		assert.strictEqual(migrateSettings(legacy, migrated), true, "version-1 settings must be migrated");
 		assert.strictEqual(migrated.rainbowIndentGuides, true);
 		assert.strictEqual(migrated.settingsVersion, CURRENT_SETTINGS_VERSION);
-		const current = { rainbowIndentGuides: false, settingsVersion: CURRENT_SETTINGS_VERSION } as Partial<DoomEmacsStyleSettings>;
+		const current = { rainbowIndentGuides: false, settingsVersion: CURRENT_SETTINGS_VERSION } as Partial<DoomEsqueStyleSettings>;
 		const kept = { ...DEFAULT_DOOM_SETTINGS, ...current };
 		assert.strictEqual(migrateSettings(current, kept), false, "current settings must not be migrated");
 		assert.strictEqual(kept.rainbowIndentGuides, false, "an explicit choice saved after v2 must be respected");

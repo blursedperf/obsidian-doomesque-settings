@@ -33,9 +33,9 @@ A dedicated companion plugin to customize palettes, layout spacing, retro text c
 
 ## 🤝 Working with Style Settings & Other Themes
 
-- **Style Settings enabled:** the DoomEsque theme also exposes its options through the [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) plugin. When it is enabled, Style Settings controls the options both plugins offer (palettes, spacing, indentation, typography, cursor, hover preview size/stickiness/properties). Those rows are disabled in this plugin's tab and the matching commands show a notice; heading scale, custom monospace font, page margins, header height, hover text scale and the Super-key shortcut still apply from here.
+- **Style Settings enabled:** the DoomEsque theme also exposes its options through the [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) plugin. When it is enabled, Style Settings controls the options both plugins offer (palettes, spacing, indentation, typography, cursor, hover preview size and properties). Those rows are disabled in this plugin's tab and the matching commands show a notice; heading scale, custom monospace font, page margins, header height, sticky previews, hover text scale and the Super-key shortcut still apply from here.
 - **Another theme active:** the plugin removes its classes and variables so the active theme renders untouched. The enhanced hover preview window keeps working under any theme.
-- All theme styling lives in the DoomEsque theme; this plugin's `styles.css` only styles the hover preview chrome and its own settings widgets.
+- **Division of work:** the theme owns how things look (palette colours, including colours for this plugin's preview window). This plugin owns what it adds: the preview window's resize/drag/maximize/sticky behaviour and layout, the cursor engine, Bases toolbar tooltips and its settings tab. Its `styles.css` uses Obsidian's neutral variables, so the preview window works under any theme.
 
 ---
 

@@ -19,10 +19,10 @@
 	font-family: var(--font-monospace-doom, var(--font-monospace));
 	font-size: 11.5px;
 	text-align: right;
-	background-color: var(--doom-base0, var(--background-secondary));
-	border: 1px solid var(--doom-border-subtle, var(--background-modifier-border));
+	background-color: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;
-	color: var(--doom-blue-text, var(--text-accent));
+	color: var(--text-accent);
 	user-select: none;
 }
 
@@ -58,10 +58,10 @@ body .popover.hover-popover {
 	min-height: 220px;
 	max-width: 96vw;
 	max-height: 94vh;
-	border: 1px solid var(--doom-blue, #51afef);
+	border: 1px solid var(--text-accent);
 	border-radius: var(--radius-m, 4px);
-	box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), 0 0 0 1px var(--doom-base3, #23272e);
-	background-color: var(--doom-bg-alt, #21242b);
+	box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), 0 0 0 1px var(--background-modifier-border);
+	background-color: var(--background-secondary);
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
@@ -147,7 +147,7 @@ body .popover.hover-popover .markdown-preview-view {
 	overscroll-behavior: contain;
 	-webkit-overflow-scrolling: touch;
 	padding: 0;
-	background-color: var(--doom-bg-alt, #21242b);
+	background-color: var(--background-secondary);
 }
 
 /* In Live Preview, outer containers must NOT scroll so only .cm-scroller handles virtual line scrolling */
@@ -162,7 +162,7 @@ body .popover.hover-popover .cm-editor {
 	box-sizing: border-box;
 	overflow: hidden;
 	padding: 0;
-	background-color: var(--doom-bg-alt, #21242b);
+	background-color: var(--background-secondary);
 }
 
 body .popover.hover-popover .cm-scroller {
@@ -177,7 +177,7 @@ body .popover.hover-popover .cm-scroller {
 	overscroll-behavior: contain;
 	-webkit-overflow-scrolling: touch;
 	padding: 0;
-	background-color: var(--doom-bg-alt, #21242b);
+	background-color: var(--background-secondary);
 }
 
 /* Ensure note content container expands to the full height of the resized popover window */
@@ -189,7 +189,7 @@ body .popover.hover-popover .markdown-preview-sizer {
 	padding: 16px 20px 24px 20px;
 	padding-bottom: 24px;
 	box-sizing: border-box;
-	background-color: var(--doom-bg-alt, #21242b);
+	background-color: var(--background-secondary);
 }
 
 body .popover.hover-popover .markdown-preview-section {
@@ -281,7 +281,7 @@ body .popover.hover-popover .pdf-embed {
 /* Sticky Popover Appearance */
 body .popover.hover-popover.doom-sticky-popover {
 	z-index: var(--layer-popover, 35);
-	box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75), 0 0 0 2px var(--doom-blue, #51afef);
+	box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75), 0 0 0 2px var(--text-accent);
 }
 
 /* Doom Popover Header */
@@ -290,11 +290,11 @@ body .popover.hover-popover.doom-sticky-popover {
 	align-items: center;
 	justify-content: space-between;
 	padding: 5px 8px;
-	background-color: var(--doom-base1, #1c1f24);
-	border-bottom: 1px solid var(--doom-base3, #23272e);
+	background-color: var(--background-secondary-alt);
+	border-bottom: 1px solid var(--background-modifier-border);
 	font-family: var(--font-interface);
 	font-size: 11.5px;
-	color: var(--doom-fg, #bbc2cf);
+	color: var(--text-normal);
 	user-select: none;
 	cursor: grab;
 	flex-shrink: 0;
@@ -313,13 +313,13 @@ body .popover.hover-popover.doom-sticky-popover {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	font-weight: 600;
-	color: var(--doom-blue, #51afef);
+	color: var(--text-accent);
 	cursor: pointer;
 	transition: color 0.12s ease;
 }
 
 .doom-popover-title:hover {
-	color: var(--doom-teal, #4db5bd);
+	color: var(--color-cyan);
 }
 
 .doom-popover-title-icon {
@@ -351,7 +351,7 @@ body .popover.hover-popover.mod-dragged {
 	border-radius: 3px;
 	border: 1px solid transparent;
 	background: transparent;
-	color: var(--doom-base6, #73797e);
+	color: var(--text-muted);
 	cursor: pointer;
 	font-size: 12px;
 	line-height: 1;
@@ -376,22 +376,22 @@ body .popover.hover-popover.mod-dragged {
 }
 
 .doom-popover-btn:hover {
-	background-color: var(--doom-base3, #23272e);
-	color: var(--doom-fg, #bbc2cf);
-	border-color: var(--doom-base4, #3f444a);
+	background-color: var(--background-modifier-border);
+	color: var(--text-normal);
+	border-color: var(--background-modifier-border-hover);
 }
 
 .doom-popover-btn.mod-pin:hover {
-	color: var(--doom-green, #98be65);
-	background-color: rgba(var(--doom-green-rgb, 152, 190, 101), 0.16);
-	border-color: rgba(var(--doom-green-rgb, 152, 190, 101), 0.35);
+	color: var(--color-green);
+	background-color: rgba(var(--color-green-rgb), 0.16);
+	border-color: rgba(var(--color-green-rgb), 0.35);
 }
 
 .doom-popover-btn.is-active,
 .doom-popover-btn.mod-pin.is-active {
-	color: var(--doom-green, #98be65);
-	background-color: rgba(var(--doom-green-rgb, 152, 190, 101), 0.16);
-	border-color: rgba(var(--doom-green-rgb, 152, 190, 101), 0.35);
+	color: var(--color-green);
+	background-color: rgba(var(--color-green-rgb), 0.16);
+	border-color: rgba(var(--color-green-rgb), 0.35);
 }
 
 .doom-popover-btn.mod-pin.is-active svg path {
@@ -399,38 +399,38 @@ body .popover.hover-popover.mod-dragged {
 }
 
 .doom-popover-btn.mod-pin.is-active:hover {
-	background-color: rgba(var(--doom-green-rgb, 152, 190, 101), 0.26);
-	border-color: rgba(var(--doom-green-rgb, 152, 190, 101), 0.50);
+	background-color: rgba(var(--color-green-rgb), 0.26);
+	border-color: rgba(var(--color-green-rgb), 0.50);
 }
 
 .doom-popover-btn.mod-open-tab:hover {
-	color: var(--doom-teal, #4db5bd);
-	background-color: rgba(var(--doom-teal-rgb, 77, 181, 189), 0.16);
-	border-color: rgba(var(--doom-teal-rgb, 77, 181, 189), 0.35);
+	color: var(--color-cyan);
+	background-color: rgba(var(--color-cyan-rgb), 0.16);
+	border-color: rgba(var(--color-cyan-rgb), 0.35);
 }
 
 .doom-popover-btn.mod-maximize:hover {
-	color: var(--doom-cyan, #46d9ff);
-	background-color: rgba(var(--doom-cyan-rgb, 70, 217, 255), 0.16);
-	border-color: rgba(var(--doom-cyan-rgb, 70, 217, 255), 0.35);
+	color: var(--color-cyan);
+	background-color: rgba(var(--color-cyan-rgb), 0.16);
+	border-color: rgba(var(--color-cyan-rgb), 0.35);
 }
 
 .doom-popover-btn.mod-sidebar:hover {
-	color: var(--doom-yellow, #ecbe7b);
-	background-color: rgba(var(--doom-yellow-rgb, 236, 190, 123), 0.16);
-	border-color: rgba(var(--doom-yellow-rgb, 236, 190, 123), 0.35);
+	color: var(--color-yellow);
+	background-color: rgba(var(--color-yellow-rgb), 0.16);
+	border-color: rgba(var(--color-yellow-rgb), 0.35);
 }
 
 .doom-popover-btn.mod-close:hover {
-	color: var(--doom-red, #ff6c6b);
-	background-color: rgba(var(--doom-red-rgb, 255, 108, 107), 0.16);
-	border-color: rgba(var(--doom-red-rgb, 255, 108, 107), 0.35);
+	color: var(--color-red);
+	background-color: rgba(var(--color-red-rgb), 0.16);
+	border-color: rgba(var(--color-red-rgb), 0.35);
 }
 
 /* Open link button in hover popovers */
 .popover.hover-popover .markdown-embed-link,
 .popover.hover-popover .file-embed-link {
-	color: var(--doom-base6, #73797e);
+	color: var(--text-muted);
 	cursor: pointer;
 	border-radius: 3px;
 	transition: color 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
@@ -438,6 +438,6 @@ body .popover.hover-popover.mod-dragged {
 
 .popover.hover-popover .markdown-embed-link:hover,
 .popover.hover-popover .file-embed-link:hover {
-	color: var(--doom-teal, #4db5bd);
+	color: var(--color-cyan);
 	background-color: rgba(77, 181, 189, 0.16);
 }

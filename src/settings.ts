@@ -201,8 +201,6 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-monochrome-headings",
 	"doom-no-h1-border",
 	"doom-active-block-highlight",
-	"doom-active-line-highlight",
-	"doom-no-active-line-highlight",
 	"doom-mono-indent-guides",
 	"doom-indent-style-solid",
 	"doom-indent-style-dashed",
@@ -217,7 +215,6 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-cursor-glow",
 	"doom-cursor-hollow",
 	"doom-cursor-underline",
-	"doom-sticky-hover-enabled",
 	"doom-popover-properties",
 	"doom-settings-flat",
 	"doom-legal-outline",
@@ -304,7 +301,6 @@ export const STYLE_SETTINGS_SHARED_CLASSES: readonly string[] = [
 	"doom-cursor-glow",
 	"doom-cursor-hollow",
 	"doom-cursor-underline",
-	"doom-sticky-hover-enabled",
 	"doom-popover-properties",
 	"doom-settings-flat",
 ];
@@ -354,7 +350,6 @@ export const STYLE_SETTINGS_SHARED_KEYS: readonly (keyof DoomEsqueStyleSettings)
 	"cursorStyle",
 	"hoverPopoverWidthPx",
 	"hoverPopoverHeightPx",
-	"stickyHoverPreviews",
 	"showPopoverProperties",
 ];
 
@@ -383,7 +378,7 @@ export interface DoomEsqueStyleSettings {
 	disableH1Border: boolean;
 	/** Optional active editor block/line highlight (`hl-line-mode`) (`doom-active-block-highlight`). Defaults to false (off). */
 	activeBlockHighlight: boolean;
-	/** Backward compatibility alias for activeBlockHighlight. */
+	/** @deprecated Legacy (pre-1.0) inverse of `activeBlockHighlight`; only read to migrate old saved data. */
 	disableActiveLineHighlight?: boolean;
 
 	// --- Typography ---
@@ -454,16 +449,14 @@ export interface DoomEsqueStyleSettings {
 }
 
 /** Backward-compatibility type alias */
-export type DoomEmacsStyleSettings = DoomEsqueStyleSettings;
 
-export const DEFAULT_DOOMESQUE_SETTINGS: DoomEsqueStyleSettings = {
+export const DEFAULT_DOOM_SETTINGS: DoomEsqueStyleSettings = {
 	darkPalette: "doom-palette-one",
 	lightPalette: "doom-palette-one-light",
 	disableOrgTodoBadges: false,
 	monochromeHeadings: false,
 	disableH1Border: false,
 	activeBlockHighlight: false,
-	disableActiveLineHighlight: false,
 
 	monospaceEditor: false,
 	disableMonospaceUi: false,
@@ -500,7 +493,6 @@ export const DEFAULT_DOOMESQUE_SETTINGS: DoomEsqueStyleSettings = {
 };
 
 /** Backward-compatibility constant alias */
-export const DEFAULT_DOOM_SETTINGS = DEFAULT_DOOMESQUE_SETTINGS;
 
 /**
  * Sanitizes a user-provided font family name so it cannot inject arbitrary CSS tokens (`;`, `{`, `}`, `\`).
@@ -531,7 +523,7 @@ function roundTo(value: number, decimals: number): number {
 
 /**
  * Pure function that computes the exact `document.body` classes and inline CSS variables
- * for a given `DoomEmacsStyleSettings` object.
+ * for a given `DoomEsqueStyleSettings` object.
  */
 /** One-time migrations for settings saved by older plugin versions. Returns true if anything changed. */
 export function migrateSettings(saved: Partial<DoomEsqueStyleSettings> | null, settings: DoomEsqueStyleSettings): boolean {
@@ -551,7 +543,7 @@ export function migrateSettings(saved: Partial<DoomEsqueStyleSettings> | null, s
 }
 
 export function computeDoomDomState(
-	settings: DoomEmacsStyleSettings,
+	settings: DoomEsqueStyleSettings,
 	options: DoomDomOptions = {}
 ): ComputedDoomDomState {
 	const validPalette: DoomDarkPalette = DOOM_PALETTES.some((p) => p.id === settings.darkPalette)
@@ -584,9 +576,6 @@ export function computeDoomDomState(
 	if (settings.activeBlockHighlight) {
 		activeClasses.push("doom-active-block-highlight");
 	}
-	if (settings.disableActiveLineHighlight) {
-		activeClasses.push("doom-no-active-line-highlight");
-	}
 	if (!settings.rainbowIndentGuides) {
 		activeClasses.push("doom-mono-indent-guides");
 	}
@@ -595,9 +584,6 @@ export function computeDoomDomState(
 	}
 	if (settings.editorialEmphasis) {
 		activeClasses.push("doom-editorial-emphasis");
-	}
-	if (settings.stickyHoverPreviews) {
-		activeClasses.push("doom-sticky-hover-enabled");
 	}
 	if (settings.showPopoverProperties) {
 		activeClasses.push("doom-popover-properties");

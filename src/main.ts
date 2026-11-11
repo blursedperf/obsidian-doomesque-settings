@@ -11,7 +11,7 @@ import {
 	DoomDarkPalette,
 	DoomLightPalette,
 	DoomCursorStyle,
-	DoomEmacsStyleSettings,
+	DoomEsqueStyleSettings,
 	DoomIndentGuideStyle,
 	DoomSidebarDensity,
 	applyDoomDomState,
@@ -54,7 +54,7 @@ const NESTED_NATIVE_SELECTION_FIX = Prec.highest(
 );
 
 export default class DoomEsqueSettingsPlugin extends Plugin {
-	settings: DoomEmacsStyleSettings = { ...DEFAULT_DOOM_SETTINGS };
+	settings: DoomEsqueStyleSettings = { ...DEFAULT_DOOM_SETTINGS };
 	hoverManager: HoverPreviewManager = new HoverPreviewManager(this);
 	private trackedDocuments = new Set<Document>();
 
@@ -240,7 +240,6 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			callback: async () => {
 				if (this.blockedByStyleSettings()) return;
 				this.settings.activeBlockHighlight = !this.settings.activeBlockHighlight;
-				this.settings.disableActiveLineHighlight = !this.settings.activeBlockHighlight;
 				await this.saveSettings();
 				new Notice(
 					`DoomEsque: Active block highlight ${this.settings.activeBlockHighlight ? "enabled" : "disabled"}`
@@ -313,7 +312,6 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 				id: "toggle-sticky-hover-previews",
 				name: "Toggle sticky hover preview windows",
 				callback: async () => {
-					if (this.blockedByStyleSettings()) return;
 					this.settings.stickyHoverPreviews = !this.settings.stickyHoverPreviews;
 					await this.saveSettings();
 					new Notice(
@@ -381,12 +379,13 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 	}
 
 	async loadSettings(): Promise<void> {
-		const saved = (await this.loadData()) as Partial<DoomEmacsStyleSettings> | null;
+		const saved = (await this.loadData()) as Partial<DoomEsqueStyleSettings> | null;
 		this.settings = Object.assign({}, DEFAULT_DOOM_SETTINGS, saved);
 		// Migrate legacy disableActiveLineHighlight if activeBlockHighlight not explicitly set
 		if (saved?.activeBlockHighlight === undefined && saved?.disableActiveLineHighlight !== undefined) {
 			this.settings.activeBlockHighlight = !saved.disableActiveLineHighlight;
 		}
+		delete this.settings.disableActiveLineHighlight; // legacy key: read once, never written back
 		if (migrateSettings(saved, this.settings)) {
 			await this.saveData(this.settings);
 		}
@@ -492,7 +491,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 	 * Settings as they are actually in effect. While Style Settings owns the shared options,
 	 * hover preview behaviour follows the classes and variables it has applied.
 	 */
-	getEffectiveSettings(): DoomEmacsStyleSettings {
+	getEffectiveSettings(): DoomEsqueStyleSettings {
 		if (!this.isStyleSettingsEnabled()) {
 			return this.settings;
 		}
@@ -504,7 +503,6 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 		};
 		return {
 			...this.settings,
-			stickyHoverPreviews: body.classList.contains("doom-sticky-hover-enabled"),
 			showPopoverProperties: body.classList.contains("doom-popover-properties"),
 			hoverPopoverWidthPx: px("--popover-width", DEFAULT_DOOM_SETTINGS.hoverPopoverWidthPx),
 			hoverPopoverHeightPx: px("--popover-height", DEFAULT_DOOM_SETTINGS.hoverPopoverHeightPx),
@@ -552,10 +550,6 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-	getSettingDefinitions(): [] {
-		return [];
-	}
-
 	display(): void {
 		this.renderSettings();
 	}
@@ -587,7 +581,6 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 		"Text cursor style",
 		"Hover preview width",
 		"Hover preview height",
-		"Sticky hover preview windows",
 		"Show note properties in hover previews",
 	]);
 
@@ -707,7 +700,6 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.activeBlockHighlight)
 					.onChange(async (val) => {
 						this.plugin.settings.activeBlockHighlight = val;
-						this.plugin.settings.disableActiveLineHighlight = !val;
 						await this.plugin.saveSettings();
 					});
 			});

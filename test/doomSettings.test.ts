@@ -1290,7 +1290,7 @@ void (async () => {
 
 	// -----------------------------------------------------------------------------
 	// -----------------------------------------------------------------------------
-	// 19. Table Cell Typing, Layout Preservation & Horizontal Scrollbar Suppression Tests
+	// 19. Native Obsidian Table Mechanics Preservation & Doom Color Differences Tests
 	// -----------------------------------------------------------------------------
 	{
 		const fs = require("node:fs");
@@ -1301,41 +1301,16 @@ void (async () => {
 		assert.ok(fs.existsSync(cssPath), "styles.css must exist");
 		const stylesContent = fs.readFileSync(cssPath, "utf-8");
 
-		// 1. Verify Markdown Table Editor cell scrollbar suppression, height & min-width in styles.css
+		// 1. Verify styles.css does NOT inject intrusive table layout/cell overrides so native Obsidian controls mechanics
 		assert.ok(
-			stylesContent.includes("::-webkit-scrollbar") && stylesContent.includes("display: none;"),
-			"styles.css must suppress scrollbars on cell editors via ::-webkit-scrollbar"
+			!stylesContent.includes("table.table-editor th"),
+			"styles.css must not override native Obsidian table cell geometry"
 		);
 		assert.ok(
-			stylesContent.includes(".table-cell-wrapper"),
-			"styles.css must target .table-cell-wrapper"
-		);
-		assert.ok(
-			stylesContent.includes("height: 100%;"),
-			"styles.css must enforce height: 100% on .table-cell-wrapper for stable cell interaction"
-		);
-		assert.ok(
-			stylesContent.includes(":is(.cm-scroller, .cm-editor)"),
-			"styles.css must target cm-scroller and cm-editor for scrollbar suppression"
-		);
-		assert.ok(
-			stylesContent.includes("word-break: normal;"),
-			"styles.css must preserve normal word breaking for typing stability"
-		);
-		const sStart = stylesContent.indexOf("Table & Cell Text Input");
-		const sEnd = stylesContent.indexOf("Obsidian Bases / Database Views");
-		const tableStyles = stylesContent.substring(sStart, sEnd);
-		assert.ok(
-			!tableStyles.includes("overflow-x: hidden;"),
-			"styles.css must not use overflow-x: hidden on cell editors to prevent caret clipping"
-		);
-		assert.ok(
-			!tableStyles.includes("padding-left: 2px;"),
-			"styles.css must not use padding-left: 2px on cm-content to prevent text shift on focus"
-		);
-		assert.ok(
-			stylesContent.includes("min-width: var(--table-column-min-width, 70px);"),
-			"styles.css must enforce min-width on table cells to prevent squashing"
+			stylesContent.includes(".doom-active-line-highlight") &&
+				stylesContent.includes(".cm-table-widget .cm-activeLine") &&
+				stylesContent.includes("background-color: transparent;"),
+			"styles.css must prevent active-line background bleed into table cells"
 		);
 
 		// 2. Verify Bases cell scrollbar suppression & min-width in styles.css
@@ -1352,9 +1327,11 @@ void (async () => {
 			"styles.css must enforce healthy min-width on Bases cells to prevent flex squashing"
 		);
 
-		// 3. Verify theme.css rules if present in workspace
+		// 3. Verify theme.css preserves 100% native table functionality and applies Doom color differences
 		if (fs.existsSync(themeCssPath)) {
 			const themeContent = fs.readFileSync(themeCssPath, "utf-8");
+			
+			// Must NOT force abnormal white-space overrides
 			assert.ok(
 				!themeContent.includes("--table-white-space: normal;"),
 				"theme.css must not force --table-white-space: normal"
@@ -1363,48 +1340,60 @@ void (async () => {
 				!themeContent.includes("--bases-table-white-space: normal;"),
 				"theme.css must not force --bases-table-white-space: normal"
 			);
+
+			// Must NOT hardcode non-native cell padding (which broke native density scaling)
 			assert.ok(
-				themeContent.includes(".table-cell-wrapper"),
-				"theme.css must target .table-cell-wrapper"
+				!themeContent.includes("padding: 8px 13px;"),
+				"theme.css must not hardcode padding: 8px 13px so native Obsidian cell padding rules govern layout"
 			);
-			assert.ok(
-				themeContent.includes("height: 100%;"),
-				"theme.css must enforce height: 100% on .table-cell-wrapper"
-			);
-			assert.ok(
-				themeContent.includes(":is(.cm-scroller, .cm-editor)"),
-				"theme.css must target cm-scroller and cm-editor"
-			);
-			assert.ok(
-				themeContent.includes("word-break: normal;"),
-				"theme.css must preserve normal word breaking for typing stability"
-			);
-			const tStart = themeContent.indexOf("/* Tables (Stable, zero-shift");
-			const tEnd = themeContent.indexOf("8b. Obsidian Bases");
+
+			// Must NOT override internal CodeMirror 6 elements in table cells
+			const tStart = themeContent.indexOf("/* Tables: Org-table Doom Color Aesthetic");
+			const tEnd = themeContent.indexOf("/* --------------------------------------------------------------------------\n   8b. Obsidian Bases");
+			assert.ok(tStart !== -1 && tEnd !== -1, "theme.css must contain Org-table Doom Color Aesthetic section");
 			const themeTable = themeContent.substring(tStart, tEnd);
+
+			assert.ok(
+				!themeTable.includes(":is(.cm-editor, .cm-scroller, .cm-sizer, .cm-content, .cm-line)"),
+				"theme.css must not override nested CodeMirror 6 element layout in table cells"
+			);
 			assert.ok(
 				!themeTable.includes("overflow-x: hidden;"),
-				"theme.css must not use overflow-x: hidden on cell editors to prevent caret clipping"
+				"theme.css must not use overflow-x: hidden on cell editors"
 			);
 			assert.ok(
-				!themeTable.includes("padding-left: 2px;"),
-				"theme.css must not use padding-left: 2px on cm-content to prevent text shift on focus"
+				!themeTable.includes("box-shadow: 0 1px 4px"),
+				"theme.css must not apply box-shadow to tables"
 			);
+
+			// Must preserve Doom palette color styling differences
 			assert.ok(
-				themeContent.includes("min-width: var(--table-column-min-width, 70px);"),
-				"theme.css must enforce min-width on table cells to prevent squashing"
-			);
-			assert.ok(
-				themeContent.includes("min-width: max(var(--bases-column-width, 80px), 80px);"),
-				"theme.css must enforce min-width on Bases cells to prevent flex squashing"
+				themeContent.includes("border-bottom: 2px solid var(--doom-blue);"),
+				"theme.css must style table headers with Doom blue accent underline"
 			);
 			assert.ok(
 				themeContent.includes("--table-selection-border-color: var(--doom-blue);"),
 				"theme.css must define visible table selection border color"
 			);
+			assert.ok(
+				themeContent.includes("--table-row-alt-background: var(--doom-bg-alt);"),
+				"theme.css must define zebra striping alt background"
+			);
+			assert.ok(
+				themeContent.includes("--table-background: var(--doom-bg);"),
+				"theme.css must define table background"
+			);
+			assert.ok(
+				themeContent.includes("--table-text-size: var(--font-text-size);"),
+				"theme.css must use native font-text-size for cell text"
+			);
+			assert.ok(
+				themeContent.includes("--table-line-height: var(--line-height-normal);"),
+				"theme.css must use native line-height-normal for cell text"
+			);
 		}
 
-		console.log("✓ Table cell typing, layout preservation & horizontal scrollbar suppression verified");
+		console.log("✓ Native Obsidian table mechanics preservation & Doom color differences verified");
 	}
 
 	// -----------------------------------------------------------------------------

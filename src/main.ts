@@ -5,6 +5,7 @@ import { Prec } from "@codemirror/state";
 import { EditorView, drawSelection } from "@codemirror/view";
 import { HoverPreviewManager } from "./hoverPreview";
 import { BASES_TOOLTIP_DATA_KEY, basesToolbarTooltipFor } from "./basesToolbar";
+import { listParentGuides } from "./listGuides";
 import {
 	DOOM_PALETTES,
 	DOOM_LIGHT_PALETTES,
@@ -67,6 +68,15 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			} catch (err) {
 				console.warn("DoomEsque Settings: drawSelection registration skipped", err);
 			}
+		}
+
+		// Marks list lines whose next line is a nested item, so the theme can start the indent guide
+		// under a wrapped parent's marker without :has(). All platforms (Live Preview and Source).
+		try {
+			const vault = this.app.vault as unknown as { getConfig?: (key: string) => unknown };
+			this.registerEditorExtension(listParentGuides(() => vault.getConfig?.("showIndentGuide") !== false));
+		} catch (err) {
+			console.warn("DoomEsque Settings: list guide extension skipped", err);
 		}
 
 		try {

@@ -1,93 +1,42 @@
 # DoomEsque Settings for Obsidian
 
-A dedicated companion plugin to customize palettes, layout spacing, retro text cursors, typography, and sticky hover previews in the **[DoomEsque](https://github.com/blursedperf/obsidian-theme-doomesque)** theme.
+Companion plugin for the **[DoomEsque](https://github.com/blursedperf/obsidian-theme-doomesque)** theme: palettes, spacing, typography, cursors and sticky hover previews from one settings tab.
 
----
+## Features
 
-## ✨ Core Features
+- **Palettes.** Switch between 8 dark and 6 light Doom palettes; popout windows stay in sync.
+- **Cursors.** Bar, block, glow, hollow and underline, with a fixed `1ch` block on empty lines.
+- **Hover previews.** Resizable, draggable, maximizable and sticky preview windows with open-in-new-tab, pop-to-right-sidebar, pin and close buttons. Press the Super key (`Cmd`/`Ctrl`/`Win`) over a link to open it in the right sidebar. Optional properties drawer.
+- **Typography.** Monospace note buffer, `TODO`/`DONE` badges, monochrome headings, heading scale, custom monospace font and legal outline numbering.
+- **Layout.** Line width, line height, paragraph and heading spacing, editor margins, header height and sidebar density.
+- **Indent guides.** Rainbow or single colour; solid, dashed, dotted, double or none.
+- **Tables and Bases.** Density, gridlines, zebra striping, Bases toolbar labels and uppercase Bases headers.
+- **Offline.** No network requests, telemetry or `eval`.
 
-- **🎨 Dynamic Palette Switcher**:
-  - Instant dark (8 schemes) and light (6 schemes) Doom Emacs palette switching.
-  - Multi-window synchronization keeps main workspace, popouts, and settings in sync.
-- **🔲 Retro Cursor Engine**:
-  - Five cursor styles: Modern Bar, Retro Block, Phosphor Glow, Hollow Box, and Underline.
-  - Custom CodeMirror 6 extension maintains a solid, fixed `1ch` block cursor on empty lines and line boundaries.
-- **🔍 Enhanced Sticky Hover Previews**:
-  - Unconstrained preview windows (configurable width & height) with contained scrolling.
-  - Floating modeline header with drag handle, Open in New Tab (`↗`), Pop to Right Sidebar (`⇥`), Maximize (`⤢`), Pin (`P`), and Close (`✕`).
-  - Super key (`Cmd`/`Ctrl`/`Win`) shortcut to pop any hovered note directly into the right sidebar.
-  - Optional frontmatter properties (`:PROPERTIES:` drawer) at the top of preview windows.
-- **📜 Org-Mode & Typography Controls**:
-  - Toggle full monospace note buffer while keeping system UI chrome.
-  - Toggle Org-mode `TODO` and `DONE` task badges.
-  - Rainbow indentation guides with customizable line styles (solid, dashed, dotted, double).
-  - Legal outline numbering (`I.` → `A.` → `1.` → `a.` → `i.`) for nested ordered lists.
-- **📐 Layout & Spacing Rhythm**:
-  - Fine-tune readable line width, line height, paragraph spacing, heading scale, and editor margins.
-  - Sidebar density options: Compact, Normal, and Comfortable.
-- **🗃️ Tables & Bases**:
-  - Density (row height, cell padding, Bases text size): Compact, Normal, and Comfortable.
-  - Gridlines: full grid, horizontal rules only, or none; optional zebra striping removal.
-  - Bases toolbar text labels and Org-style uppercase Bases column headers.
-- **🔒 100% Offline & Secure**:
-  - Zero external network requests, zero telemetry, and zero dynamic code evaluation (`eval`).
-  - Safe native DOM operations adhering strictly to Obsidian developer guidelines.
+## Style Settings and other themes
 
----
+- **Style Settings enabled:** the theme exposes most of these options through [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) too. While it is enabled it controls the shared options, so their rows here are disabled and their commands show a notice. Options only this plugin has still apply.
+- **Another theme active:** the plugin removes its classes and variables, so that theme is untouched. Enhanced hover previews keep working under any theme.
 
-## 🤝 Working with Style Settings & Other Themes
+## Commands
 
-- **Style Settings enabled:** the DoomEsque theme also exposes its options through the [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) plugin. When it is enabled, Style Settings controls the options both plugins offer (palettes, spacing, indentation, typography, cursor, hover preview size and properties). Those rows are disabled in this plugin's tab and the matching commands show a notice; heading scale, custom monospace font, page margins, header height, sticky previews, hover text scale and the Super-key shortcut still apply from here.
-- **Another theme active:** the plugin removes its classes and variables so the active theme renders untouched. The enhanced hover preview window keeps working under any theme.
-- **Division of work:** the theme owns how things look (palette colours, including colours for this plugin's preview window). This plugin owns what it adds: the preview window's resize/drag/maximize/sticky behaviour and layout, the cursor engine, Bases toolbar tooltips and its settings tab. Its `styles.css` uses Obsidian's neutral variables, so the preview window works under any theme.
+Run from the command palette (`Ctrl/Cmd + P`) or bind to hotkeys. They include cycling the dark and light palettes, cursor style and indent guide style; toggling monospace, task badges, rainbow guides, monochrome headings, the active block highlight, legal numbering, editorial emphasis and flat settings items; and hover preview actions (sticky previews, properties, open in right sidebar, close active, close all).
 
----
+## Installation
 
-## ⚡ Key Commands
+From Obsidian: **Settings → Community plugins → Browse**, search for **DoomEsque Settings**, install and enable.
 
-Access these actions via `Ctrl/Cmd + P` or bind them to hotkeys:
+Manually: copy `manifest.json`, `main.js` and `styles.css` into `<vault>/.obsidian/plugins/doomesque-settings/`.
 
-| Command | Action |
-| :--- | :--- |
-| `DoomEsque: Cycle dark theme palette` | Cycle through Doom dark color schemes |
-| `DoomEsque: Cycle light theme palette` | Cycle through Doom light color schemes |
-| `DoomEsque: Cycle text cursor style` | Cycle between bar, block, glow, hollow, and underline |
-| `DoomEsque: Toggle sticky hover preview windows` | Keep preview popovers pinned open |
-| `DoomEsque: Open active preview in right sidebar` | Pop active preview to right sidebar |
-| `DoomEsque: Close all hover previews` | Dismiss all open preview windows |
-| `DoomEsque: Toggle monospace note editor` | Switch editor between monospace and default font |
-| `DoomEsque: Cycle indentation guide style` | Cycle solid, dashed, dotted, double, or none |
-| `DoomEsque: Toggle rainbow indentation guides` | Toggle rainbow indent guides on/off |
-
----
-
-## 📦 Installation
-
-### From Obsidian Community Plugins
-1. Open **Settings → Community plugins → Browse**.
-2. Search for **DoomEsque Settings**, install, and enable.
-
-### Manual Installation
-Copy `manifest.json`, `main.js`, and `styles.css` into your vault:
+## Development
 
 ```bash
-mkdir -p "/path/to/vault/.obsidian/plugins/doomesque-settings"
-cp manifest.json main.js styles.css "/path/to/vault/.obsidian/plugins/doomesque-settings/"
+npm install     # install dependencies
+npm run build   # production build
+npm test        # unit tests
+npm run dev     # watch mode
 ```
 
----
+## License
 
-## 🛠️ Development
-
-```bash
-npm install        # Install dependencies
-npm run build      # Build production bundle
-npm test           # Run the unit test suite
-npm run dev        # Development watch mode
-```
-
----
-
-## 📄 License
-
-[MIT License](./LICENSE) © 2026 blursedperf
+[MIT](./LICENSE) © 2026 blursedperf

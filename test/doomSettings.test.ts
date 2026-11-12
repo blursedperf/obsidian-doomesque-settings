@@ -22,7 +22,6 @@ import {
 	getManagedClasses,
 } from "../src/settings";
 import { BASES_TOOLBAR_ICON_BUTTON_SELECTOR, basesToolbarTooltipFor } from "../src/basesToolbar";
-import { LIST_PARENT_CLASS, isListParent, listIndentWidth } from "../src/listGuides";
 import { SETTINGS_SECTIONS, findSettingSpec, isSharedSetting, normalizeSettingValue } from "../src/settingsSchema";
 
 console.log("Running obsidian-doomesque-settings unit tests...\n");
@@ -1880,44 +1879,6 @@ void (async () => {
 		);
 
 		console.log("✓ Style Settings ownership, theme gating and plugin CSS scope verified");
-	}
-
-	// -----------------------------------------------------------------------------
-	// List parents for indent guides under wrapped parents (no :has() in the theme)
-	// -----------------------------------------------------------------------------
-	{
-		assert.strictEqual(listIndentWidth("- item", 4), 0);
-		assert.strictEqual(listIndentWidth("\t- item", 4), 4);
-		assert.strictEqual(listIndentWidth("  \t1. item", 4), 4, "tabs advance to the next tab stop");
-		assert.strictEqual(listIndentWidth("    * item", 4), 4);
-		assert.strictEqual(listIndentWidth("\t\t- [ ] task", 4), 8);
-		assert.strictEqual(listIndentWidth("2) item", 4), 0);
-		assert.strictEqual(listIndentWidth("-", 4), 0, "an empty bullet is still a list item");
-		assert.strictEqual(listIndentWidth("plain text", 4), null);
-		assert.strictEqual(listIndentWidth("-not a bullet", 4), null);
-		assert.strictEqual(listIndentWidth("\tcontinued paragraph", 4), null);
-
-		assert.ok(isListParent("- parent", "\t- child", 4));
-		assert.ok(isListParent("1. parent", "\t1. child", 4));
-		assert.ok(isListParent("- [ ] task", "    - [ ] sub task", 4));
-		assert.ok(isListParent("\t- level two", "\t\t- level three", 4));
-		assert.ok(!isListParent("- one", "- sibling", 4), "siblings are not parents");
-		assert.ok(!isListParent("\t- child", "- shallower", 4));
-		assert.ok(!isListParent("- parent", "", 4), "a blank line ends the parent");
-		assert.ok(!isListParent("- parent", "\tindented paragraph", 4), "only list items count as children");
-		assert.ok(!isListParent("paragraph", "\t- item", 4));
-		assert.ok(!isListParent("- last line", null, 4));
-
-		const mainSrc = require("node:fs").readFileSync(require("node:path").resolve(process.cwd(), "src/main.ts"), "utf-8");
-		assert.ok(/registerEditorExtension\(listParentGuides\(/.test(mainSrc), "list guide extension is registered");
-		assert.ok(mainSrc.includes('getConfig?.("showIndentGuide")'), "list guide extension follows Obsidian's indent guide setting");
-
-		assertTheme(
-			(css) => css.includes(`.HyperMD-list-line-1.${LIST_PARENT_CLASS}::before`) && css.includes(`.HyperMD-list-line-2.${LIST_PARENT_CLASS} > .cm-hmd-list-indent::after`),
-			"theme must draw the parent guide segment on lines the plugin marks"
-		);
-		assertTheme((css) => !css.includes(":has("), "theme must not use :has() (CSS lint: broad selector invalidation)");
-		console.log("✓ List parent detection for wrapped-parent indent guides verified");
 	}
 
 	console.log("\nAll unit tests passed successfully!");

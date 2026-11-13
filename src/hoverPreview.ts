@@ -509,14 +509,20 @@ export class HoverPreviewManager {
 			}
 		};
 
-		this.mutationObserver = new MutationObserver(() => {
-			checkAndEnhancePopovers();
+		// Obsidian mounts hover popovers directly on <body>, so only body's own children are watched
+		// (not the whole DOM, which changes on every keystroke), and only added popovers trigger work.
+		this.mutationObserver = new MutationObserver((mutations) => {
+			for (const mutation of mutations) {
+				for (const node of Array.from(mutation.addedNodes)) {
+					if (node.nodeType === 1 && (node as Element).classList.contains("hover-popover")) {
+						checkAndEnhancePopovers();
+						return;
+					}
+				}
+			}
 		});
 
-		this.mutationObserver.observe(activeDocument.body, {
-			childList: true,
-			subtree: true,
-		});
+		this.mutationObserver.observe(activeDocument.body, { childList: true });
 
 		checkAndEnhancePopovers();
 	}

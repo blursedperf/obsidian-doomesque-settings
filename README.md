@@ -37,6 +37,10 @@ npm test        # unit tests
 npm run dev     # watch mode
 ```
 
+## Privacy
+
+The plugin makes no network requests. Every test run checks the source, built bundle and styles with `scripts/offline-audit.mjs`, which fails on any network API, dynamic code, raw HTML injection or remote CSS.
+
 ## License
 
 [MIT](./LICENSE) © 2026 blursedperf

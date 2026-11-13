@@ -6,7 +6,8 @@ export type DoomDarkPalette =
 	| "doom-palette-gruvbox"
 	| "doom-palette-cyberpunk"
 	| "doom-palette-retro-terminal"
-	| "doom-palette-suit-and-tie";
+	| "doom-palette-suit-and-tie"
+	| "doom-palette-crisp-dark";
 
 export type DoomLightPalette =
 	| "doom-palette-one-light"
@@ -75,6 +76,11 @@ export const DOOM_PALETTES: readonly DoomPaletteOption[] = [
 		id: "doom-palette-suit-and-tie",
 		label: "doom-suit-and-tie (Modern Sartorial)",
 		description: "Clean modern bespoke suiting palette: tailored charcoal slate with crisp white shirt contrast, silk crimson tie, and steel blue accents.",
+	},
+	{
+		id: "doom-palette-crisp-dark",
+		label: "doom-crisp-dark (Clean Modern)",
+		description: "The dark counterpart of doom-crisp-light: near-black neutral surfaces, off-white ink and bright, saturated accents that stay readable on every surface.",
 	},
 ];
 
@@ -209,6 +215,7 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-palette-cyberpunk",
 	"doom-palette-retro-terminal",
 	"doom-palette-suit-and-tie",
+	"doom-palette-crisp-dark",
 	"doom-palette-one-light",
 	"doom-palette-nord-light",
 	"doom-palette-gruvbox-light",
@@ -303,6 +310,7 @@ export const STYLE_SETTINGS_SHARED_CLASSES: readonly string[] = [
 	"doom-palette-cyberpunk",
 	"doom-palette-retro-terminal",
 	"doom-palette-suit-and-tie",
+	"doom-palette-crisp-dark",
 	"doom-palette-one-light",
 	"doom-palette-nord-light",
 	"doom-palette-gruvbox-light",

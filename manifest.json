@@ -1,7 +1,7 @@
 {
 	"id": "doomesque-settings",
 	"name": "DoomEsque Settings",
-	"version": "1.1.16",
+	"version": "1.1.17",
 	"minAppVersion": "1.7.2",
 	"description": "Customize DoomEsque theme palettes, spacing, indentation guides, and sticky hover preview popovers.",
 	"author": "blursedperf",

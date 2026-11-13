@@ -22,7 +22,7 @@ The suite:
 
 ## Features
 
-- **Palettes.** Switch between 8 dark and 7 light Doom palettes; popout windows stay in sync.
+- **Palettes.** Switch between 9 dark and 7 light Doom palettes; popout windows stay in sync.
 - **Cursors.** Bar, block, glow, hollow and underline, with a fixed `1ch` block on empty lines.
 - **Hover previews.** Resizable, draggable, maximizable and sticky preview windows with open-in-new-tab, pop-to-right-sidebar, pin and close buttons. Press the Super key (`Cmd`/`Ctrl`/`Win`) over a link to open it in the right sidebar. Optional properties drawer.
 - **Typography.** Monospace note buffer, `TODO`/`DONE` badges, monochrome headings, heading scale, custom monospace font and legal outline numbering.

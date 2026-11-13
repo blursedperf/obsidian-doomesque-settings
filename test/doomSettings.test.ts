@@ -148,6 +148,11 @@ class MockDOMTokenList {
 	);
 	assert.ok(suitAndTieLight.activeClasses.includes("doom-palette-suit-and-tie-light"));
 
+	const crispLight = computeDoomDomState(
+		makeSettings({ lightPalette: "doom-palette-crisp-light" })
+	);
+	assert.ok(crispLight.activeClasses.includes("doom-palette-crisp-light"));
+
 	// Invalid light palette fallback
 	const invalidLight = computeDoomDomState(makeSettings({ lightPalette: "doom-unknown" as any }));
 	assert.ok(invalidLight.activeClasses.includes("doom-palette-one-light"));
@@ -193,6 +198,10 @@ class MockDOMTokenList {
 	);
 	assert.strictEqual(
 		getNextLightPalette("doom-palette-suit-and-tie-light"),
+		"doom-palette-crisp-light"
+	);
+	assert.strictEqual(
+		getNextLightPalette("doom-palette-crisp-light"),
 		"doom-palette-one-light"
 	);
 	assert.strictEqual(getNextLightPalette("invalid" as any), "doom-palette-one-light");

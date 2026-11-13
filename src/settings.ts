@@ -14,7 +14,8 @@ export type DoomLightPalette =
 	| "doom-palette-gruvbox-light"
 	| "doom-palette-solarized-light"
 	| "doom-palette-tomorrow-day"
-	| "doom-palette-suit-and-tie-light";
+	| "doom-palette-suit-and-tie-light"
+	| "doom-palette-crisp-light";
 
 export type DoomIndentGuideStyle = "solid" | "dashed" | "dotted" | "double" | "none";
 
@@ -107,6 +108,11 @@ export const DOOM_LIGHT_PALETTES: readonly DoomLightPaletteOption[] = [
 		id: "doom-palette-suit-and-tie-light",
 		label: "doom-suit-and-tie-light (Linen & Silk)",
 		description: "Crisp modern light sartorial palette: warm off-white linen shirt background with tailored navy and silk burgundy accents.",
+	},
+	{
+		id: "doom-palette-crisp-light",
+		label: "doom-crisp-light (Clean Modern)",
+		description: "Clean modern high-contrast light palette: pure white paper (#ffffff), near-black ink and saturated accents that stay readable on every surface.",
 	},
 ];
 
@@ -209,6 +215,7 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-palette-solarized-light",
 	"doom-palette-tomorrow-day",
 	"doom-palette-suit-and-tie-light",
+	"doom-palette-crisp-light",
 	"doom-no-org-todo",
 	"doom-monospace-editor",
 	"doom-disable-monospace-ui",
@@ -302,6 +309,7 @@ export const STYLE_SETTINGS_SHARED_CLASSES: readonly string[] = [
 	"doom-palette-solarized-light",
 	"doom-palette-tomorrow-day",
 	"doom-palette-suit-and-tie-light",
+	"doom-palette-crisp-light",
 	"doom-no-org-todo",
 	"doom-monochrome-headings",
 	"doom-no-h1-border",

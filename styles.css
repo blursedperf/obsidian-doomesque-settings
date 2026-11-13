@@ -441,3 +441,10 @@ body .popover.hover-popover.mod-dragged {
 	color: var(--color-cyan);
 	background-color: rgba(77, 181, 189, 0.16);
 }
+
+/* Settings tab: the status notices group ("theme not active", "Style Settings is enabled") is hidden
+   when neither applies, but Obsidian still spaced the next group as if it followed a visible one,
+   so this tab started 24px lower than every other settings tab. */
+.vertical-tab-content .setting-group[style*="display: none"] + .setting-group {
+	margin-top: 0;
+}

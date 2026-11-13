@@ -837,13 +837,27 @@ class MockDOMTokenList {
 		".bases-table-footer",
 		".bases-table-summary-cell",
 		".bases-group-heading",
-		".bases-cards-item",
-		".bases-kanban-column",
+		".bases-kanban-column-header",
+		// Cards and kanban are styled through Obsidian's variables (their outlines are box-shadow rings)
+		"--bases-cards-background",
+		"--bases-cards-shadow",
+		"--bases-kanban-column-background",
+		"--bases-kanban-card-shadow",
 	];
 
 	for (const selector of requiredBasesSelectors) {
-		assertTheme((css) => css.includes(selector), `theme.css must include Bases selector: ${selector}`);
+		assertTheme((css) => css.includes(selector), `theme.css must include Bases styling hook: ${selector}`);
 	}
+	// A border on cards or kanban cards doubles Obsidian's ring outline; canvas node containers keep
+	// Obsidian's edge colour (--canvas-color) and shadows.
+	assertTheme(
+		(css) => !/(^|\n)\.bases-(cards-item|kanban-card)\s*\{[^}]*\bborder\s*:/.test(css),
+		"theme.css must not add a border to Bases cards or kanban cards (doubles the outline)"
+	);
+	assertTheme(
+		(css) => !/(^|\n)\.canvas-node-container\s*\{/.test(css),
+		"theme.css must not override canvas node containers (breaks node edge colour and shadows)"
+	);
 	// The plugin must not duplicate theme Bases styling (it applied under every theme and drifted).
 	assert.ok(!cssContent.includes(".bases-thead"), "styles.css must not duplicate theme Bases table styling");
 

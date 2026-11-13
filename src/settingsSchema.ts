@@ -124,7 +124,8 @@ export function normalizeSettingValue(spec: SettingSpec, value: unknown): unknow
 		return c.integer ? Math.round(n) : n;
 	}
 	if (c.type === "text") {
-		return spec.key === "customMonospaceFont" ? sanitizeFontFamily(String(value ?? "")) : String(value ?? "");
+		const text = typeof value === "string" ? value : "";
+		return spec.key === "customMonospaceFont" ? sanitizeFontFamily(text) : text;
 	}
 	return value;
 }

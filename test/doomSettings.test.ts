@@ -867,6 +867,16 @@ class MockDOMTokenList {
 		(css) => !/(^|\n)\.canvas-node-container\s*\{/.test(css),
 		"theme.css must not override canvas node containers (breaks node edge colour and shadows)"
 	);
+	// Live Preview draws a tag as two spans (.cm-hashtag-begin "#" and .cm-hashtag-end); Obsidian rounds
+	// only their outer corners from --tag-radius. A border-radius on the spans rounds the seam as well,
+	// which shows as a bump after the "#".
+	assertTheme(
+		(css) =>
+			![...css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]*)\{([^}]*)\}/g)].some(
+				([, sel, body]) => /cm-hashtag/.test(sel) && /(^|[;\s])border-radius\s*:/.test(body)
+			),
+		"theme.css must round Live Preview tags with --tag-radius, not border-radius on span.cm-hashtag"
+	);
 	// The plugin must not duplicate theme Bases styling (it applied under every theme and drifted).
 	assert.ok(!cssContent.includes(".bases-thead"), "styles.css must not duplicate theme Bases table styling");
 

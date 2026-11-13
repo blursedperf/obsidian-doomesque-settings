@@ -85,7 +85,7 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			}
 
 			// Hover tooltips for the theme's icon-only Bases toolbar buttons
-			this.attachBasesToolbarTooltips(document);
+			this.attachBasesToolbarTooltips(activeDocument);
 
 			// Update popout windows when opened (Obsidian 1.0+ desktop Electron popouts)
 			try {
@@ -684,7 +684,7 @@ class DoomEsqueSettingTab extends PluginSettingTab {
 				setting.addDropdown((d) => d.addOptions(c.options).setValue(String(value)).onChange(save));
 				break;
 			case "text":
-				setting.addText((t) => t.setPlaceholder(c.placeholder ?? "").setValue(String(value ?? "")).onChange(save));
+				setting.addText((t) => t.setPlaceholder(c.placeholder ?? "").setValue(typeof value === "string" ? value : "").onChange(save));
 				break;
 			case "slider": {
 				const badge = setting.controlEl.createSpan({ cls: "doom-settings-slider-value", text: c.format(Number(value)) });

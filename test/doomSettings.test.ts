@@ -1998,13 +1998,17 @@ void (async () => {
 		assert.strictEqual(fromOff.outlineNumbering, "standard");
 
 		// Theme: every style has Reading view rules, global and per note, and the Live Preview marker box
-		assertTheme((css) => css.includes("@counter-style doom-paren-lower-alpha"), "statutory counter styles");
+		assertTheme((css) => !css.includes("@counter-style"), "no @counter-style (flagged by the theme review lint)");
+		assertTheme((css) => css.includes('body .markdown-rendered.outline-statutory :where(ol ol) ol > li::marker {\n  content: "(" counter(list-item, lower-roman) ") ";'), "statutory brackets via ::marker at equal specificity");
 		for (const root of [".markdown-rendered", "body.doom-legal-outline .markdown-rendered", "body.doom-outline-decimal .markdown-rendered", "body.doom-outline-statutory .markdown-rendered", "body .markdown-rendered.outline-standard", "body .markdown-rendered.outline-hornbook", "body .markdown-rendered.outline-decimal", "body .markdown-rendered.outline-statutory"]) {
 			assertTheme((css) => css.includes(`${root} ol ol ol ol ol ol {`), `six levels for ${root}`);
 		}
 		assertTheme((css) => css.includes('body .markdown-rendered.outline-decimal :where(li) ol > li::marker {\n  content: counters(list-item, ".") " ";'), "decimal chains nested numbers");
 		assertTheme((css) => css.includes("body .markdown-rendered.outline-standard ol > li::marker {\n  content: normal;"), "a per-note style undoes a global decimal marker");
-		assertTheme((css) => /\.doom-outline-marker-text \{[^}]*position: absolute;[^}]*inset-inline-end: 0;/.test(css), "the Live Preview marker is right-aligned to the typed marker's edge");
+		const pluginCss = fs.readFileSync(path.resolve(process.cwd(), "styles.css"), "utf-8");
+		assert.ok(/\.doom-outline-marker \{[^}]*text-indent: 0;/.test(pluginCss), "the plugin resets the hanging indent inside its marker widget");
+		assert.ok(/\.doom-outline-marker-text \{[^}]*position: absolute;[^}]*inset-inline-end: 0;/.test(pluginCss), "the Live Preview marker is right-aligned to the typed marker's edge");
+		assertTheme((css) => !css.includes("doom-outline-marker"), "the widget's layout lives in the plugin, not the theme");
 		assertTheme((css) => /id: doom-outline-numbering\n\s+title: Outline Numbering\n[\s\S]*?value: doom-outline-statutory/.test(css), "Style Settings offers the four styles");
 		console.log("✓ Outline numbering: computation, styles, settings, migration and theme rules verified");
 	}

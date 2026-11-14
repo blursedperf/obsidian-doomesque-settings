@@ -448,3 +448,31 @@ body .popover.hover-popover.mod-dragged {
 .vertical-tab-content .setting-group[style*="display: none"] + .setting-group {
 	margin-top: 0;
 }
+
+/* --------------------------------------------------------------------------
+   Live Preview outline numbers (outlineExtension.ts)
+   The widget replaces the typed marker and its space ("1. "). An invisible
+   copy of the typed marker keeps its exact width, so text and wrapped lines
+   stay where Obsidian put them; the computed marker (with its space) is
+   right-aligned to that edge and extends left when it is longer. The line's
+   negative hanging indent is reset here or it would shift the marker. Colour
+   and weight come from the theme's list-marker rules (the widget carries the
+   cm-formatting-list classes).
+   -------------------------------------------------------------------------- */
+.markdown-source-view.mod-cm6 .doom-outline-marker {
+	position: relative;
+	display: inline-block;
+	text-indent: 0;
+}
+
+.markdown-source-view.mod-cm6 .doom-outline-marker-sizer {
+	visibility: hidden;
+	white-space: pre;
+}
+
+.markdown-source-view.mod-cm6 .doom-outline-marker-text {
+	position: absolute;
+	inset-inline-end: 0;
+	top: 0;
+	white-space: pre;
+}

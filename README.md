@@ -46,7 +46,7 @@ Nested numbered lists can be numbered in four styles:
 
 Choose the style under **Outline numbering**, or with the **Cycle outline numbering style** command. A note can use its own style through its `cssclasses` property, for example `cssclasses: outline-hornbook` (also `outline-standard`, `outline-decimal` and `outline-statutory`).
 
-In Live Preview the computed numbers are drawn in place of the typed ones, so the editor, Reading view and PDF export agree. The note itself is untouched: type `1.` for every item if you like, and put the cursor on a number to see and edit what is typed. Numbering follows Markdown: a list's first number sets its start, and a bullet list in between does not change the level. Turn off **Outline numbers in Live Preview** to see the typed numbers while editing. On iPhone and iPad, Reading view shows decimal numbering as 1. 2. 3. at each level, because iOS does not support the CSS it needs. Live Preview is unaffected.
+In Live Preview the computed numbers are drawn in place of the typed ones, so the editor, Reading view and PDF export agree. The note itself is untouched: type `1.` for every item if you like, and put the cursor on a number to see and edit what is typed. Numbering follows Markdown: a list's first number sets its start, and a bullet list in between does not change the level. Turn off **Outline numbers in Live Preview** to see the typed numbers while editing. On iPhone and iPad, Reading view shows decimal and statutory numbering without the chaining or brackets (1. a. i.), because iOS does not support the CSS they need. Live Preview is unaffected.
 
 ## Style Settings and other themes
 

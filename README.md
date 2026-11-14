@@ -26,11 +26,27 @@ The suite:
 - **Palettes.** Switch between 9 dark and 7 light Doom palettes; popout windows stay in sync.
 - **Cursors.** Bar, block, glow, hollow and underline, with a fixed `1ch` block on empty lines.
 - **Hover previews.** Resizable, draggable, maximizable and sticky preview windows with open-in-new-tab, pop-to-right-sidebar, pin and close buttons. Press the Super key (`Cmd`/`Ctrl`/`Win`) over a link to open it in the right sidebar. Optional properties drawer.
-- **Typography.** Monospace note buffer, `TODO`/`DONE` badges, monochrome headings, heading scale, custom monospace font and legal outline numbering.
+- **Typography.** Monospace note buffer, `TODO`/`DONE` badges, monochrome headings, heading scale, custom monospace font.
+- **Outline numbering.** Four styles for nested numbered lists, shown the same way in Live Preview, Reading view and PDF export (see below).
 - **Layout.** Line width, line height, paragraph and heading spacing, editor margins, header height and sidebar density.
 - **Indent guides.** Rainbow or single colour; solid, dashed, dotted, double or none.
 - **Tables and Bases.** Density, gridlines, zebra striping, Bases toolbar labels and uppercase Bases headers.
 - **Offline.** No network requests, telemetry or `eval`.
+
+## Outline numbering
+
+Nested numbered lists can be numbered in four styles:
+
+| Style | Levels | For |
+| --- | --- | --- |
+| Standard (default) | 1. a. i. A. | General notes |
+| Legal / hornbook | I. A. 1. a. i. | Course outlines |
+| Decimal | 1. 1.1 1.1.1 | Contracts, memos, essay plans |
+| Statutory | (1) (a) (i) (A) | Following the structure of legislation |
+
+Choose the style under **Outline numbering**, or with the **Cycle outline numbering style** command. A note can use its own style through its `cssclasses` property, for example `cssclasses: outline-hornbook` (also `outline-standard`, `outline-decimal` and `outline-statutory`).
+
+In Live Preview the computed numbers are drawn in place of the typed ones, so the editor, Reading view and PDF export agree. The note itself is untouched: type `1.` for every item if you like, and put the cursor on a number to see and edit what is typed. Numbering follows Markdown: a list's first number sets its start, and a bullet list in between does not change the level. Turn off **Outline numbers in Live Preview** to see the typed numbers while editing. On iPhone and iPad, Reading view shows decimal numbering as 1. 2. 3. at each level, because iOS does not support the CSS it needs. Live Preview is unaffected.
 
 ## Style Settings and other themes
 
@@ -39,7 +55,7 @@ The suite:
 
 ## Commands
 
-Run from the command palette (`Ctrl/Cmd + P`) or bind to hotkeys. They include cycling the dark and light palettes, cursor style and indent guide style; toggling monospace, task badges, rainbow guides, monochrome headings, the active block highlight, legal numbering, editorial emphasis and flat settings items; and hover preview actions (sticky previews, properties, open in right sidebar, close active, close all).
+Run from the command palette (`Ctrl/Cmd + P`) or bind to hotkeys. They include cycling the dark and light palettes, cursor style and indent guide style; toggling monospace, task badges, rainbow guides, monochrome headings, the active block highlight, legal numbering (and cycling the outline numbering style), editorial emphasis and flat settings items; and hover preview actions (sticky previews, properties, open in right sidebar, close active, close all).
 
 ## Installation
 

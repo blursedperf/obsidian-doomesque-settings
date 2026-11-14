@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-doomesque-settings",
-	"version": "1.1.18",
+	"version": "1.2.0",
 	"description": "Obsidian plugin to customize palettes, typography, and layout in the DoomEsque theme.",
 	"main": "main.js",
 	"scripts": {

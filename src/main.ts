@@ -4,6 +4,7 @@ import { SETTINGS_SECTIONS, SettingKey, SettingSpec, findSettingSpec, isSharedSe
 import { Prec } from "@codemirror/state";
 import { EditorView, drawSelection } from "@codemirror/view";
 import { HoverPreviewManager } from "./hoverPreview";
+import { outlineNumberingExtension } from "./outlineExtension";
 import { BASES_TOOLTIP_DATA_KEY, basesToolbarTooltipFor } from "./basesToolbar";
 import {
 	DOOM_PALETTES,
@@ -19,6 +20,7 @@ import {
 	getNextIndentStyle,
 	getNextCursorStyle,
 	migrateSettings,
+	DoomOutlineNumbering,
 	DOOMESQUE_THEME_NAME,
 	STYLE_SETTINGS_PLUGIN_ID,
 	DoomDomOptions,
@@ -49,6 +51,13 @@ const NESTED_NATIVE_SELECTION_FIX = Prec.highest(
 	})
 );
 
+const OUTLINE_NUMBERING_LABELS: Record<DoomOutlineNumbering, string> = {
+	standard: "Standard",
+	hornbook: "Legal / hornbook",
+	decimal: "Decimal",
+	statutory: "Statutory",
+};
+
 export default class DoomEsqueSettingsPlugin extends Plugin {
 	settings: DoomEsqueStyleSettings = { ...DEFAULT_DOOM_SETTINGS };
 	hoverManager: HoverPreviewManager = new HoverPreviewManager(this);
@@ -68,6 +77,10 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 				console.warn("DoomEsque Settings: drawSelection registration skipped", err);
 			}
 		}
+
+		// Live Preview outline numbering (desktop and mobile). Draws nothing unless the theme is active
+		// and the option is on (the doom-outline-live body class).
+		this.registerEditorExtension(outlineNumberingExtension);
 
 		try {
 			await this.loadSettings();
@@ -257,17 +270,26 @@ export default class DoomEsqueSettingsPlugin extends Plugin {
 			},
 		});
 
-		// Legal outline numbering toggle
+		// Outline numbering: the old toggle (kept for existing hotkeys) and a cycle through the styles
 		this.addCommand({
 			id: "toggle-legal-outline-numbering",
 			name: "Toggle legal / hornbook outline numbering (I, A, 1, a, i)",
 			callback: async () => {
 				if (this.blockedByStyleSettings()) return;
-				this.settings.legalOutlineNumbering = !this.settings.legalOutlineNumbering;
+				this.settings.outlineNumbering = this.settings.outlineNumbering === "hornbook" ? "standard" : "hornbook";
 				await this.saveSettings();
-				new Notice(
-					`DoomEsque: Legal outline numbering ${this.settings.legalOutlineNumbering ? "enabled" : "disabled"}`
-				);
+				new Notice(`DoomEsque: ${OUTLINE_NUMBERING_LABELS[this.settings.outlineNumbering]} outline numbering`);
+			},
+		});
+		this.addCommand({
+			id: "cycle-outline-numbering",
+			name: "Cycle outline numbering style",
+			callback: async () => {
+				if (this.blockedByStyleSettings()) return;
+				const order = Object.keys(OUTLINE_NUMBERING_LABELS) as DoomOutlineNumbering[];
+				this.settings.outlineNumbering = order[(order.indexOf(this.settings.outlineNumbering) + 1) % order.length];
+				await this.saveSettings();
+				new Notice(`DoomEsque: ${OUTLINE_NUMBERING_LABELS[this.settings.outlineNumbering]} outline numbering`);
 			},
 		});
 

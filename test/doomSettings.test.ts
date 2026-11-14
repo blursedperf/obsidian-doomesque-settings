@@ -1,4 +1,5 @@
 import assert from "node:assert";
+import { computeOutline, formatMarker, styleFromClasses, OutlineStyle } from "../src/outlineNumbering";
 import {
 	ALL_MANAGED_BODY_CLASSES,
 	CURRENT_SETTINGS_VERSION,
@@ -70,6 +71,7 @@ class MockDOMTokenList {
 	assert.deepStrictEqual(state.activeClasses, [
 		"doom-palette-one",
 		"doom-palette-one-light",
+		"doom-outline-live",
 		"doom-indent-style-solid",
 		"doom-sidebar-normal",
 		"doom-table-density-normal",
@@ -243,7 +245,7 @@ class MockDOMTokenList {
 			disableH1Border: true,
 			activeBlockHighlight: true,
 			rainbowIndentGuides: true,
-			legalOutlineNumbering: true,
+			outlineNumbering: "hornbook",
 			editorialEmphasis: true,
 			stickyHoverPreviews: true,
 			showPopoverProperties: true,
@@ -1187,7 +1189,7 @@ void (async () => {
 			darkPalette: "doom-palette-retro-terminal",
 			monospaceEditor: true,
 			rainbowIndentGuides: true,
-			legalOutlineNumbering: true,
+			outlineNumbering: "hornbook",
 		});
 		const mobileState = computeDoomDomState(mobileSettings);
 		assert.ok(mobileState.activeClasses.includes("doom-palette-retro-terminal"));
@@ -1921,6 +1923,90 @@ void (async () => {
 		);
 
 		console.log("✓ Style Settings ownership, theme gating and plugin CSS scope verified");
+	}
+
+	// Outline numbering: the numbers Live Preview draws, and the settings and theme behind them
+	{
+		const marks = (text: string, style: OutlineStyle = "standard") =>
+			computeOutline(text.split("\n")).map((m) => `${m.line}:${formatMarker(m, style)}`);
+
+		// Typed numbers after the first are ignored; nesting by indentation (spaces or tabs)
+		const outline = "1. Duty\n    1. Neighbour\n    1. Proximity\n        1. Deep\n1. Breach\n\t1. Standard\n2. Causation";
+		assert.deepStrictEqual(marks(outline), ["0:1.", "1:a.", "2:b.", "3:i.", "4:2.", "5:a.", "6:3."]);
+		assert.deepStrictEqual(marks(outline, "hornbook"), ["0:I.", "1:A.", "2:B.", "3:1.", "4:II.", "5:A.", "6:III."]);
+		assert.deepStrictEqual(marks(outline, "decimal"), ["0:1.", "1:1.1", "2:1.2", "3:1.2.1", "4:2.", "5:2.1", "6:3."]);
+		assert.deepStrictEqual(marks(outline, "statutory"), ["0:(1)", "1:(a)", "2:(b)", "3:(i)", "4:(2)", "5:(a)", "6:(3)"]);
+
+		// The first typed number sets the start
+		assert.deepStrictEqual(marks("3. c\n9. d", "hornbook"), ["0:III.", "1:IV."]);
+		// Marker columns cover the typed number only
+		const [m0] = computeOutline(["    12. twelve"]);
+		assert.deepStrictEqual([m0.from, m0.to], [4, 7]);
+
+		// A bullet list in between does not change the level; decimal chains the bullet's position
+		const mixed = "1. Torts\n    - note\n    - point\n        1. under the second bullet";
+		assert.deepStrictEqual(marks(mixed), ["0:1.", "3:a."]);
+		assert.deepStrictEqual(marks(mixed, "decimal"), ["0:1.", "3:1.2.1"]);
+
+		// Blank lines inside a list keep it going; an unindented paragraph after a blank ends it
+		assert.deepStrictEqual(marks("1. a\n\n1. b\n\n    more text\n1. c"), ["0:1.", "2:2.", "5:3."]);
+		assert.deepStrictEqual(marks("1. a\n\nParagraph\n\n1. b"), ["0:1.", "4:1."]);
+		// A lazy continuation line does not end the list
+		assert.deepStrictEqual(marks("1. a\nlazy text\n1. b"), ["0:1.", "2:2."]);
+		// Headings, a different delimiter, code fences, quotes and frontmatter
+		assert.deepStrictEqual(marks("1. a\n# H\n1. b"), ["0:1.", "2:1."]);
+		assert.deepStrictEqual(marks("1. a\n1) b"), ["0:1.", "1:1."], "a new delimiter starts a new list");
+		assert.deepStrictEqual(marks("```\n1. code\n```\n1. a"), ["3:1."]);
+		assert.deepStrictEqual(marks("1. a\n    ```\n    1. code\n    ```\n1. b"), ["0:1.", "4:2."], "a fence inside an item");
+		assert.deepStrictEqual(marks("> 1. quoted\n1. a"), ["1:1."]);
+		assert.deepStrictEqual(marks("---\nlist: 1. no\n---\n1. a"), ["3:1."]);
+		assert.deepStrictEqual(marks("1. task\n    1. [ ] sub task", "hornbook"), ["0:I.", "1:A."]);
+		assert.deepStrictEqual(marks("1.no space\n2023. A year"), ["1:2023."]);
+
+		// Long numbers
+		assert.strictEqual(formatMarker({ level: 2, number: 27, chain: [1, 27] }, "standard"), "aa.");
+		assert.strictEqual(formatMarker({ level: 1, number: 1994, chain: [1994] }, "hornbook"), "MCMXCIV.");
+		assert.strictEqual(formatMarker({ level: 2, number: 0, chain: [1, 0] }, "standard"), "0.");
+		assert.strictEqual(formatMarker({ level: 9, number: 4, chain: [] }, "standard"), "iv.", "deeper levels repeat the last");
+
+		// Style: a note's outline-* cssclass wins over the body class
+		assert.strictEqual(styleFromClasses([], []), "standard");
+		assert.strictEqual(styleFromClasses([], ["doom-legal-outline"]), "hornbook");
+		assert.strictEqual(styleFromClasses(["outline-standard"], ["doom-legal-outline"]), "standard");
+		assert.strictEqual(styleFromClasses(["foo", "outline-statutory"], ["doom-outline-decimal"]), "statutory");
+
+		// Settings: each style sets its body class; Live Preview numbering is on by default
+		const cls = (o: Partial<DoomEsqueStyleSettings>) => computeDoomDomState(makeSettings(o)).activeClasses;
+		assert.ok(cls({}).includes("doom-outline-live"));
+		assert.ok(!cls({ livePreviewOutlineNumbers: false }).includes("doom-outline-live"));
+		assert.ok(cls({ outlineNumbering: "decimal" }).includes("doom-outline-decimal"));
+		assert.ok(cls({ outlineNumbering: "statutory" }).includes("doom-outline-statutory"));
+		assert.ok(!cls({}).some((c) => /^doom-(legal-outline|outline-(decimal|statutory))$/.test(c)));
+		for (const c of ["doom-legal-outline", "doom-outline-decimal", "doom-outline-statutory", "doom-outline-live"]) {
+			assert.ok(ALL_MANAGED_BODY_CLASSES.includes(c), `${c} must be managed`);
+		}
+
+		// Migration: the old hornbook toggle becomes the hornbook style
+		const oldOn = { legalOutlineNumbering: true, settingsVersion: 2 } as unknown as Partial<DoomEsqueStyleSettings>;
+		const fromOn = { ...DEFAULT_DOOM_SETTINGS, ...oldOn };
+		assert.strictEqual(migrateSettings(oldOn, fromOn), true);
+		assert.strictEqual(fromOn.outlineNumbering, "hornbook");
+		assert.ok(!("legalOutlineNumbering" in fromOn), "the old key is dropped");
+		const oldOff = { legalOutlineNumbering: false, settingsVersion: 2 } as unknown as Partial<DoomEsqueStyleSettings>;
+		const fromOff = { ...DEFAULT_DOOM_SETTINGS, ...oldOff };
+		migrateSettings(oldOff, fromOff);
+		assert.strictEqual(fromOff.outlineNumbering, "standard");
+
+		// Theme: every style has Reading view rules, global and per note, and the Live Preview marker box
+		assertTheme((css) => css.includes("@counter-style doom-paren-lower-alpha"), "statutory counter styles");
+		for (const root of [".markdown-rendered", "body.doom-legal-outline .markdown-rendered", "body.doom-outline-decimal .markdown-rendered", "body.doom-outline-statutory .markdown-rendered", "body .markdown-rendered.outline-standard", "body .markdown-rendered.outline-hornbook", "body .markdown-rendered.outline-decimal", "body .markdown-rendered.outline-statutory"]) {
+			assertTheme((css) => css.includes(`${root} ol ol ol ol ol ol {`), `six levels for ${root}`);
+		}
+		assertTheme((css) => css.includes('body .markdown-rendered.outline-decimal :where(li) ol > li::marker {\n  content: counters(list-item, ".") " ";'), "decimal chains nested numbers");
+		assertTheme((css) => css.includes("body .markdown-rendered.outline-standard ol > li::marker {\n  content: normal;"), "a per-note style undoes a global decimal marker");
+		assertTheme((css) => /\.doom-outline-marker-text \{[^}]*position: absolute;[^}]*inset-inline-end: 0;/.test(css), "the Live Preview marker is right-aligned to the typed marker's edge");
+		assertTheme((css) => /id: doom-outline-numbering\n\s+title: Outline Numbering\n[\s\S]*?value: doom-outline-statutory/.test(css), "Style Settings offers the four styles");
+		console.log("✓ Outline numbering: computation, styles, settings, migration and theme rules verified");
 	}
 
 	console.log("\nAll unit tests passed successfully!");

@@ -255,6 +255,9 @@ export const ALL_MANAGED_BODY_CLASSES: readonly string[] = [
 	"doom-popover-properties",
 	"doom-settings-flat",
 	"doom-legal-outline",
+	"doom-outline-decimal",
+	"doom-outline-statutory",
+	"doom-outline-live",
 	"doom-editorial-emphasis",
 ];
 
@@ -341,6 +344,8 @@ export const STYLE_SETTINGS_SHARED_CLASSES: readonly string[] = [
 	"doom-indent-style-none",
 	"doom-mono-indent-guides",
 	"doom-legal-outline",
+	"doom-outline-decimal",
+	"doom-outline-statutory",
 	"doom-editorial-emphasis",
 	"doom-monospace-editor",
 	"doom-disable-monospace-ui",
@@ -395,7 +400,7 @@ export const STYLE_SETTINGS_SHARED_KEYS: readonly (keyof DoomEsqueStyleSettings)
 	"indentGuideStyle",
 	"indentGuideWidthPx",
 	"rainbowIndentGuides",
-	"legalOutlineNumbering",
+	"outlineNumbering",
 	"fileTreeIndentPx",
 	"editorialEmphasis",
 	"monospaceEditor",
@@ -414,8 +419,19 @@ export interface DoomDomOptions {
 /**
  * 2: rainbow indent guides became the default. Settings saved before that stored the old default
  * (false) for every user, so version-1 data is migrated to rainbow once.
+ * 3: the legal outline toggle became a numbering style; `legalOutlineNumbering: true` → hornbook.
  */
-export const CURRENT_SETTINGS_VERSION = 2;
+export const CURRENT_SETTINGS_VERSION = 3;
+
+/** Ordered list numbering styles: standard 1 a i A, hornbook I A 1 a i, decimal 1 1.1 1.1.1, statutory (1) (a) (i) (A). */
+export type DoomOutlineNumbering = "standard" | "hornbook" | "decimal" | "statutory";
+
+export const OUTLINE_NUMBERING_CLASSES: Record<DoomOutlineNumbering, string | null> = {
+	standard: null,
+	hornbook: "doom-legal-outline",
+	decimal: "doom-outline-decimal",
+	statutory: "doom-outline-statutory",
+};
 
 export interface DoomEsqueStyleSettings {
 	// --- Palette & Style ---
@@ -485,8 +501,10 @@ export interface DoomEsqueStyleSettings {
 	indentGuideWidthPx: number;
 	/** Color nested indentation guides with Doom rainbow level colors. Default: true; false adds `doom-mono-indent-guides`. */
 	rainbowIndentGuides: boolean;
-	/** Use formal legal / hornbook outline numbering (`I.` -> `A.` -> `1.` -> `a.` -> `i.`) for nested ordered lists (`doom-legal-outline`). */
-	legalOutlineNumbering: boolean;
+	/** Numbering style for nested ordered lists (`doom-legal-outline`, `doom-outline-decimal`, `doom-outline-statutory`). */
+	outlineNumbering: DoomOutlineNumbering;
+	/** Show the same numbers in Live Preview instead of the typed ones (`doom-outline-live`). */
+	livePreviewOutlineNumbers: boolean;
 	/** File explorer tree indentation per folder level in `px` (`--doom-tree-indent`). Default: 14. */
 	fileTreeIndentPx: number;
 
@@ -545,7 +563,8 @@ export const DEFAULT_DOOM_SETTINGS: DoomEsqueStyleSettings = {
 	indentGuideStyle: "solid",
 	indentGuideWidthPx: 1,
 	rainbowIndentGuides: true,
-	legalOutlineNumbering: false,
+	outlineNumbering: "standard",
+	livePreviewOutlineNumbers: true,
 	fileTreeIndentPx: 14,
 
 	hoverPopoverWidthPx: 550,
@@ -604,6 +623,13 @@ export function migrateSettings(saved: Partial<DoomEsqueStyleSettings> | null, s
 	if (from < 2) {
 		settings.rainbowIndentGuides = true;
 	}
+	if (from < 3) {
+		const legacy: unknown = Reflect.get(saved, "legalOutlineNumbering");
+		if (saved.outlineNumbering === undefined) {
+			settings.outlineNumbering = legacy === true ? "hornbook" : "standard";
+		}
+		Reflect.deleteProperty(settings, "legalOutlineNumbering");
+	}
 	settings.settingsVersion = CURRENT_SETTINGS_VERSION;
 	return true;
 }
@@ -645,8 +671,12 @@ export function computeDoomDomState(
 	if (!settings.rainbowIndentGuides) {
 		activeClasses.push("doom-mono-indent-guides");
 	}
-	if (settings.legalOutlineNumbering) {
-		activeClasses.push("doom-legal-outline");
+	const outlineClass = OUTLINE_NUMBERING_CLASSES[settings.outlineNumbering] ?? null;
+	if (outlineClass) {
+		activeClasses.push(outlineClass);
+	}
+	if (settings.livePreviewOutlineNumbers) {
+		activeClasses.push("doom-outline-live");
 	}
 	if (settings.editorialEmphasis) {
 		activeClasses.push("doom-editorial-emphasis");

@@ -69,8 +69,8 @@ class MockDOMTokenList {
 	const state = computeDoomDomState(DEFAULT_DOOM_SETTINGS);
 
 	assert.deepStrictEqual(state.activeClasses, [
-		"doom-palette-one",
-		"doom-palette-one-light",
+		"doom-palette-crisp-dark",
+		"doom-palette-crisp-light",
 		"doom-outline-live",
 		"doom-indent-style-solid",
 		"doom-sidebar-normal",
@@ -121,7 +121,7 @@ class MockDOMTokenList {
 
 	// Invalid dark palette fallback
 	const invalidDark = computeDoomDomState(makeSettings({ darkPalette: "doom-unknown" as any }));
-	assert.ok(invalidDark.activeClasses.includes("doom-palette-one"));
+	assert.ok(invalidDark.activeClasses.includes("doom-palette-crisp-dark"), "an unknown dark palette falls back to the default");
 
 	// Light palettes
 	const oneLight = computeDoomDomState(makeSettings({ lightPalette: "doom-palette-one-light" }));
@@ -162,7 +162,7 @@ class MockDOMTokenList {
 
 	// Invalid light palette fallback
 	const invalidLight = computeDoomDomState(makeSettings({ lightPalette: "doom-unknown" as any }));
-	assert.ok(invalidLight.activeClasses.includes("doom-palette-one-light"));
+	assert.ok(invalidLight.activeClasses.includes("doom-palette-crisp-light"), "an unknown light palette falls back to the default");
 	console.log("✓ Dark and light palette selections and invalid fallbacks work correctly");
 }
 
@@ -191,7 +191,7 @@ class MockDOMTokenList {
 		getNextDarkPalette("doom-palette-crisp-dark"),
 		"doom-palette-one"
 	);
-	assert.strictEqual(getNextDarkPalette("invalid" as any), "doom-palette-one");
+	assert.strictEqual(getNextDarkPalette("invalid" as any), "doom-palette-crisp-dark");
 
 	assert.strictEqual(getNextLightPalette("doom-palette-one-light"), "doom-palette-nord-light");
 	assert.strictEqual(getNextLightPalette("doom-palette-nord-light"), "doom-palette-gruvbox-light");
@@ -215,7 +215,7 @@ class MockDOMTokenList {
 		getNextLightPalette("doom-palette-crisp-light"),
 		"doom-palette-one-light"
 	);
-	assert.strictEqual(getNextLightPalette("invalid" as any), "doom-palette-one-light");
+	assert.strictEqual(getNextLightPalette("invalid" as any), "doom-palette-crisp-light");
 
 	assert.strictEqual(getNextIndentStyle("solid"), "dashed");
 	assert.strictEqual(getNextIndentStyle("dashed"), "dotted");
@@ -1812,9 +1812,25 @@ void (async () => {
 		if (THEME_CSS !== null) {
 			const noComments = THEME_CSS.replace(/\/\*[\s\S]*?\*\//g, "");
 			const ungated: string[] = [];
+			// Split at commas / whitespace outside parentheses, so :is(a, b) stays one compound.
+			const splitTop = (text: string, sep: RegExp): string[] => {
+				const parts: string[] = [];
+				let depth = 0;
+				let cur = "";
+				for (const ch of text) {
+					if (ch === "(") depth++;
+					else if (ch === ")") depth--;
+					if (depth === 0 && sep.test(ch)) {
+						if (cur.trim()) parts.push(cur);
+						cur = "";
+					} else cur += ch;
+				}
+				if (cur.trim()) parts.push(cur);
+				return parts;
+			};
 			for (const m of noComments.matchAll(/([^{}]+)\{/g)) {
-				for (const sel of m[1].split(",")) {
-					for (const compound of sel.trim().split(/\s+/)) {
+				for (const sel of splitTop(m[1], /,/)) {
+					for (const compound of splitTop(sel.trim(), /\s/)) {
 						if (compound.includes("doom-palette-") && !/\.theme-(dark|light)\b/.test(compound)) ungated.push(sel.trim());
 					}
 				}
@@ -2006,11 +2022,25 @@ void (async () => {
 		assertTheme((css) => css.includes('body .markdown-rendered.outline-decimal :where(li) ol > li::marker {\n  content: counters(list-item, ".") " ";'), "decimal chains nested numbers");
 		assertTheme((css) => css.includes("body .markdown-rendered.outline-standard ol > li::marker {\n  content: normal;"), "a per-note style undoes a global decimal marker");
 		const pluginCss = fs.readFileSync(path.resolve(process.cwd(), "styles.css"), "utf-8");
-		assert.ok(/\.doom-outline-marker \{[^}]*text-indent: 0;/.test(pluginCss), "the plugin resets the hanging indent inside its marker widget");
+		assert.ok(!pluginCss.includes("text-indent"), "no text-indent (flagged by the review lint); the marker is right-aligned instead");
+		assert.ok(/\.doom-outline-marker-text \{[^}]*text-align: end;/.test(pluginCss), "the marker ends at the typed marker's edge whatever the inherited indent");
 		assert.ok(/\.doom-outline-marker-text \{[^}]*position: absolute;[^}]*inset-inline-end: 0;/.test(pluginCss), "the Live Preview marker is right-aligned to the typed marker's edge");
 		assertTheme((css) => !css.includes("doom-outline-marker"), "the widget's layout lives in the plugin, not the theme");
 		assertTheme((css) => /id: doom-outline-numbering\n\s+title: Outline Numbering\n[\s\S]*?value: doom-outline-statutory/.test(css), "Style Settings offers the four styles");
 		console.log("✓ Outline numbering: computation, styles, settings, migration and theme rules verified");
+	}
+
+	// Crisp is the default palette pair, in the plugin, in Style Settings and with no palette class at all
+	{
+		assert.strictEqual(DEFAULT_DOOM_SETTINGS.darkPalette, "doom-palette-crisp-dark");
+		assert.strictEqual(DEFAULT_DOOM_SETTINGS.lightPalette, "doom-palette-crisp-light");
+		assertTheme((css) => /id: doom-dark-palette[\s\S]*?default: doom-palette-crisp-dark/.test(css), "Style Settings defaults to crisp dark");
+		assertTheme((css) => /id: doom-light-palette[\s\S]*?default: doom-palette-crisp-light/.test(css), "Style Settings defaults to crisp light");
+		for (const mode of ["dark", "light"]) {
+			assertTheme((css) => css.includes(`body.theme-${mode}.doom-palette-crisp-${mode},\nbody.theme-${mode}:not([class*="doom-palette-"]) {\n  --doom-bg: #`), `crisp ${mode} tokens apply with no palette class`);
+			assertTheme((css) => !css.includes(`body.theme-${mode}.doom-palette-crisp-${mode} `) && !css.includes(`body.theme-${mode}.doom-palette-crisp-${mode})`), `every crisp ${mode} rule also covers the class-less default`);
+		}
+		console.log("✓ Crisp palettes are the default everywhere");
 	}
 
 	console.log("\nAll unit tests passed successfully!");

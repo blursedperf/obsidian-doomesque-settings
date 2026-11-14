@@ -39,7 +39,7 @@ export interface DoomLightPaletteOption {
 export const DOOM_PALETTES: readonly DoomPaletteOption[] = [
 	{
 		id: "doom-palette-one",
-		label: "doom-one (Default)",
+		label: "doom-one",
 		description: "Flagship Atom One Dark inspired Doom color scheme (#282c34).",
 	},
 	{
@@ -79,7 +79,7 @@ export const DOOM_PALETTES: readonly DoomPaletteOption[] = [
 	},
 	{
 		id: "doom-palette-crisp-dark",
-		label: "doom-crisp-dark (Clean Modern)",
+		label: "doom-crisp-dark (Default, clean modern)",
 		description: "The dark counterpart of doom-crisp-light: near-black neutral surfaces, off-white ink and bright, saturated accents that stay readable on every surface.",
 	},
 ];
@@ -87,7 +87,7 @@ export const DOOM_PALETTES: readonly DoomPaletteOption[] = [
 export const DOOM_LIGHT_PALETTES: readonly DoomLightPaletteOption[] = [
 	{
 		id: "doom-palette-one-light",
-		label: "doom-one-light (Default)",
+		label: "doom-one-light",
 		description: "Clean Atom One Light port (#fafafa) with bright Doom syntax accents.",
 	},
 	{
@@ -117,7 +117,7 @@ export const DOOM_LIGHT_PALETTES: readonly DoomLightPaletteOption[] = [
 	},
 	{
 		id: "doom-palette-crisp-light",
-		label: "doom-crisp-light (Clean Modern)",
+		label: "doom-crisp-light (Default, clean modern)",
 		description: "Clean modern high-contrast light palette: pure white paper (#ffffff), near-black ink and saturated accents that stay readable on every surface.",
 	},
 ];
@@ -530,8 +530,8 @@ export interface DoomEsqueStyleSettings {
 /** Backward-compatibility type alias */
 
 export const DEFAULT_DOOM_SETTINGS: DoomEsqueStyleSettings = {
-	darkPalette: "doom-palette-one",
-	lightPalette: "doom-palette-one-light",
+	darkPalette: "doom-palette-crisp-dark",
+	lightPalette: "doom-palette-crisp-light",
 	disableOrgTodoBadges: false,
 	monochromeHeadings: false,
 	disableH1Border: false,
@@ -947,13 +947,13 @@ export const INDENT_GUIDE_STYLES: readonly DoomIndentGuideStyle[] = [
 
 export function getNextDarkPalette(current: DoomDarkPalette): DoomDarkPalette {
 	const idx = DOOM_PALETTES.findIndex((p) => p.id === current);
-	if (idx === -1) return DOOM_PALETTES[0].id;
+	if (idx === -1) return DEFAULT_DOOM_SETTINGS.darkPalette;
 	return DOOM_PALETTES[(idx + 1) % DOOM_PALETTES.length].id;
 }
 
 export function getNextLightPalette(current: DoomLightPalette): DoomLightPalette {
 	const idx = DOOM_LIGHT_PALETTES.findIndex((p) => p.id === current);
-	if (idx === -1) return DOOM_LIGHT_PALETTES[0].id;
+	if (idx === -1) return DEFAULT_DOOM_SETTINGS.lightPalette;
 	return DOOM_LIGHT_PALETTES[(idx + 1) % DOOM_LIGHT_PALETTES.length].id;
 }
 

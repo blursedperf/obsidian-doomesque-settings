@@ -205,6 +205,12 @@ body .popover.hover-popover .mod-ui {
 	display: none;
 }
 
+/* Reading view puts the properties in the header (.mod-header.mod-ui): keep it
+   when "Show note properties in hover previews" is on */
+body.doom-popover-properties .popover.hover-popover .mod-header.mod-ui {
+	display: block;
+}
+
 /* CodeMirror content width in live preview inside popover */
 body .popover.hover-popover .cm-content {
 	width: 100%;

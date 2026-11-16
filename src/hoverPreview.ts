@@ -1,4 +1,4 @@
-import { App, EventRef, HoverPopover, Notice, Platform, TFile } from "obsidian";
+import { App, EventRef, HoverPopover, Notice, Platform, TFile, setIcon } from "obsidian";
 import type DoomEmacsSettingsPlugin from "./main";
 
 export interface HoveredLinkInfo {
@@ -68,8 +68,9 @@ interface HoverPopoverProto {
 
 let topPopoverZIndex = 100;
 
+/** Header buttons use Obsidian's own (Lucide) icons so they match the rest of the app. */
 function renderPinIcon(buttonEl: HTMLElement): void {
-	buttonEl.setText("P");
+	setIcon(buttonEl, "pin");
 }
 
 export class HoverPreviewManager {
@@ -709,7 +710,7 @@ export class HoverPreviewManager {
 			title: "Open note in new tab",
 		});
 		const titleIcon = titleEl.createSpan({ cls: "doom-popover-title-icon" });
-		titleIcon.setText("📄");
+		setIcon(titleIcon, "file-text");
 		const titleText = titleEl.createSpan();
 		titleText.setText(linktext);
 		titleEl.onclick = (e) => {
@@ -730,8 +731,8 @@ export class HoverPreviewManager {
 		const openBtn = createEl("button", {
 			cls: "doom-popover-btn mod-open-tab",
 			title: "Open note in new tab",
-			text: "↗",
 		});
+		setIcon(openBtn, "external-link");
 		openBtn.onclick = (e) => {
 			e.stopPropagation();
 			e.preventDefault();
@@ -746,8 +747,8 @@ export class HoverPreviewManager {
 		const sidebarBtn = createEl("button", {
 			cls: "doom-popover-btn mod-sidebar",
 			title: "Pop open in right sidebar (Super key)",
-			text: "⇥",
 		});
+		setIcon(sidebarBtn, "panel-right");
 		sidebarBtn.onclick = (e) => {
 			e.stopPropagation();
 			e.preventDefault();
@@ -765,8 +766,8 @@ export class HoverPreviewManager {
 		const maxBtn = createEl("button", {
 			cls: "doom-popover-btn mod-maximize",
 			title: "Maximize / restore preview window",
-			text: "⤢",
 		});
+		setIcon(maxBtn, "maximize-2");
 		let isMaximized = false;
 		let prevStyle = { left: "", top: "", width: "", height: "", position: "" };
 
@@ -793,7 +794,7 @@ export class HoverPreviewManager {
 					margin: "",
 				});
 				maxBtn.classList.add("is-active");
-				maxBtn.setText("🗗");
+				setIcon(maxBtn, "minimize-2");
 				maxBtn.title = "Restore preview window size";
 			} else {
 				popoverEl.classList.remove("mod-maximized");
@@ -805,7 +806,7 @@ export class HoverPreviewManager {
 					height: prevStyle.height || `${this.plugin.getEffectiveSettings().hoverPopoverHeightPx}px`,
 				});
 				maxBtn.classList.remove("is-active");
-				maxBtn.setText("⤢");
+				setIcon(maxBtn, "maximize-2");
 				maxBtn.title = "Maximize preview window";
 			}
 			this.expandPopoverInnerContent(popoverEl);
@@ -855,8 +856,8 @@ export class HoverPreviewManager {
 		const closeBtn = createEl("button", {
 			cls: "doom-popover-btn mod-close",
 			title: "Close preview (Esc)",
-			text: "✕",
 		});
+		setIcon(closeBtn, "x");
 		closeBtn.onclick = (e) => {
 			e.stopPropagation();
 			e.preventDefault();
@@ -1301,7 +1302,7 @@ export class HoverPreviewManager {
 					if (pinBtn) {
 						pinBtn.classList.add("is-active");
 						pinBtn.setAttribute("title", "Pinned (sticky until closed)");
-						if (pinBtn.textContent !== "P") {
+						if (!pinBtn.querySelector("svg")) {
 							renderPinIcon(pinBtn);
 						}
 					}
@@ -1311,7 +1312,7 @@ export class HoverPreviewManager {
 					if (pinBtn) {
 						pinBtn.classList.remove("is-active");
 						pinBtn.setAttribute("title", "Pin preview (make sticky)");
-						if (pinBtn.textContent !== "P") {
+						if (!pinBtn.querySelector("svg")) {
 							renderPinIcon(pinBtn);
 						}
 					}

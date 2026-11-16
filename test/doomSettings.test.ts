@@ -1472,21 +1472,22 @@ void (async () => {
 		const hpPath = path.resolve(process.cwd(), "src/hoverPreview.ts");
 		const hpContent = fs.readFileSync(hpPath, "utf-8");
 
-		// 1. Verify src/hoverPreview.ts uses capital 'P' for the pin button
+		// 1. Header buttons use Obsidian's Lucide icons, not text glyphs or emoji
 		assert.ok(
-			!hpContent.includes('pinBtn.setText("📌")'),
-			"hoverPreview.ts must not use hardcoded pushpin emoji"
+			!hpContent.includes('pinBtn.setText("📌")') && !hpContent.includes('setText("P")'),
+			"hoverPreview.ts must not render the pin as an emoji or a letter"
 		);
-		assert.ok(
-			hpContent.includes('buttonEl.setText("P")') || hpContent.includes('pinBtn.setText("P")'),
-			"hoverPreview.ts must render capital 'P' in pin button"
-		);
+		for (const icon of ["pin", "external-link", "panel-right", "maximize-2", "minimize-2", "x", "file-text"]) {
+			assert.ok(hpContent.includes(`, "${icon}")`), `hoverPreview.ts must render the "${icon}" icon with setIcon`);
+		}
+		for (const glyph of ["↗", "⇥", "⤢", "🗗", "✕", "📄"]) {
+			assert.ok(!hpContent.includes(`"${glyph}"`), `hoverPreview.ts must not use the "${glyph}" glyph`);
+		}
 
-		// 2. Verify styles.css contains themeable capital 'P' rules for mod-pin
+		// 2. styles.css sizes the icons and keeps the pin's hover and active states
 		assert.ok(
-			stylesContent.includes(".doom-popover-btn.mod-pin") &&
-				stylesContent.includes("font-family: var(--font-monospace-doom"),
-			"styles.css must style .doom-popover-btn.mod-pin with monospace font"
+			stylesContent.includes(".doom-popover-btn svg") && stylesContent.includes(".doom-popover-title-icon svg"),
+			"styles.css must size the header button and title icons"
 		);
 		assert.ok(
 			stylesContent.includes(".doom-popover-btn.mod-pin:hover"),
@@ -1884,7 +1885,7 @@ void (async () => {
 		// 12. Task rows read checkbox → TODO/DONE → text: Live Preview badge follows the checkbox label,
 		//     Reading view checkbox and fold toggle hang in the gutter out of the text flow.
 		assertTheme(
-			(css) => css.includes('.HyperMD-task-line[data-task=" "] .task-list-label::after') &&
+			(css) => css.includes('.HyperMD-task-line[data-task] .task-list-label::after') &&
 				css.includes(".markdown-rendered li.task-list-item > .list-collapse-indicator {") &&
 				css.includes(".markdown-rendered .list-collapse-indicator {\n  margin-inline-start: calc(-1.9em + var(--doom-reading-marker-shift, 0em));") &&
 				css.includes(".HyperMD-list-line:not(.cm-active):not(.HyperMD-task-line) .cm-fold-indicator .collapse-indicator {\n  inset-inline-end: calc(var(--list-bullet-end-padding) * -1 - 0.4em);"),

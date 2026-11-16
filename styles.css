@@ -329,8 +329,13 @@ body .popover.hover-popover.doom-sticky-popover {
 }
 
 .doom-popover-title-icon {
-	font-size: 12px;
-	line-height: 1;
+	display: inline-flex;
+	flex-shrink: 0;
+}
+
+.doom-popover-title-icon svg {
+	width: 13px;
+	height: 13px;
 }
 
 body .popover.hover-popover.mod-dragged {
@@ -371,14 +376,6 @@ body .popover.hover-popover.mod-dragged {
 	stroke: currentColor;
 	display: block;
 	pointer-events: none;
-}
-
-.doom-popover-btn.mod-pin {
-	font-family: var(--font-monospace-doom, var(--font-monospace));
-	font-weight: 700;
-	font-size: 11px;
-	line-height: 1;
-	letter-spacing: 0.02em;
 }
 
 .doom-popover-btn:hover {
@@ -431,6 +428,11 @@ body .popover.hover-popover.mod-dragged {
 	color: var(--color-red);
 	background-color: rgba(var(--color-red-rgb), 0.16);
 	border-color: rgba(var(--color-red-rgb), 0.35);
+}
+
+/* The header's open button replaces Obsidian's corner "open link" button, which would duplicate it. */
+.popover.hover-popover:has(> .doom-popover-header) :is(.markdown-embed-link, .file-embed-link) {
+	display: none;
 }
 
 /* Open link button in hover popovers */

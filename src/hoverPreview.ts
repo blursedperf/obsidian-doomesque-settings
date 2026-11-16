@@ -198,12 +198,12 @@ export class HoverPreviewManager {
 		};
 
 		const { originalShow, originalHide, originalShouldShow, originalShouldShowSelf, originalPosition } = this;
-		const onPopoverShow = this.onPopoverShow.bind(this);
-		const onPopoverHide = this.onPopoverHide.bind(this);
+		const onPopoverShow = (instance: PatchedHoverPopover): void => this.onPopoverShow(instance);
+		const onPopoverHide = (instance: PatchedHoverPopover): void => this.onPopoverHide(instance);
 
 		// 1. show()
 		safePatch("show", function (this: PatchedHoverPopover, ...args: unknown[]) {
-			const ret = originalShow ? originalShow.apply(this, args) : undefined;
+			const ret: unknown = originalShow ? originalShow.apply(this, args) : undefined;
 			try {
 				onPopoverShow(this);
 			} catch (err) {
@@ -221,7 +221,8 @@ export class HoverPreviewManager {
 				return;
 			}
 			onPopoverHide(this);
-			return originalHide ? originalHide.apply(this, args) : undefined;
+			const ret: unknown = originalHide ? originalHide.apply(this, args) : undefined;
+			return ret;
 		});
 
 		// 3. shouldShow()
@@ -257,7 +258,7 @@ export class HoverPreviewManager {
 			if (this._doomHasRendered && (this.onHover || this.hoverEl?.matches(":hover"))) {
 				return;
 			}
-			const ret = originalPosition ? originalPosition.apply(this, args) : undefined;
+			const ret: unknown = originalPosition ? originalPosition.apply(this, args) : undefined;
 			if (this.hoverEl && (this.hoverEl.style.left || this.hoverEl.style.top)) {
 				this._doomHasRendered = true;
 			}

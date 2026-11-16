@@ -431,7 +431,7 @@ body .popover.hover-popover.mod-dragged {
 }
 
 /* The header's open button replaces Obsidian's corner "open link" button, which would duplicate it. */
-.popover.hover-popover:has(> .doom-popover-header) :is(.markdown-embed-link, .file-embed-link) {
+.popover.hover-popover.doom-has-popover-header :is(.markdown-embed-link, .file-embed-link) {
 	display: none;
 }
 

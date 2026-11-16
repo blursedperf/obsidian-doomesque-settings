@@ -871,6 +871,9 @@ export class HoverPreviewManager {
 		this.makeElementDraggable(popoverEl, header);
 
 		popoverEl.prepend(header);
+		// Marks previews that carry the header, so styles.css can hide Obsidian's duplicate corner link
+		// with a plain class selector rather than :has().
+		popoverEl.addClass("doom-has-popover-header");
 	}
 
 	/**

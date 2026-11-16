@@ -1484,6 +1484,14 @@ void (async () => {
 			assert.ok(!hpContent.includes(`"${glyph}"`), `hoverPreview.ts must not use the "${glyph}" glyph`);
 		}
 
+		// No :has() in plugin CSS (broad selector invalidation); the header marks its popover instead
+		assert.ok(!stylesContent.includes(":has("), "styles.css must not use :has()");
+		assert.ok(
+			hpContent.includes('popoverEl.addClass("doom-has-popover-header")') &&
+				stylesContent.includes(".popover.hover-popover.doom-has-popover-header :is(.markdown-embed-link, .file-embed-link)"),
+			"previews with the header must hide Obsidian's corner link via the doom-has-popover-header class"
+		);
+
 		// 2. styles.css sizes the icons and keeps the pin's hover and active states
 		assert.ok(
 			stylesContent.includes(".doom-popover-btn svg") && stylesContent.includes(".doom-popover-title-icon svg"),
